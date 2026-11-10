@@ -103,6 +103,12 @@ a:hover { color: #0B7A58; }
 
 /* On narrow screens the header keeps only the logo and the main button */
 @media (max-width: 900px) { .nk-navlink { display: none; } }
+.nk-short { display: none; }
+@media (max-width: 600px) {
+  .nk-long { display: none; }
+  .nk-short { display: inline; }
+  .nk-btn-compact { padding: 11px 14px !important; }
+}
 
 :focus-visible { outline: 2px solid #0B7A58; outline-offset: 2px; }
 
