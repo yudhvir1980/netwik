@@ -87,6 +87,15 @@ a:hover { color: #0B7A58; }
 .nk-viz span { aspect-ratio: 1 / 1; background: #26282C; transition: background .35s ease; }
 .nk-tag { font-family: var(--mono); font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); padding: 3px 8px; }
 
+/* What we build: the three layers */
+.nk-layer { border: 1px solid #2A2C30; padding: 20px; display: flex; flex-wrap: wrap; gap: 14px 24px; opacity: .45; transition: border-color .6s ease, opacity .6s ease; }
+.nk-layer-num { font-family: var(--mono); font-size: 13px; color: #8B9097; transition: color .6s ease; }
+.nk-layer.is-lit { border-color: var(--signal); opacity: 1; }
+.nk-layer.is-lit .nk-layer-num { color: var(--signal); }
+
+/* On narrow screens the header keeps only the logo and the main button */
+@media (max-width: 900px) { .nk-navlink { display: none; } }
+
 :focus-visible { outline: 2px solid #0B7A58; outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {

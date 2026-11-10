@@ -119,14 +119,34 @@
     });
   }
 
+  // What we build: layers light up from the bottom
+  var layers = $$('#build-layers .nk-layer');
+  function renderBuild() {
+    var phase = still ? 3 : Math.floor(S.t / 20) % 5;
+    layers.forEach(function (l) {
+      l.classList.toggle('is-lit', Number(l.getAttribute('data-layer')) <= phase);
+    });
+  }
+
+  // How you start: progress bars fill one after another
+  var startBars = $$('#start-steps .nk-fill');
+  function renderStart() {
+    var sp = still ? 999 : S.t % 110;
+    startBars.forEach(function (b, i) {
+      b.style.width = Math.max(0, Math.min(100, Math.round((sp - i * 25) / 25 * 100))) + '%';
+    });
+  }
+
   function render() {
+    renderBuild();
     renderHow();
     renderCtx();
+    renderStart();
   }
 
   N.run({
     interval: 120,
-    blocks: 8,
+    blocks: 12,
     onTick: function (t) {
       S.t = t;
       if (!still) {
