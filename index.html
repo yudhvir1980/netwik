@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Netwik: AI agents for network services</title>
+<meta name="description" content="Ready-made AI agents for incident, change, capacity, release, availability and problem management, built on the context of your network.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<a class="nk-skip" href="#main">Skip to content</a>
+<div style="display: flex; justify-content: center; min-height: 100vh; background: #FFFFFF; color: #0A0A0B; font-family: 'Inter Tight', Inter, system-ui, sans-serif; font-size: 17px; line-height: 1.5">
+
+<div class="nk-margin nk-margin-left" aria-hidden="true"><div class="nk-margin-inner"></div></div>
+
+<div style="flex: 0 1 1140px; min-width: 0; border-left: 1px solid #E2E4E7; border-right: 1px solid #E2E4E7">
+
+<header style="position: sticky; top: 0; z-index: 5; background: #FFFFFF; border-bottom: 1px solid #E2E4E7">
+<div style="padding: 12px 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 28px">
+<a href="index.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #0A0A0B; min-height: 44px">
+<svg aria-hidden="true" width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#0A0A0B" stroke-width="1.6"><path d="M5 20 L13 6 L21 20 Z"></path><rect x="2" y="17" width="6" height="6" fill="#FFFFFF"></rect><rect x="10" y="3" width="6" height="6" fill="#12B886" stroke="#0A0A0B"></rect><rect x="18" y="17" width="6" height="6" fill="#FFFFFF"></rect></svg>
+<span style="font-weight: 600; font-size: 20px; letter-spacing: -0.03em">Netwik</span>
+</a>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 26px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase">
+<a href="use-cases.html" style="text-decoration: none; padding: 13px 0; color: #3D4147">Use cases</a>
+<a href="#context" style="text-decoration: none; padding: 13px 0; color: #3D4147">Context</a>
+<a href="#how" style="text-decoration: none; padding: 13px 0; color: #3D4147">How it works</a>
+<a href="#guardrails" style="text-decoration: none; padding: 13px 0; color: #3D4147">Guardrails</a>
+<a href="#who" style="text-decoration: none; padding: 13px 0; color: #3D4147">Who it is for</a>
+<a href="use-cases.html" class="nk-btn" style="background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; padding: 13px 18px">Explore use cases</a>
+</nav>
+</div>
+</header>
+
+<main id="main">
+
+<section style="padding: 72px 28px 80px; display: flex; flex-wrap: wrap; align-items: center; gap: 48px; border-bottom: 1px solid #E2E4E7">
+<div style="flex: 1 1 440px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 26px">
+<div class="nk-rise" style="display: flex; align-items: center; gap: 10px; border: 1px solid #E2E4E7; padding: 7px 12px; font-size: 14px; color: #3D4147">
+<span class="nk-live" style="width: 7px; height: 7px; background: #12B886"></span>
+<span>AI agents for network services</span>
+</div>
+<h1 class="nk-rise" style="margin: 0; font-weight: 500; font-size: clamp(44px, 6.2vw, 84px); line-height: 1.02; letter-spacing: -0.045em; animation-delay: .08s">Agents that run your network.</h1>
+<p class="nk-rise" style="margin: 0; font-size: 20px; line-height: 1.45; color: #5B6068; max-width: 480px; animation-delay: .16s">Ready-made agents for incident, change, capacity, release, availability and problem management, built on the context of your network.</p>
+<a href="use-cases.html" class="nk-btn nk-rise" style="background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px; animation-delay: .24s">Explore use cases &nbsp;→</a>
+</div>
+
+<div class="nk-rise" data-run-panel style="flex: 1 1 440px; min-width: 0; background: #131416; color: #F2F3F5; animation-delay: .2s">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 16px 22px; border-bottom: 1px solid #2A2C30; font-size: 14px">
+<span style="font-weight: 500">Incident agent</span>
+<span style="color: #A3A7AE">Illustrative run</span>
+</div>
+<div style="padding: 22px; display: flex; flex-direction: column; gap: 16px; font-size: 15px; line-height: 1.4">
+<div class="nk-step"><span class="nk-step-dot"></span><div><div class="nk-step-title">Alarm received</div><div class="nk-step-sub">WAN circuit down at a branch site</div></div></div>
+<div class="nk-step"><span class="nk-step-dot"></span><div><div class="nk-step-title">Related alarms grouped</div><div class="nk-step-sub">Router, tunnel and site alarms become one incident</div></div></div>
+<div class="nk-step"><span class="nk-step-dot"></span><div><div class="nk-step-title">Evidence collected</div><div class="nk-step-sub">Device state, backup path, carrier status, last change</div></div></div>
+<div class="nk-step"><span class="nk-step-dot"></span><div><div class="nk-step-title">Diagnosis written to the ticket</div><div class="nk-step-sub">Carrier fault. Backup path is carrying traffic.</div></div></div>
+<div class="nk-step"><span class="nk-step-dot"></span><div><div class="nk-step-title">Waiting for engineer approval</div><div class="nk-step-sub">Proposed next step: raise a case with the carrier</div></div></div>
+</div>
+<div style="padding: 14px 22px 16px; border-top: 1px solid #2A2C30; display: flex; gap: 12px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 1.5; min-height: 58px">
+<span style="flex: none; color: #A3A7AE">Ticket</span>
+<span><span data-run-typed></span><span class="nk-cursor"></span></span>
+</div>
+<div style="height: 3px; background: #2A2C30"><div class="nk-fill" data-run-bar style="width: 0%"></div></div>
+</div>
+</section>
+
+<section aria-label="Network domains" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); border-bottom: 1px solid #E2E4E7">
+<div style="padding: 22px 28px; display: flex; align-items: center; gap: 12px"><span style="flex: none; width: 7px; height: 7px; background: #12B886"></span><span><strong style="font-weight: 600">LAN</strong> <span style="color: #5B6068">switching and campus</span></span></div>
+<div style="padding: 22px 28px; display: flex; align-items: center; gap: 12px"><span style="flex: none; width: 7px; height: 7px; background: #12B886"></span><span><strong style="font-weight: 600">WAN</strong> <span style="color: #5B6068">SD-WAN and circuits</span></span></div>
+<div style="padding: 22px 28px; display: flex; align-items: center; gap: 12px"><span style="flex: none; width: 7px; height: 7px; background: #12B886"></span><span><strong style="font-weight: 600">Wireless</strong> <span style="color: #5B6068">access points and clients</span></span></div>
+<div style="padding: 22px 28px; display: flex; align-items: center; gap: 12px"><span style="flex: none; width: 7px; height: 7px; background: #12B886"></span><span><strong style="font-weight: 600">DDI</strong> <span style="color: #5B6068">DNS, DHCP and addresses</span></span></div>
+</section>
+
+<section style="padding: 88px 28px; display: flex; flex-wrap: wrap; gap: 40px 64px; border-bottom: 1px solid #E2E4E7">
+<div style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 20px">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(34px, 4vw, 50px); line-height: 1.05; letter-spacing: -0.04em">One agent for each process.</h2>
+<p style="margin: 0; color: #5B6068; max-width: 400px">Each agent comes with use cases for the network domains it covers. Start with the process that hurts most.</p>
+<a href="use-cases.html" class="nk-btn" style="background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px">Browse all use cases &nbsp;→</a>
+</div>
+<div style="flex: 999 1 520px; min-width: 0; border: 1px solid #E2E4E7; display: flex; flex-direction: column">
+<a href="incident-agent.html" class="nk-row" style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 24px; padding: 20px 22px; text-decoration: none; border-bottom: 1px solid #E2E4E7"><span style="font-size: 24px; font-weight: 500; letter-spacing: -0.03em">Incident management</span><span style="color: #5B6068; font-size: 16px">Triage and diagnosis &nbsp;→</span></a>
+<a href="use-cases.html?process=Change" class="nk-row" style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 24px; padding: 20px 22px; text-decoration: none; border-bottom: 1px solid #E2E4E7"><span style="font-size: 24px; font-weight: 500; letter-spacing: -0.03em">Change management</span><span style="color: #5B6068; font-size: 16px">Risk review before approval &nbsp;→</span></a>
+<a href="use-cases.html?process=Capacity" class="nk-row" style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 24px; padding: 20px 22px; text-decoration: none; border-bottom: 1px solid #E2E4E7"><span style="font-size: 24px; font-weight: 500; letter-spacing: -0.03em">Capacity management</span><span style="color: #5B6068; font-size: 16px">Forecasts and what to order &nbsp;→</span></a>
+<a href="use-cases.html?process=Release" class="nk-row" style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 24px; padding: 20px 22px; text-decoration: none; border-bottom: 1px solid #E2E4E7"><span style="font-size: 24px; font-weight: 500; letter-spacing: -0.03em">Release management</span><span style="color: #5B6068; font-size: 16px">Advisory to upgrade plan &nbsp;→</span></a>
+<a href="use-cases.html?process=Availability" class="nk-row" style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 24px; padding: 20px 22px; text-decoration: none; border-bottom: 1px solid #E2E4E7"><span style="font-size: 24px; font-weight: 500; letter-spacing: -0.03em">Availability management</span><span style="color: #5B6068; font-size: 16px">Uptime and weak points &nbsp;→</span></a>
+<a href="use-cases.html?process=Problem" class="nk-row" style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 24px; padding: 20px 22px; text-decoration: none"><span style="font-size: 24px; font-weight: 500; letter-spacing: -0.03em">Problem management</span><span style="color: #5B6068; font-size: 16px">Repeat incidents and root cause &nbsp;→</span></a>
+</div>
+</section>
+
+<section id="context" style="padding: 88px 28px; border-bottom: 1px solid #E2E4E7">
+<div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; margin-bottom: 48px">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(38px, 5vw, 64px); line-height: 1.03; letter-spacing: -0.045em">Agents need context.</h2>
+<p style="margin: 0; color: #5B6068; max-width: 640px">AI models get smarter every day. What they do not have is the context of your network. Without it, an agent is a brilliant new starter on its first day, every day.</p>
+</div>
+
+<div style="border: 1px solid #E2E4E7; margin-bottom: 48px">
+<div style="padding: 20px 22px; border-bottom: 1px solid #E2E4E7; font-size: 22px; font-weight: 500; line-height: 1.25; letter-spacing: -0.025em">The context layer turns your knowledge, expertise and processes into context a machine can use.</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr))">
+<div style="padding: 22px; display: flex; flex-direction: column; gap: 8px"><div style="display: flex; align-items: center; gap: 10px"><span style="width: 7px; height: 7px; background: #12B886"></span><h3 style="margin: 0; font-weight: 500; font-size: 21px; letter-spacing: -0.02em">Knowledge</h3></div><p style="margin: 0; color: #5B6068; font-size: 16px">What exists. Sites, devices, circuits, and what depends on what.</p></div>
+<div style="padding: 22px; display: flex; flex-direction: column; gap: 8px"><div style="display: flex; align-items: center; gap: 10px"><span style="width: 7px; height: 7px; background: #12B886"></span><h3 style="margin: 0; font-weight: 500; font-size: 21px; letter-spacing: -0.02em">Expertise</h3></div><p style="margin: 0; color: #5B6068; font-size: 16px">How the network is managed. What your engineers learned from outages and failed changes.</p></div>
+<div style="padding: 22px; display: flex; flex-direction: column; gap: 8px"><div style="display: flex; align-items: center; gap: 10px"><span style="width: 7px; height: 7px; background: #F5A524"></span><h3 style="margin: 0; font-weight: 500; font-size: 21px; letter-spacing: -0.02em">Processes</h3></div><p style="margin: 0; color: #5B6068; font-size: 16px">Which actions are acceptable, and who has to approve them.</p></div>
+</div>
+<div style="padding: 16px 22px; border-top: 1px solid #E2E4E7; color: #3D4147; font-size: 16px">Run like software: owned, approved, versioned and kept current.</div>
+</div>
+
+<div style="font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: #5B6068; margin-bottom: 20px">We get there in four steps</div>
+<div style="display: flex; flex-wrap: wrap; gap: 36px 44px">
+
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+<div id="ctx-num" style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; color: #5B6068">01 / 04</div>
+<h3 id="ctx-title" style="margin: 0; font-weight: 500; font-size: clamp(28px, 3vw, 38px); line-height: 1.1; letter-spacing: -0.035em; min-height: 84px">Years of experience become playbooks.</h3>
+<p id="ctx-body" style="margin: 0; color: #5B6068; min-height: 154px">Your best engineer knows which sites are critical and who to call, without looking anything up. That came from shadowing colleagues, living through outages and rolling back failed changes. We write it down.</p>
+<div id="ctx-tabs" role="group" aria-label="Context layer steps" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); border: 1px solid #E2E4E7; margin-top: auto">
+<button type="button" class="nk-tab" aria-pressed="true"><span class="nk-tab-head"><span class="nk-tab-num">01</span><span class="nk-tab-label">Codify</span></span><span class="nk-tab-bar"></span></button>
+<button type="button" class="nk-tab" aria-pressed="false"><span class="nk-tab-head"><span class="nk-tab-num">02</span><span class="nk-tab-label">Consolidate</span></span><span class="nk-tab-bar"></span></button>
+<button type="button" class="nk-tab" aria-pressed="false"><span class="nk-tab-head"><span class="nk-tab-num">03</span><span class="nk-tab-label">Assist</span></span><span class="nk-tab-bar"></span></button>
+<button type="button" class="nk-tab" aria-pressed="false"><span class="nk-tab-head"><span class="nk-tab-num">04</span><span class="nk-tab-label">Act</span></span><span class="nk-tab-bar"></span></button>
+</div>
+</div>
+
+<div aria-hidden="true" style="flex: 1 1 480px; min-width: 0; background: #131416; color: #F2F3F5; padding: 22px; display: flex; flex-direction: column; gap: 16px; font-size: 14px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 13px; color: #A3A7AE; padding-bottom: 14px; border-bottom: 1px solid #2A2C30">
+<span>Context layer</span>
+<span>Illustrative example</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px">
+<div id="ctx-playbook" class="nk-zone" style="flex: 1 1 200px; min-width: 0; border: 1px solid #2A2C30; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="font-weight: 500">Playbook: site link degraded</div>
+<div style="display: flex; align-items: center; gap: 10px; color: #D5D8DC; font-size: 13px"><span class="nk-dot"></span><span>1&nbsp; Check carrier circuit status</span></div>
+<div style="display: flex; align-items: center; gap: 10px; color: #D5D8DC; font-size: 13px"><span class="nk-dot"></span><span>2&nbsp; Confirm the backup network is healthy</span></div>
+<div style="display: flex; align-items: center; gap: 10px; color: #D5D8DC; font-size: 13px"><span class="nk-dot"></span><span>3&nbsp; Check changes in the last 24 hours</span></div>
+<div style="display: flex; align-items: center; gap: 10px; color: #D5D8DC; font-size: 13px"><span class="nk-dot"></span><span>4&nbsp; Call the site lead</span></div>
+<div style="display: flex; align-items: center; gap: 10px; color: #D5D8DC; font-size: 13px"><span class="nk-dot"></span><span>5&nbsp; Fail over the site</span></div>
+</div>
+<div id="ctx-zone1" class="nk-zone" style="flex: 1 1 200px; min-width: 0; border: 1px solid #2A2C30; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<div style="font-weight: 500">Sources, joined</div>
+<div id="ctx-chips" style="display: flex; flex-wrap: wrap; gap: 6px">
+<span class="nk-src">Monitoring</span>
+<span class="nk-src">Ticketing</span>
+<span class="nk-src">Inventory</span>
+<span class="nk-src">Carrier portal</span>
+<span class="nk-src">Site notes</span>
+</div>
+<div style="margin-top: auto; height: 5px; background: #2A2C30"><div id="ctx-join" class="nk-fill" style="width: 0%"></div></div>
+</div>
+</div>
+<div id="ctx-zone2" class="nk-zone" style="border: 1px solid #2A2C30; padding: 16px; display: flex; gap: 12px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 1.5; min-height: 64px">
+<span style="flex: none; color: #A3A7AE">Agent</span>
+<span id="ctx-agent">Waiting for context.</span>
+</div>
+<div id="ctx-zone3" class="nk-zone" style="display: flex; flex-direction: column; gap: 12px">
+<div style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A3A7AE">Autonomy, granted by you</div>
+<div style="height: 3px; background: #2A2C30"><div id="ctx-ladder-bar" class="nk-fill" style="width: 0%; transition: width .5s ease"></div></div>
+<div id="ctx-ladder" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; font-size: 13px; line-height: 1.25">
+<div class="nk-rung"><span class="nk-rung-dot"></span><span class="nk-rung-label">Observe</span></div>
+<div class="nk-rung"><span class="nk-rung-dot"></span><span class="nk-rung-label">Suggest</span></div>
+<div class="nk-rung"><span class="nk-rung-dot"></span><span class="nk-rung-label">Prepare</span></div>
+<div class="nk-rung"><span class="nk-rung-dot"></span><span class="nk-rung-label">Act with approval</span></div>
+<div class="nk-rung"><span class="nk-rung-dot"></span><span class="nk-rung-label">Act</span></div>
+</div>
+</div>
+</div>
+
+</div>
+
+<div style="margin-top: 44px; border: 1px solid #E2E4E7">
+<div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 24px; padding: 18px 22px; border-bottom: 1px solid #E2E4E7">
+<span style="font-size: 24px; font-weight: 500; letter-spacing: -0.03em">The agent earns autonomy. You grant it.</span>
+<span style="color: #5B6068; font-size: 15px">Every action has evidence, a named approver and a change record.</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 24px; padding: 16px 22px; border-bottom: 1px solid #E2E4E7"><span style="flex: 1 1 220px; font-weight: 500">Collect diagnostics</span><span style="flex: 0 1 160px; color: #5B6068">Low risk</span><span style="flex: 0 0 150px; display: flex; align-items: center; gap: 10px"><span style="width: 7px; height: 7px; background: #12B886"></span>On its own</span></div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 24px; padding: 16px 22px; border-bottom: 1px solid #E2E4E7"><span style="flex: 1 1 220px; font-weight: 500">Clear a stuck port</span><span style="flex: 0 1 160px; color: #5B6068">Low risk</span><span style="flex: 0 0 150px; display: flex; align-items: center; gap: 10px"><span style="width: 7px; height: 7px; background: #12B886"></span>On its own</span></div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 24px; padding: 16px 22px"><span style="flex: 1 1 220px; font-weight: 500">Fail over a site</span><span style="flex: 0 1 160px; color: #5B6068">High risk</span><span style="flex: 0 0 150px; display: flex; align-items: center; gap: 10px"><span style="width: 7px; height: 7px; background: #F5A524"></span>With approval</span></div>
+</div>
+</section>
+
+<section id="how" style="padding: 88px 28px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0 0 48px; text-align: center; font-weight: 500; font-size: clamp(38px, 5vw, 64px); line-height: 1.03; letter-spacing: -0.045em">How an agent works.</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 36px 44px">
+
+<div aria-hidden="true" style="flex: 1 1 460px; min-width: 0; background: #131416; color: #F2F3F5; padding: 22px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 13px; color: #A3A7AE; padding-bottom: 16px; border-bottom: 1px solid #2A2C30">
+<span>The agent reads from your tools</span>
+<span id="how-stage">Investigating</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px">
+<div id="how-bars" style="flex: 1 1 180px; min-width: 0; border: 1px solid #2A2C30; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 14px; font-weight: 500">Your tools</div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="font-size: 12px; color: #A3A7AE">Service desk</div><div style="height: 5px; background: #2A2C30"><div class="nk-fill" style="width: 0%; background: #8B9097"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="font-size: 12px; color: #A3A7AE">Monitoring</div><div style="height: 5px; background: #2A2C30"><div class="nk-fill" style="width: 0%; background: #8B9097"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="font-size: 12px; color: #A3A7AE">Controller</div><div style="height: 5px; background: #2A2C30"><div class="nk-fill" style="width: 0%; background: #8B9097"></div></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><div style="font-size: 12px; color: #A3A7AE">DDI</div><div style="height: 5px; background: #2A2C30"><div class="nk-fill" style="width: 0%; background: #8B9097"></div></div></div>
+</div>
+<div style="flex: 2 1 240px; min-width: 0; border: 1px solid #2A2C30; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 14px; font-weight: 500">Devices in scope</div>
+<div id="how-cells" style="display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 3px"></div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; margin-top: auto">
+<span style="border: 1px solid #2A2C30; padding: 4px 8px; color: #A3A7AE">Read-only</span>
+<span id="how-approval" style="border: 1px solid #8B9097; padding: 4px 8px; color: #8B9097; transition: color .4s ease, border-color .4s ease">Engineer approval</span>
+</div>
+</div>
+</div>
+<div style="display: flex; gap: 12px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 1.5; padding-top: 16px; border-top: 1px solid #2A2C30; min-height: 56px">
+<span style="flex: none; color: #A3A7AE">Agent</span>
+<span><span id="how-finding"></span><span class="nk-cursor"></span></span>
+</div>
+</div>
+
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+<h3 id="how-title" style="margin: 0; font-weight: 500; font-size: clamp(28px, 3vw, 38px); line-height: 1.1; letter-spacing: -0.035em; min-height: 84px">It does the legwork.</h3>
+<p id="how-body" style="margin: 0; color: #5B6068; min-height: 128px">The agent reads alarms, tickets and telemetry from the tools you already run. It checks device state, recent changes and past records at the same time.</p>
+<div id="how-tabs" role="group" aria-label="Steps" style="display: flex; flex-direction: column; border: 1px solid #E2E4E7; margin-top: auto">
+<button type="button" class="nk-tab" aria-pressed="true"><span class="nk-tab-head"><span class="nk-tab-num">01</span><span class="nk-tab-label">Investigate</span></span><span class="nk-tab-bar"></span></button>
+<button type="button" class="nk-tab" aria-pressed="false"><span class="nk-tab-head"><span class="nk-tab-num">02</span><span class="nk-tab-label">Propose</span></span><span class="nk-tab-bar"></span></button>
+<button type="button" class="nk-tab" aria-pressed="false" style="border-bottom: 0"><span class="nk-tab-head"><span class="nk-tab-num">03</span><span class="nk-tab-label">Approve and act</span></span><span class="nk-tab-bar"></span></button>
+</div>
+<a href="incident-agent.html" class="nk-btn" style="align-self: flex-start; background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px">See the incident agent &nbsp;→</a>
+</div>
+
+</div>
+</section>
+
+<section id="guardrails" style="padding: 88px 28px; border-bottom: 1px solid #E2E4E7">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 640px; margin-bottom: 44px">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(34px, 4vw, 50px); line-height: 1.05; letter-spacing: -0.04em">Built for networks that cannot go down.</h2>
+<p style="margin: 0; color: #5B6068">An agent with access to production needs tighter rules than a new engineer. These apply to every agent in the catalogue.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)); gap: 12px">
+<div style="border: 1px solid #E2E4E7; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+<span style="width: 7px; height: 7px; background: #12B886"></span>
+<h3 style="margin: 0; font-weight: 500; font-size: 21px; line-height: 1.2; letter-spacing: -0.02em">Read-only until you say otherwise</h3>
+<p style="margin: 0; color: #5B6068; font-size: 16px">Every agent starts by observing and recommending. You choose which actions it may take.</p>
+</div>
+<div style="border: 1px solid #E2E4E7; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+<span style="width: 7px; height: 7px; background: #F5A524"></span>
+<h3 style="margin: 0; font-weight: 500; font-size: 21px; line-height: 1.2; letter-spacing: -0.02em">A person approves every change</h3>
+<p style="margin: 0; color: #5B6068; font-size: 16px">Nothing that alters production happens without a named engineer approving it.</p>
+</div>
+<div style="border: 1px solid #E2E4E7; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+<span style="width: 7px; height: 7px; background: #12B886"></span>
+<h3 style="margin: 0; font-weight: 500; font-size: 21px; line-height: 1.2; letter-spacing: -0.02em">Evidence with every answer</h3>
+<p style="margin: 0; color: #5B6068; font-size: 16px">Each diagnosis shows the data it came from, so your team can check it in seconds.</p>
+</div>
+<div style="border: 1px solid #E2E4E7; padding: 24px; display: flex; flex-direction: column; gap: 10px">
+<span style="width: 7px; height: 7px; background: #12B886"></span>
+<h3 style="margin: 0; font-weight: 500; font-size: 21px; line-height: 1.2; letter-spacing: -0.02em">Your tools stay in charge</h3>
+<p style="margin: 0; color: #5B6068; font-size: 16px">Agents work through your service desk, monitoring and controllers. Records stay where they are.</p>
+</div>
+</div>
+<div style="margin-top: 12px; background: #131416; color: #F2F3F5; padding: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 40px">
+<div style="flex: 1 1 380px; min-width: 0; font-size: 26px; font-weight: 500; line-height: 1.15; letter-spacing: -0.03em">Everything we build lives in your environment, and you own it.</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px; font-size: 14px">
+<span style="border: 1px solid #3A3D42; padding: 7px 11px">Playbooks</span>
+<span style="border: 1px solid #3A3D42; padding: 7px 11px">Site console</span>
+<span style="border: 1px solid #3A3D42; padding: 7px 11px">Context model</span>
+<span style="border: 1px solid #3A3D42; padding: 7px 11px">Workflows</span>
+</div>
+</div>
+</section>
+
+<section style="padding: 88px 28px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0 0 44px; text-align: center; font-weight: 500; font-size: clamp(38px, 5vw, 64px); line-height: 1.03; letter-spacing: -0.045em">Use cases.</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 12px">
+<article style="border: 1px solid #E2E4E7; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 14px; color: #5B6068">Change agent</div>
+<h3 style="margin: 0; font-weight: 500; font-size: 24px; line-height: 1.15; letter-spacing: -0.03em">Change request risk review</h3>
+<p style="margin: 0; color: #5B6068; font-size: 16px">People are good at judgement. Machines are good at relentless diligence. The agent applies the same context to every scheduled change and spots risk before the change window opens.</p>
+<pre aria-label="Illustrative output" style="margin: auto 0 0; background: #131416; color: #D5D8DC; padding: 16px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.7; overflow-x: auto">$ review change-request
+plan ......... complete
+rollback ..... not tested
+clash ........ same site, same window
+<span style="color: #F5A524">verdict: send back with feedback</span></pre>
+</article>
+<article style="border: 1px solid #E2E4E7; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 14px; color: #5B6068">Release agent</div>
+<h3 style="margin: 0; font-weight: 500; font-size: 24px; line-height: 1.15; letter-spacing: -0.03em">Vulnerability to upgrade plan</h3>
+<p style="margin: 0; color: #5B6068; font-size: 16px">Maps a new security advisory to the devices it affects and proposes a staged rollout.</p>
+<pre aria-label="Illustrative output" style="margin: auto 0 0; background: #131416; color: #D5D8DC; padding: 16px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.7; overflow-x: auto">$ assess advisory
+affected ..... listed by site
+target ....... approved version
+rollout ...... waves, pilot site first
+<span style="color: #2EE6A6">verdict: plan ready for approval</span></pre>
+</article>
+<article style="border: 1px solid #E2E4E7; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 14px; color: #5B6068">Incident agent</div>
+<h3 style="margin: 0; font-weight: 500; font-size: 24px; line-height: 1.15; letter-spacing: -0.03em">WAN circuit outage triage</h3>
+<p style="margin: 0; color: #5B6068; font-size: 16px">Groups the alarms from one outage and opens a ticket with the diagnosis in it.</p>
+<pre aria-label="Illustrative output" style="margin: auto 0 0; background: #131416; color: #D5D8DC; padding: 16px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.7; overflow-x: auto">$ triage alarm
+alarms ....... grouped into one incident
+backup ....... carrying traffic
+cause ........ carrier fault
+<span style="color: #F5A524">next: raise carrier case (needs approval)</span></pre>
+</article>
+</div>
+<div style="display: flex; justify-content: center; margin-top: 36px">
+<a href="use-cases.html" class="nk-btn" style="background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px">Browse all use cases &nbsp;→</a>
+</div>
+</section>
+
+<section id="who" style="padding: 88px 28px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0 0 44px; font-weight: 500; font-size: clamp(34px, 4vw, 50px); line-height: 1.05; letter-spacing: -0.04em">Who it is for.</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 12px">
+<div style="border: 1px solid #E2E4E7; padding: 28px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px">
+<h3 style="margin: 0; font-weight: 500; font-size: 24px; letter-spacing: -0.03em">Network leaders</h3>
+<p style="margin: 0; color: #5B6068; font-size: 16px">You run a large network with a team that is always busy. Pick one process, run one agent beside your engineers, and judge it on your own tickets.</p>
+<a href="use-cases.html" style="margin-top: auto; padding: 12px 0; font-weight: 500; font-size: 16px">Find a use case &nbsp;→</a>
+</div>
+<div style="border: 1px solid #E2E4E7; padding: 28px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px">
+<h3 style="margin: 0; font-weight: 500; font-size: 24px; letter-spacing: -0.03em">Partners</h3>
+<p style="margin: 0; color: #5B6068; font-size: 16px">You run networks for your customers as a service provider or integrator. Offer Netwik agents on the estates you already manage.</p>
+<a href="mailto:[YOUR EMAIL]" style="margin-top: auto; padding: 12px 0; font-weight: 500; font-size: 16px">Talk about partnering &nbsp;→</a>
+</div>
+<div style="border: 1px solid #E2E4E7; padding: 28px; display: flex; flex-direction: column; align-items: flex-start; gap: 12px">
+<h3 style="margin: 0; font-weight: 500; font-size: 24px; letter-spacing: -0.03em">Investors</h3>
+<p style="margin: 0; color: #5B6068; font-size: 16px">[ONE OR TWO SENTENCES ON THE MARKET, THE FOUNDER'S BACKGROUND IN NETWORK SERVICES, AND WHAT YOU ARE RAISING]</p>
+<a href="mailto:[YOUR EMAIL]" style="margin-top: auto; padding: 12px 0; font-weight: 500; font-size: 16px">Ask for the deck &nbsp;→</a>
+</div>
+</div>
+</section>
+
+<section style="padding: 104px 28px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 24px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(40px, 5.6vw, 76px); line-height: 1.02; letter-spacing: -0.045em">AI is here. We make it work on your network.</h2>
+<p style="margin: 0; color: #5B6068; max-width: 560px">The models will keep getting better. Context is the part we build with you. The agents in the catalogue run today as working prototypes.</p>
+<a href="use-cases.html" class="nk-btn" style="background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px">Explore use cases &nbsp;→</a>
+</section>
+
+</main>
+
+<footer style="padding: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px; font-size: 14px; color: #5B6068">
+<span style="font-weight: 600; font-size: 18px; letter-spacing: -0.03em; color: #0A0A0B">Netwik</span>
+<span>AI agents for LAN, WAN, wireless and DDI operations</span>
+<a href="mailto:[YOUR EMAIL]" style="padding: 12px 0">[YOUR EMAIL]</a>
+</footer>
+
+</div>
+
+<div class="nk-margin nk-margin-right" aria-hidden="true"><div class="nk-margin-inner"></div></div>
+
+</div>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/home.js"></script>
+</body>
+</html>

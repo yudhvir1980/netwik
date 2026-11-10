@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Use cases: Netwik</title>
+<meta name="description" content="Every Netwik use case, by agent and network domain: incident, change, capacity, release, availability and problem management across LAN, WAN, wireless and DDI.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<a class="nk-skip" href="#main">Skip to content</a>
+<div style="display: flex; justify-content: center; min-height: 100vh; background: #FFFFFF; color: #0A0A0B; font-family: 'Inter Tight', Inter, system-ui, sans-serif; font-size: 17px; line-height: 1.5">
+
+<div class="nk-margin nk-margin-left" aria-hidden="true"><div class="nk-margin-inner"></div></div>
+
+<div style="flex: 0 1 1140px; min-width: 0; border-left: 1px solid #E2E4E7; border-right: 1px solid #E2E4E7">
+
+<header style="position: sticky; top: 0; z-index: 5; background: #FFFFFF; border-bottom: 1px solid #E2E4E7">
+<div style="padding: 12px 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 28px">
+<a href="index.html" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #0A0A0B; min-height: 44px">
+<svg aria-hidden="true" width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="#0A0A0B" stroke-width="1.6"><path d="M5 20 L13 6 L21 20 Z"></path><rect x="2" y="17" width="6" height="6" fill="#FFFFFF"></rect><rect x="10" y="3" width="6" height="6" fill="#12B886" stroke="#0A0A0B"></rect><rect x="18" y="17" width="6" height="6" fill="#FFFFFF"></rect></svg>
+<span style="font-weight: 600; font-size: 20px; letter-spacing: -0.03em">Netwik</span>
+</a>
+<nav aria-label="Main" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px 26px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase">
+<a href="use-cases.html" aria-current="page" style="text-decoration: underline; text-underline-offset: 6px; padding: 13px 0; color: #0A0A0B">Use cases</a>
+<a href="index.html#how" style="text-decoration: none; padding: 13px 0; color: #3D4147">How it works</a>
+<a href="index.html#guardrails" style="text-decoration: none; padding: 13px 0; color: #3D4147">Guardrails</a>
+<a href="index.html#who" style="text-decoration: none; padding: 13px 0; color: #3D4147">Who it is for</a>
+</nav>
+</div>
+</header>
+
+<main id="main">
+
+<section style="padding: 64px 28px 64px; display: flex; flex-wrap: wrap; align-items: center; gap: 44px; border-bottom: 1px solid #E2E4E7">
+<div style="flex: 1 1 400px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+<h1 class="nk-rise" style="margin: 0; font-weight: 500; font-size: clamp(40px, 5.2vw, 72px); line-height: 1.02; letter-spacing: -0.045em">Find work for an agent.</h1>
+<p class="nk-rise" style="margin: 0; font-size: 20px; line-height: 1.45; color: #5B6068; max-width: 460px; animation-delay: .1s">Every use case belongs to one agent and one or more network domains. Pick a square on the map, or use the filters below.</p>
+</div>
+<div class="nk-rise" style="flex: 1 1 460px; min-width: 0; background: #131416; color: #F2F3F5; padding: 20px; display: flex; flex-direction: column; gap: 16px; animation-delay: .2s">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 14px; padding-bottom: 14px; border-bottom: 1px solid #2A2C30">
+<span style="font-weight: 500">Coverage map</span>
+<span style="color: #A3A7AE">One square is one use case</span>
+</div>
+<div id="matrix" role="group" aria-label="Use cases by process and network domain" style="display: grid; grid-template-columns: minmax(92px, 1.3fr) repeat(4, minmax(0, 1fr)); gap: 3px; font-size: 13px">
+<span></span>
+<span style="color: #A3A7AE; padding: 0 0 6px 6px">LAN</span>
+<span style="color: #A3A7AE; padding: 0 0 6px 6px">WAN</span>
+<span style="color: #A3A7AE; padding: 0 0 6px 6px">Wireless</span>
+<span style="color: #A3A7AE; padding: 0 0 6px 6px">DDI</span>
+</div>
+</div>
+</section>
+
+<section style="padding: 24px 28px; display: flex; flex-direction: column; gap: 14px; border-bottom: 1px solid #E2E4E7">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px">
+<span style="font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: #5B6068; width: 76px">Process</span>
+<div id="proc-chips" role="group" aria-label="Filter by process" style="display: flex; flex-wrap: wrap; gap: 6px"></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px">
+<span style="font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: #5B6068; width: 76px">Domain</span>
+<div id="dom-chips" role="group" aria-label="Filter by network domain" style="display: flex; flex-wrap: wrap; gap: 6px"></div>
+</div>
+</section>
+
+<section style="padding: 20px 28px 88px; border-bottom: 1px solid #E2E4E7">
+<div id="count" aria-live="polite" style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; color: #5B6068; padding-bottom: 20px">16 use cases</div>
+<div id="cases" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(330px, 100%), 1fr)); gap: 12px"></div>
+<div id="empty" hidden style="border: 1px dashed #B5B9BF; padding: 40px 28px; flex-direction: column; align-items: flex-start; gap: 16px">
+<div style="font-weight: 500; font-size: 24px; letter-spacing: -0.03em">No use case for that combination yet.</div>
+<button type="button" id="reset" class="nk-btn" style="font: inherit; font-size: 16px; font-weight: 600; min-height: 48px; padding: 0 22px; border: 0; background: #0A0A0B; color: #FFFFFF; cursor: pointer">Clear filters</button>
+</div>
+<noscript><p style="color: #5B6068">Turn on JavaScript to browse and filter the use case catalogue.</p></noscript>
+</section>
+
+</main>
+
+<footer style="padding: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px; font-size: 14px; color: #5B6068">
+<span style="font-weight: 600; font-size: 18px; letter-spacing: -0.03em; color: #0A0A0B">Netwik</span>
+<span>AI agents for LAN, WAN, wireless and DDI operations</span>
+<a href="mailto:[YOUR EMAIL]" style="padding: 12px 0">[YOUR EMAIL]</a>
+</footer>
+
+</div>
+
+<div class="nk-margin nk-margin-right" aria-hidden="true"><div class="nk-margin-inner"></div></div>
+
+</div>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/use-cases.js"></script>
+</body>
+</html>
