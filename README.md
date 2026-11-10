@@ -39,7 +39,6 @@ In the repository on GitHub, go to **Settings → Pages**, choose **Deploy from 
 
 Search the HTML for `[` to find them:
 
-- `[YOUR EMAIL]`: contact address in the footers and the Partners and Investors links
 - Investors blurb on the home page
 - `[YOUR DDI PLATFORM]`, `[CARRIER PORTAL OR API]`, `[YOUR CHAT TOOL]` on the incident agent page
 - `[TARGET]` figures in "What a pilot measures"
