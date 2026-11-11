@@ -19,7 +19,7 @@ Opening `index.html` directly also works. To check changes, load the page in a b
 ## Voice and content rules
 
 - Written in the first person singular ("I am building"), never "we". Do not add vendor language: no pilots, partners, demos on request, pricing or "how you start".
-- Do not claim anything exists that does not. Sample runs and outputs are labelled "illustrative". Product names (ServiceNow, SolarWinds Orion, Cisco DNA Center and so on) always carry a "for example" label.
+- Do not claim anything exists that does not. Sample runs and outputs are labelled "illustrative". The one exception, by the owner's choice, is the concept diagram in the home page hero (the incident flow), which has no label. Product names (ServiceNow, SolarWinds Orion, Cisco DNA Center and so on) always carry a "for example" label.
 - Copy uses British spelling ("utilisation", "catalogue", "colour") and short, plain sentences.
 - The only call to action is an email to `hi@netwik.co`. There is no About section, by the owner's choice.
 
