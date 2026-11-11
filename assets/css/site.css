@@ -101,13 +101,11 @@ a:hover { color: #0B7A58; }
 .nk-layer.is-lit { border-color: var(--signal); opacity: 1; }
 .nk-layer.is-lit .nk-layer-num { color: var(--signal); }
 
-/* On narrow screens the header keeps only the logo and the main button */
-@media (max-width: 900px) { .nk-navlink { display: none; } }
+/* On phones the long nav label is swapped for a short one */
 .nk-short { display: none; }
 @media (max-width: 600px) {
   .nk-long { display: none; }
   .nk-short { display: inline; }
-  .nk-btn-compact { padding: 11px 14px !important; }
 }
 
 :focus-visible { outline: 2px solid #0B7A58; outline-offset: 2px; }

@@ -65,15 +65,15 @@
     return function () { mutate(); paint(); };
   }
 
-  // The "Incident agent / Illustrative run" panel.
-  function runPanel(root) {
+  // The "Illustrative run" panel. `text` is what gets typed into the last line.
+  function runPanel(root, text) {
     if (!root) return function () {};
     var rows = Array.prototype.slice.call(root.querySelectorAll('.nk-step')).map(function (row) {
       return { row: row, dot: row.querySelector('.nk-step-dot') };
     });
     var typedEl = root.querySelector('[data-run-typed]');
     var bar = root.querySelector('[data-run-bar]');
-    var ticket = 'Carrier fault on the primary circuit. Backup path is carrying traffic. Evidence attached.';
+    var ticket = text || 'Carrier fault on the primary circuit. Backup path is carrying traffic. Evidence attached.';
 
     return function (t) {
       var cyc = still ? 999 : t % 120;

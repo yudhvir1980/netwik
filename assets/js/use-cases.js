@@ -1,29 +1,13 @@
-/* Use case catalogue: coverage map, filters and animated cards. */
+/* Home page: hero run panel and the use case catalogue (coverage map, filters and animated cards). */
 (function () {
   'use strict';
 
   var N = window.Netwik;
 
-  var ALL = [
-    { proc: 'Incident', title: 'WAN circuit outage triage', text: 'Groups the alarms from one outage, checks the backup path and carrier status, and opens a ticket with the diagnosis.', doms: ['WAN'], hasDetail: true },
-    { proc: 'Incident', title: 'Wireless connection complaints', text: 'Works out whether a complaint comes from the access point, the radio environment, authentication or the client device.', doms: ['Wireless'], hasDetail: true },
-    { proc: 'Incident', title: 'DNS resolution failures', text: 'Tests resolution from several points, finds the failing server or record, and reports what broke and since when.', doms: ['DDI'], hasDetail: true },
-    { proc: 'Incident', title: 'Flapping ports and uplinks', text: 'Reads interface history and error counters to separate a cabling fault from a configuration or hardware fault.', doms: ['LAN'], hasDetail: true },
-    { proc: 'Change', title: 'Change request risk review', text: 'Checks each request for a complete plan, a tested rollback, the sites affected and clashes with other changes, then gives the engineer feedback.', doms: ['LAN', 'WAN', 'Wireless', 'DDI'] },
-    { proc: 'Change', title: 'Before and after verification', text: 'Captures network state before a change, captures it again afterwards and reports every difference that was not planned.', doms: ['LAN', 'WAN', 'Wireless'] },
-    { proc: 'Change', title: 'DNS and DHCP change validation', text: 'Checks a record or scope change for conflicts and overlaps before it is applied.', doms: ['DDI'] },
-    { proc: 'Capacity', title: 'Circuit utilisation forecast', text: 'Projects when each circuit will reach its limit and recommends the upgrade to order, with lead time taken into account.', doms: ['WAN'] },
-    { proc: 'Capacity', title: 'Address pool exhaustion', text: 'Tracks DHCP scopes and subnets and warns before a site runs out of addresses.', doms: ['DDI'] },
-    { proc: 'Capacity', title: 'Wireless density planning', text: 'Finds areas where client numbers are outgrowing the access points that serve them.', doms: ['Wireless'] },
-    { proc: 'Release', title: 'Vulnerability to upgrade plan', text: 'Maps a new security advisory to the devices it affects, picks a target software version and proposes a staged rollout.', doms: ['LAN', 'WAN', 'Wireless'] },
-    { proc: 'Release', title: 'Software version drift', text: 'Lists devices that have fallen behind the approved software version and groups them into upgrade batches.', doms: ['LAN', 'WAN', 'Wireless'] },
-    { proc: 'Availability', title: 'Service level reporting', text: 'Calculates availability per site and service, and attributes each outage to its cause and owner.', doms: ['LAN', 'WAN', 'Wireless', 'DDI'] },
-    { proc: 'Availability', title: 'Single point of failure check', text: 'Walks the topology to find sites and services that depend on one device, one link or one carrier.', doms: ['LAN', 'WAN'] },
-    { proc: 'Problem', title: 'Recurring incident detection', text: 'Finds incidents that share a device, site, software version or cause and raises them as one problem record.', doms: ['LAN', 'WAN', 'Wireless', 'DDI'] },
-    { proc: 'Problem', title: 'Root cause analysis draft', text: 'Assembles the timeline, evidence and likely cause for a major incident, ready for the team to review and correct.', doms: ['LAN', 'WAN', 'Wireless', 'DDI'] }
-  ];
-  var PROCS = ['All', 'Incident', 'Change', 'Capacity', 'Release', 'Availability', 'Problem'];
-  var DOMS = ['All', 'LAN', 'WAN', 'Wireless', 'DDI'];
+  var D = window.NetwikData;
+  var PROCS = D.PROCS, DOMS = D.DOMS;
+  // Use cases with a walkthrough come first.
+  var ALL = D.ALL.filter(function (c) { return c.detail; }).concat(D.ALL.filter(function (c) { return !c.detail; }));
   var OFF = '#26282C', GREY = '#5A5E65', GREEN = '#2EE6A6', AMBER = '#F5A524', UP = '#1E7D5F';
 
   var params = new URLSearchParams(window.location.search);
@@ -77,6 +61,11 @@
     } else if (procName === 'Availability') {
       var gap = (hash(r, idx) + Math.floor(f / 3)) % 19;
       bg = c === gap || c === gap - 1 ? AMBER : UP;
+    } else if (procName === 'Knowledge') {
+      // A playbook: one row per step, ticked off in turn.
+      var done = Math.floor((f % 40) / 8);
+      if (c === 0) bg = r < done ? GREEN : r === done ? AMBER : GREY;
+      else if (c >= 2 && c < 6 + (hash(r, idx) % 8)) bg = GREY;
     } else {
       var hp = hash(i, idx + 3);
       if (hp % 5 === 0) bg = hp % 3 === 0 && f % 10 < 5 ? GREEN : GREY;
@@ -154,7 +143,7 @@
       var dot = el('span');
       dot.style.cssText = 'flex: none; width: 7px; height: 7px; background: #12B886';
       agent.appendChild(dot);
-      agent.appendChild(el('span', null, c.proc + ' agent'));
+      agent.appendChild(el('span', null, c.proc));
       body.appendChild(agent);
 
       var h = el('h2', null, c.title);
@@ -170,11 +159,15 @@
       tags.style.cssText = 'display: flex; flex-wrap: wrap; gap: 6px';
       c.doms.forEach(function (d) { tags.appendChild(el('span', 'nk-tag', d)); });
       foot.appendChild(tags);
-      if (c.hasDetail) {
-        var a = el('a', null, 'View the agent  →');
-        a.href = 'incident-agent.html';
+      if (c.detail) {
+        var a = el('a', null, 'See the walkthrough  →');
+        a.href = 'use-case.html?id=' + c.id;
         a.style.cssText = 'font-weight: 500; font-size: 15px; padding: 12px 0';
         foot.appendChild(a);
+      } else {
+        var soon = el('span', null, 'Coming soon');
+        soon.style.cssText = 'font-size: 14px; color: #5B6068; padding: 12px 0';
+        foot.appendChild(soon);
       }
       body.appendChild(foot);
       card.appendChild(body);
@@ -229,9 +222,11 @@
 
   renderAll();
 
+  var runPanel = N.runPanel(document.querySelector('[data-run-panel]'));
+
   N.run({
     interval: 160,
-    blocks: 4,
-    onTick: function (t) { S.t = t; paintViz(); }
+    blocks: 12,
+    onTick: function (t) { S.t = t; paintViz(); runPanel(t); }
   });
 })();

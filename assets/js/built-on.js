@@ -1,4 +1,5 @@
-/* Home page: hero run panel, "Agents need context" steps and "How an agent works" steps. */
+/* "What agents are built on" page: the three layers, the context steps and the "at work" steps.
+   Tabs change only when clicked. The panels beside them animate from the moment a tab is chosen. */
 (function () {
   'use strict';
 
@@ -8,7 +9,6 @@
   function $$(s) { return Array.prototype.slice.call(document.querySelectorAll(s)); }
 
   var S = { t: 0, tab: 0, tabStart: 0, ctx: still ? 3 : 0, ctxStart: 0 };
-  var runPanel = N.runPanel($('[data-run-panel]'));
 
   // How an agent works
   var tabData = [
@@ -30,7 +30,7 @@
 
   // Agents need context
   var ctxData = [
-    { title: 'Years of experience become playbooks.', body: 'Your best engineer knows which sites are critical and who to call, without looking anything up. That came from shadowing colleagues, living through outages and rolling back failed changes. We write it down.' },
+    { title: 'Years of experience become playbooks.', body: 'Your best engineer knows which sites are critical and who to call, without looking anything up. That came from shadowing colleagues, living through outages and rolling back failed changes. The first step is to write it down.' },
     { title: 'One console for every site.', body: 'What engineers chase across several tools comes together in one site console, with the playbook player built in. The agent sees what a senior engineer would look up.' },
     { title: 'The agent works beside the engineer.', body: 'The agent works the incident alongside your engineer. It reads the context, follows the playbook and suggests the next step, with its evidence.' },
     { title: 'Autonomy, one task at a time.', body: 'As the agent proves itself, you grant it more autonomy, starting with the safest, highest-volume tasks. The agent earns autonomy. You grant it.' }
@@ -57,9 +57,8 @@
     var t = S.t;
     var tk = still ? 999 : t - S.tabStart;
     var cur = tabData[S.tab];
-    var p = tk / 7;
-    howTitle.textContent = N.scramble(cur.title, p);
-    howBody.textContent = N.scramble(cur.body, p);
+    howTitle.textContent = cur.title;
+    howBody.textContent = cur.body;
     howStage.textContent = cur.stage;
     howFinding.textContent = cur.finding.slice(0, Math.max(0, tk * 2));
     var ac = S.tab === 2 ? '#F5A524' : '#8B9097';
@@ -77,10 +76,7 @@
       c.style.background = bg;
     });
     howTabs.forEach(function (b, i) {
-      var w = 0;
-      if (i < S.tab) w = 100;
-      if (i === S.tab) w = Math.min(100, Math.round(tk / 60 * 100));
-      b.querySelector('.nk-tab-bar').style.width = w + '%';
+      b.querySelector('.nk-tab-bar').style.width = i === S.tab ? '100%' : '0';
       b.setAttribute('aria-pressed', i === S.tab ? 'true' : 'false');
     });
   }
@@ -88,10 +84,9 @@
   function renderCtx() {
     var ctx = S.ctx;
     var ck = still ? 999 : S.t - S.ctxStart;
-    var cp = ck / 7;
     ctxNum.textContent = '0' + (ctx + 1) + ' / 04';
-    ctxTitle.textContent = N.scramble(ctxData[ctx].title, cp);
-    ctxBody.textContent = N.scramble(ctxData[ctx].body, cp);
+    ctxTitle.textContent = ctxData[ctx].title;
+    ctxBody.textContent = ctxData[ctx].body;
     pbDots.forEach(function (d, i) {
       d.style.background = ctx > 0 || ck >= i * 7 ? '#2EE6A6' : '#3A3D42';
     });
@@ -111,15 +106,12 @@
     ladderBar.style.width = (reached <= 1 ? 0 : (reached - 1) * 20) + '%';
     zones.forEach(function (z, i) { z.style.opacity = ctx >= i + 1 ? '1' : '0.35'; });
     ctxTabs.forEach(function (b, i) {
-      var w = 0;
-      if (i < ctx) w = 100;
-      if (i === ctx) w = Math.min(100, Math.round(ck / 58 * 100));
-      b.querySelector('.nk-tab-bar').style.width = w + '%';
+      b.querySelector('.nk-tab-bar').style.width = i === ctx ? '100%' : '0';
       b.setAttribute('aria-pressed', i === ctx ? 'true' : 'false');
     });
   }
 
-  // What we build: layers light up from the bottom
+  // The three layers light up from the bottom
   var layers = $$('#build-layers .nk-layer');
   function renderBuild() {
     var phase = still ? 3 : Math.floor(S.t / 20) % 5;
@@ -128,20 +120,10 @@
     });
   }
 
-  // How you start: progress bars fill one after another
-  var startBars = $$('#start-steps .nk-fill');
-  function renderStart() {
-    var sp = still ? 999 : S.t % 110;
-    startBars.forEach(function (b, i) {
-      b.style.width = Math.max(0, Math.min(100, Math.round((sp - i * 25) / 25 * 100))) + '%';
-    });
-  }
-
   function render() {
     renderBuild();
     renderHow();
     renderCtx();
-    renderStart();
   }
 
   N.run({
@@ -149,12 +131,7 @@
     blocks: 12,
     onTick: function (t) {
       S.t = t;
-      if (!still) {
-        if (t - S.tabStart >= 60) { S.tab = (S.tab + 1) % 3; S.tabStart = t; }
-        if (t - S.ctxStart >= 58) { S.ctx = (S.ctx + 1) % 4; S.ctxStart = t; }
-      }
       render();
-      runPanel(t);
     }
   });
 })();
