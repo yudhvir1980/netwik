@@ -1,4 +1,5 @@
-/* Home page: hero run panel and the use case catalogue (coverage map, filters and animated cards). */
+/* Home page: the use case catalogue (coverage map, filters and animated cards).
+   The hero's incident flow is animated in CSS only (.nk-flow-* in site.css). */
 (function () {
   'use strict';
 
@@ -222,11 +223,9 @@
 
   renderAll();
 
-  var runPanel = N.runPanel(document.querySelector('[data-run-panel]'));
-
   N.run({
     interval: 160,
     blocks: 12,
-    onTick: function (t) { S.t = t; paintViz(); runPanel(t); }
+    onTick: function (t) { S.t = t; paintViz(); }
   });
 })();

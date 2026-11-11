@@ -42,23 +42,95 @@
 <a href="#use-cases" class="nk-btn nk-rise" style="background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px; animation-delay: .24s">See the use cases &nbsp;↓</a>
 </div>
 
-<div class="nk-rise" data-run-panel style="flex: 1 1 440px; min-width: 0; background: #131416; color: #F2F3F5; animation-delay: .2s">
-<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 16px 22px; border-bottom: 1px solid #2A2C30; font-size: 14px">
-<span style="font-weight: 500">Incident agent</span>
-<span style="color: #A3A7AE">Illustrative run</span>
+<div class="nk-rise" style="flex: 1 1 440px; min-width: 0; border: 1px solid #E2E4E7; background: #FFFFFF; animation-delay: .2s">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 16px 22px; border-bottom: 1px solid #E2E4E7; font-size: 14px">
+<span style="font-weight: 500">How an incident agent works</span>
+<span style="color: #5B6068">Illustrative</span>
 </div>
-<div style="padding: 22px; display: flex; flex-direction: column; gap: 16px; font-size: 15px; line-height: 1.4">
-<div class="nk-step"><span class="nk-step-dot"></span><div><div class="nk-step-title">Alarm received</div><div class="nk-step-sub">WAN circuit down at a branch site</div></div></div>
-<div class="nk-step"><span class="nk-step-dot"></span><div><div class="nk-step-title">Related alarms grouped</div><div class="nk-step-sub">Router, tunnel and site alarms become one incident</div></div></div>
-<div class="nk-step"><span class="nk-step-dot"></span><div><div class="nk-step-title">Evidence collected</div><div class="nk-step-sub">Device state, backup path, carrier status, last change</div></div></div>
-<div class="nk-step"><span class="nk-step-dot"></span><div><div class="nk-step-title">Diagnosis written to the ticket</div><div class="nk-step-sub">Carrier fault. Backup path is carrying traffic.</div></div></div>
-<div class="nk-step"><span class="nk-step-dot"></span><div><div class="nk-step-title">Waiting for engineer approval</div><div class="nk-step-sub">Proposed next step: raise a case with the carrier</div></div></div>
+<div class="nk-flow" style="padding: 30px 22px 36px; display: flex; align-items: flex-start; justify-content: center; gap: 20px">
+<svg width="400" height="730" viewBox="0 0 400 730" aria-hidden="true" focusable="false" style="flex: none; display: block; width: min(260px, 56%); height: auto; overflow: visible">
+<rect class="nk-flow-ring" x="192" y="20" width="16" height="16" rx="3" fill="none" stroke="#F5A524" stroke-width="1.5"></rect>
+<rect class="nk-flow-ring nk-flow-ring2" x="192" y="20" width="16" height="16" rx="3" fill="none" stroke="#F5A524" stroke-width="1.5"></rect>
+<rect class="nk-flow-sig" x="192" y="20" width="16" height="16" rx="3" fill="#F5A524"></rect>
+<path class="nk-flow-ln nk-flow-ink nk-flow-l1" pathLength="1" d="M200 42 V128"></path>
+<path class="nk-flow-pk nk-flow-pk6" pathLength="1" d="M200 42 V128" style="animation-delay: .72s"></path>
+<path class="nk-flow-ln nk-flow-f0" pathLength="1" d="M200 168 C200 250 25 245 25 323"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M200 168 C200 250 25 245 25 323" style="animation-delay: 1.71s"></path>
+<path class="nk-flow-ln nk-flow-g0" pathLength="1" d="M25 341 C25 420 200 415 200 498"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M25 341 C25 420 200 415 200 498" style="animation-delay: 4.5s"></path>
+<path class="nk-flow-ln nk-flow-f1" pathLength="1" d="M200 168 C200 250 75 245 75 323"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M200 168 C200 250 75 245 75 323" style="animation-delay: 1.82s"></path>
+<path class="nk-flow-ln nk-flow-g1" pathLength="1" d="M75 341 C75 420 200 415 200 498"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M75 341 C75 420 200 415 200 498" style="animation-delay: 4.59s"></path>
+<path class="nk-flow-ln nk-flow-f2" pathLength="1" d="M200 168 C200 250 125 245 125 323"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M200 168 C200 250 125 245 125 323" style="animation-delay: 1.94s"></path>
+<path class="nk-flow-ln nk-flow-g2" pathLength="1" d="M125 341 C125 420 200 415 200 498"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M125 341 C125 420 200 415 200 498" style="animation-delay: 4.68s"></path>
+<path class="nk-flow-ln nk-flow-f3" pathLength="1" d="M200 168 C200 250 175 245 175 323"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M200 168 C200 250 175 245 175 323" style="animation-delay: 2.05s"></path>
+<path class="nk-flow-ln nk-flow-g3" pathLength="1" d="M175 341 C175 420 200 415 200 498"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M175 341 C175 420 200 415 200 498" style="animation-delay: 4.77s"></path>
+<path class="nk-flow-ln nk-flow-f4" pathLength="1" d="M200 168 C200 250 225 245 225 323"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M200 168 C200 250 225 245 225 323" style="animation-delay: 2.16s"></path>
+<path class="nk-flow-ln nk-flow-g4" pathLength="1" d="M225 341 C225 420 200 415 200 498"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M225 341 C225 420 200 415 200 498" style="animation-delay: 4.86s"></path>
+<path class="nk-flow-ln nk-flow-f5" pathLength="1" d="M200 168 C200 250 275 245 275 323"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M200 168 C200 250 275 245 275 323" style="animation-delay: 2.27s"></path>
+<path class="nk-flow-ln nk-flow-g5" pathLength="1" d="M275 341 C275 420 200 415 200 498"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M275 341 C275 420 200 415 200 498" style="animation-delay: 4.95s"></path>
+<path class="nk-flow-ln nk-flow-f6" pathLength="1" d="M200 168 C200 250 325 245 325 323"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M200 168 C200 250 325 245 325 323" style="animation-delay: 2.39s"></path>
+<path class="nk-flow-ln nk-flow-g6" pathLength="1" d="M325 341 C325 420 200 415 200 498"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M325 341 C325 420 200 415 200 498" style="animation-delay: 5.04s"></path>
+<path class="nk-flow-ln nk-flow-f7" pathLength="1" d="M200 168 C200 250 375 245 375 323"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M200 168 C200 250 375 245 375 323" style="animation-delay: 2.5s"></path>
+<path class="nk-flow-ln nk-flow-g7" pathLength="1" d="M375 341 C375 420 200 415 200 498"></path>
+<path class="nk-flow-pk nk-flow-pk9" pathLength="1" d="M375 341 C375 420 200 415 200 498" style="animation-delay: 5.13s"></path>
+<path class="nk-flow-ln nk-flow-ink nk-flow-l2" pathLength="1" d="M200 546 V680"></path>
+<path class="nk-flow-pk nk-flow-pk6" pathLength="1" d="M200 546 V680" style="animation-delay: 6.39s"></path>
+<rect class="nk-flow-lead" x="182" y="132" width="36" height="36" rx="5" fill="#12B886"></rect>
+<rect class="nk-flow-a0" x="18" y="325" width="14" height="14" rx="2" fill="#0A0A0B"></rect>
+<rect class="nk-flow-a1" x="68" y="325" width="14" height="14" rx="2" fill="#0A0A0B"></rect>
+<rect class="nk-flow-a2" x="118" y="325" width="14" height="14" rx="2" fill="#0A0A0B"></rect>
+<rect class="nk-flow-a3" x="168" y="325" width="14" height="14" rx="2" fill="#0A0A0B"></rect>
+<rect class="nk-flow-a4" x="218" y="325" width="14" height="14" rx="2" fill="#0A0A0B"></rect>
+<rect class="nk-flow-a5" x="268" y="325" width="14" height="14" rx="2" fill="#0A0A0B"></rect>
+<rect class="nk-flow-a6" x="318" y="325" width="14" height="14" rx="2" fill="#0A0A0B"></rect>
+<rect class="nk-flow-a7" x="368" y="325" width="14" height="14" rx="2" fill="#0A0A0B"></rect>
+<polygon class="nk-flow-dia" points="200,500 222,522 200,544 178,522" stroke="#0A0A0B" stroke-width="1.5"></polygon>
+<rect class="nk-flow-cf" x="197" y="701" width="6" height="6" rx="1" fill="#F5A524" style="--dx: -46px; --dy: -34px"></rect>
+<rect class="nk-flow-cf" x="197" y="701" width="5" height="5" rx="1" fill="#12B886" style="--dx: -30px; --dy: -54px"></rect>
+<rect class="nk-flow-cf" x="197" y="701" width="6" height="6" rx="1" fill="#0A0A0B" style="--dx: -10px; --dy: -62px"></rect>
+<rect class="nk-flow-cf" x="197" y="701" width="5" height="5" rx="1" fill="#F5A524" style="--dx: 14px; --dy: -60px"></rect>
+<rect class="nk-flow-cf" x="197" y="701" width="6" height="6" rx="1" fill="#12B886" style="--dx: 34px; --dy: -50px"></rect>
+<rect class="nk-flow-cf" x="197" y="701" width="5" height="5" rx="1" fill="#0A0A0B" style="--dx: 50px; --dy: -30px"></rect>
+<rect class="nk-flow-cf" x="197" y="701" width="6" height="6" rx="1" fill="#12B886" style="--dx: -58px; --dy: -8px"></rect>
+<rect class="nk-flow-cf" x="197" y="701" width="5" height="5" rx="1" fill="#F5A524" style="--dx: 60px; --dy: -6px"></rect>
+<rect class="nk-flow-cf" x="197" y="701" width="5" height="5" rx="1" fill="#0A0A0B" style="--dx: -42px; --dy: 16px"></rect>
+<rect class="nk-flow-cf" x="197" y="701" width="6" height="6" rx="1" fill="#F5A524" style="--dx: 44px; --dy: 18px"></rect>
+<rect class="nk-flow-res" x="180" y="684" width="40" height="40" rx="6" fill="#FFFFFF" stroke="#0A0A0B" stroke-width="1.5"></rect>
+<rect class="nk-flow-dot" x="192" y="696" width="16" height="16" rx="2" fill="#12B886"></rect>
+</svg>
+<ol style="flex: 0 1 190px; min-width: 0; align-self: stretch; position: relative; margin: 0; padding: 0; list-style: none; font-size: 14px; line-height: 1.35; color: #5B6068">
+<li style="position: absolute; left: 0; right: 0; top: 3.84%; transform: translateY(-50%)"><strong style="display: block; font-weight: 600; font-size: 15px; color: #0A0A0B">Signal</strong></li>
+<li style="position: absolute; left: 0; right: 0; top: 20.55%; transform: translateY(-50%)"><strong style="display: block; font-weight: 600; font-size: 15px; color: #0A0A0B">Plan</strong>lead agent</li>
+<li style="position: absolute; left: 0; right: 0; top: 45.48%; transform: translateY(-50%)"><strong style="display: block; font-weight: 600; font-size: 15px; color: #0A0A0B">Work in parallel</strong>one agent per question</li>
+<li style="position: absolute; left: 0; right: 0; top: 71.51%; transform: translateY(-50%)"><strong style="display: block; font-weight: 600; font-size: 15px; color: #0A0A0B">Approve</strong>engineer decides</li>
+<li style="position: absolute; left: 0; right: 0; top: 96.44%; transform: translateY(-50%)"><strong style="display: block; font-weight: 600; font-size: 15px; color: #0A0A0B">Resolved</strong>verified, written up</li>
+</ol>
 </div>
-<div style="padding: 14px 22px 16px; border-top: 1px solid #2A2C30; display: flex; gap: 12px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 1.5; min-height: 58px">
-<span style="flex: none; color: #A3A7AE">Ticket</span>
-<span><span data-run-typed></span><span class="nk-cursor"></span></span>
+<div aria-hidden="true" style="padding: 14px 22px 16px; border-top: 1px solid #E2E4E7; display: flex; align-items: flex-start; gap: 8px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; line-height: 1.5">
+<span style="flex: none">incident</span>
+<span class="nk-cursor" style="flex: none; margin: 3px 2px 0 0; background: #12B886"></span>
+<span style="flex: 1 1 auto; min-width: 0; display: grid; color: #3D4147">
+<span class="nk-flow-msg nk-flow-m0">alarm received · site power</span>
+<span class="nk-flow-msg nk-flow-m1">lead agent writing the plan</span>
+<span class="nk-flow-msg nk-flow-m2">8 agents investigating in parallel</span>
+<span class="nk-flow-msg nk-flow-m3">evidence gathered</span>
+<span class="nk-flow-msg nk-flow-m4">waiting for engineer approval</span>
+<span class="nk-flow-msg nk-flow-m5">verified · incident resolved</span>
+</span>
 </div>
-<div style="height: 3px; background: #2A2C30"><div class="nk-fill" data-run-bar style="width: 0%"></div></div>
 </div>
 </section>
 

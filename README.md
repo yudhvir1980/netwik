@@ -8,15 +8,15 @@ It is a plain static site: HTML, CSS and vanilla JavaScript, with no build step 
 
 | File | Page |
 | --- | --- |
-| `index.html` | Home: the use case catalogue with coverage map and filters (supports `?process=Change&domain=WAN`) |
+| `index.html` | Home: the animated incident flow, then the use case catalogue with coverage map and filters (supports `?process=Change&domain=WAN`) |
 | `use-case.html` | Use case walkthrough, built from the data for `?id=...` |
 | `built-on.html` | What agents are built on: context, foundation and autonomy |
 | `use-cases.html`, `incident-agent.html` | Redirects from the old addresses |
 
 Shared code lives in `assets/`:
 
-- `assets/css/site.css`: colours, animations and component styles
-- `assets/js/site.js`: drifting glyph margins, the "illustrative run" panel and the tick loop
+- `assets/css/site.css`: colours, animations and component styles, including the home page's incident flow
+- `assets/js/site.js`: drifting glyph margins, the "illustrative run" panel on walkthroughs and the tick loop
 - `assets/js/data.js`: every use case, for both the catalogue and the walkthrough page
 - `assets/js/use-cases.js`: the catalogue on the home page
 - `assets/js/use-case.js`: the walkthrough page
