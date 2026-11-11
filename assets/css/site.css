@@ -101,11 +101,125 @@ a:hover { color: #0B7A58; }
 .nk-layer.is-lit { border-color: var(--signal); opacity: 1; }
 .nk-layer.is-lit .nk-layer-num { color: var(--signal); }
 
+/* Home hero: the incident flow. Pure CSS on one 9s loop, so every keyframe is a share of 9s.
+   Signal 0-12%, plan 13-27%, eight agents 27-50%, approval 60-72%, resolved 76-92%, fade out 92-98%. */
+.nk-flow rect, .nk-flow polygon { transform-box: fill-box; transform-origin: center; }
+.nk-flow-ln { fill: none; stroke: #B5B9BF; stroke-width: 1.25; stroke-dasharray: 1; stroke-dashoffset: 1; }
+.nk-flow-ink { stroke: var(--ink); }
+.nk-flow-ring { opacity: 0; }
+.nk-flow-dia { fill: transparent; }
+.nk-flow-cf { opacity: 0; }
+.nk-flow-msg { grid-area: 1 / 1; opacity: 0; }
+
+@keyframes nk-flow-sig { 0% { opacity: 1; transform: rotate(0) scale(1); } 2% { transform: rotate(-16deg) scale(1.35); } 4% { transform: rotate(14deg) scale(1.05); } 6% { transform: rotate(-12deg) scale(1.35); } 8% { transform: rotate(9deg) scale(1.05); } 10% { transform: rotate(-5deg) scale(1.2); } 12%, 92% { opacity: 1; transform: rotate(0) scale(1); } 98%, 100% { opacity: .3; transform: rotate(0) scale(1); } }
+@keyframes nk-flow-ring { 0% { opacity: .7; transform: scale(1); } 10%, 100% { opacity: 0; transform: scale(3.2); } }
+.nk-flow-sig { animation: nk-flow-sig 9s linear infinite; }
+.nk-flow-ring { animation: nk-flow-ring 9s linear infinite; }
+.nk-flow-ring2 { animation-delay: .4s; }
+
+/* Green packets that ride along each line once it is drawn */
+.nk-flow-pk { fill: none; stroke: var(--green); stroke-width: 3; stroke-linecap: round; stroke-dasharray: .06 2; stroke-dashoffset: .06; opacity: 0; }
+@keyframes nk-flow-pk9 { 0% { stroke-dashoffset: .06; opacity: 1; } 9% { stroke-dashoffset: -1; opacity: 1; } 9.01%, 100% { stroke-dashoffset: -1; opacity: 0; } }
+@keyframes nk-flow-pk6 { 0% { stroke-dashoffset: .06; opacity: 1; } 6% { stroke-dashoffset: -1; opacity: 1; } 6.01%, 100% { stroke-dashoffset: -1; opacity: 0; } }
+.nk-flow-pk9 { animation: nk-flow-pk9 9s linear infinite; }
+.nk-flow-pk6 { animation: nk-flow-pk6 9s linear infinite; }
+
+/* Lines draw in. Each one stays until the loop fades out. */
+@keyframes nk-flow-l1 { 0%, 8% { stroke-dashoffset: 1; opacity: 1; } 14%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-f0 { 0%, 19% { stroke-dashoffset: 1; opacity: 1; } 28%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-f1 { 0%, 20.25% { stroke-dashoffset: 1; opacity: 1; } 29.25%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-f2 { 0%, 21.5% { stroke-dashoffset: 1; opacity: 1; } 30.5%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-f3 { 0%, 22.75% { stroke-dashoffset: 1; opacity: 1; } 31.75%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-f4 { 0%, 24% { stroke-dashoffset: 1; opacity: 1; } 33%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-f5 { 0%, 25.25% { stroke-dashoffset: 1; opacity: 1; } 34.25%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-f6 { 0%, 26.5% { stroke-dashoffset: 1; opacity: 1; } 35.5%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-f7 { 0%, 27.75% { stroke-dashoffset: 1; opacity: 1; } 36.75%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-g0 { 0%, 50% { stroke-dashoffset: 1; opacity: 1; } 59%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-g1 { 0%, 51% { stroke-dashoffset: 1; opacity: 1; } 60%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-g2 { 0%, 52% { stroke-dashoffset: 1; opacity: 1; } 61%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-g3 { 0%, 53% { stroke-dashoffset: 1; opacity: 1; } 62%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-g4 { 0%, 54% { stroke-dashoffset: 1; opacity: 1; } 63%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-g5 { 0%, 55% { stroke-dashoffset: 1; opacity: 1; } 64%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-g6 { 0%, 56% { stroke-dashoffset: 1; opacity: 1; } 65%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-g7 { 0%, 57% { stroke-dashoffset: 1; opacity: 1; } 66%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes nk-flow-l2 { 0%, 71% { stroke-dashoffset: 1; opacity: 1; } 77%, 92% { stroke-dashoffset: 0; opacity: 1; } 98%, 100% { stroke-dashoffset: 0; opacity: 0; } }
+.nk-flow-l1 { animation: nk-flow-l1 9s linear infinite; }
+.nk-flow-f0 { animation: nk-flow-f0 9s linear infinite; }
+.nk-flow-f1 { animation: nk-flow-f1 9s linear infinite; }
+.nk-flow-f2 { animation: nk-flow-f2 9s linear infinite; }
+.nk-flow-f3 { animation: nk-flow-f3 9s linear infinite; }
+.nk-flow-f4 { animation: nk-flow-f4 9s linear infinite; }
+.nk-flow-f5 { animation: nk-flow-f5 9s linear infinite; }
+.nk-flow-f6 { animation: nk-flow-f6 9s linear infinite; }
+.nk-flow-f7 { animation: nk-flow-f7 9s linear infinite; }
+.nk-flow-g0 { animation: nk-flow-g0 9s linear infinite; }
+.nk-flow-g1 { animation: nk-flow-g1 9s linear infinite; }
+.nk-flow-g2 { animation: nk-flow-g2 9s linear infinite; }
+.nk-flow-g3 { animation: nk-flow-g3 9s linear infinite; }
+.nk-flow-g4 { animation: nk-flow-g4 9s linear infinite; }
+.nk-flow-g5 { animation: nk-flow-g5 9s linear infinite; }
+.nk-flow-g6 { animation: nk-flow-g6 9s linear infinite; }
+.nk-flow-g7 { animation: nk-flow-g7 9s linear infinite; }
+.nk-flow-l2 { animation: nk-flow-l2 9s linear infinite; }
+
+/* Lead agent: bouncy entrance, then a thinking wiggle */
+@keyframes nk-flow-lead { 0%, 13% { opacity: 0; transform: rotate(-20deg) scale(.2); } 16% { opacity: 1; transform: rotate(6deg) scale(1.25); } 17.5% { transform: rotate(-4deg) scale(.92); } 19% { transform: rotate(0) scale(1); } 21% { transform: rotate(-9deg) scale(1.08); } 23% { transform: rotate(9deg) scale(1.08); } 25% { transform: rotate(-6deg) scale(1.05); } 27%, 92% { opacity: 1; transform: rotate(0) scale(1); } 98%, 100% { opacity: 0; transform: rotate(0) scale(1); } }
+.nk-flow-lead { animation: nk-flow-lead 9s linear infinite; }
+
+/* Eight agents: pop in, turn green, flip-hop while working, then rest */
+@keyframes nk-flow-a0 { 0%, 27% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(.2); } 29% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1.45); } 30.5% { fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1); } 33% { fill: #12B886; transform: translateY(0) rotate(0) scale(1); animation-timing-function: ease-out; } 34.5% { fill: #12B886; transform: translateY(-10px) rotate(90deg) scale(1.15); animation-timing-function: ease-in; } 36% { fill: #12B886; transform: translateY(0) rotate(180deg) scale(1); } 40%, 92% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } 98%, 100% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } }
+@keyframes nk-flow-a1 { 0%, 28.25% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(.2); } 30.25% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1.45); } 31.75% { fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1); } 34.25% { fill: #12B886; transform: translateY(0) rotate(0) scale(1); animation-timing-function: ease-out; } 36.1% { fill: #12B886; transform: translateY(-10px) rotate(90deg) scale(1.15); animation-timing-function: ease-in; } 38% { fill: #12B886; transform: translateY(0) rotate(180deg) scale(1); } 42%, 92% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } 98%, 100% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } }
+@keyframes nk-flow-a2 { 0%, 29.5% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(.2); } 31.5% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1.45); } 33% { fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1); } 35.5% { fill: #12B886; transform: translateY(0) rotate(0) scale(1); animation-timing-function: ease-out; } 37.75% { fill: #12B886; transform: translateY(-10px) rotate(90deg) scale(1.15); animation-timing-function: ease-in; } 40% { fill: #12B886; transform: translateY(0) rotate(180deg) scale(1); } 44%, 92% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } 98%, 100% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } }
+@keyframes nk-flow-a3 { 0%, 30.75% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(.2); } 32.75% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1.45); } 34.25% { fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1); } 36.75% { fill: #12B886; transform: translateY(0) rotate(0) scale(1); animation-timing-function: ease-out; } 39.4% { fill: #12B886; transform: translateY(-10px) rotate(90deg) scale(1.15); animation-timing-function: ease-in; } 42% { fill: #12B886; transform: translateY(0) rotate(180deg) scale(1); } 46%, 92% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } 98%, 100% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } }
+@keyframes nk-flow-a4 { 0%, 32% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(.2); } 34% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1.45); } 35.5% { fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1); } 38% { fill: #12B886; transform: translateY(0) rotate(0) scale(1); animation-timing-function: ease-out; } 41% { fill: #12B886; transform: translateY(-10px) rotate(90deg) scale(1.15); animation-timing-function: ease-in; } 44% { fill: #12B886; transform: translateY(0) rotate(180deg) scale(1); } 48%, 92% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } 98%, 100% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } }
+@keyframes nk-flow-a5 { 0%, 33.25% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(.2); } 35.25% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1.45); } 36.75% { fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1); } 39.25% { fill: #12B886; transform: translateY(0) rotate(0) scale(1); animation-timing-function: ease-out; } 42.6% { fill: #12B886; transform: translateY(-10px) rotate(90deg) scale(1.15); animation-timing-function: ease-in; } 46% { fill: #12B886; transform: translateY(0) rotate(180deg) scale(1); } 50%, 92% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } 98%, 100% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } }
+@keyframes nk-flow-a6 { 0%, 34.5% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(.2); } 36.5% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1.45); } 38% { fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1); } 40.5% { fill: #12B886; transform: translateY(0) rotate(0) scale(1); animation-timing-function: ease-out; } 44.25% { fill: #12B886; transform: translateY(-10px) rotate(90deg) scale(1.15); animation-timing-function: ease-in; } 48% { fill: #12B886; transform: translateY(0) rotate(180deg) scale(1); } 52%, 92% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } 98%, 100% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } }
+@keyframes nk-flow-a7 { 0%, 35.75% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(.2); } 37.75% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1.45); } 39.25% { fill: #0A0A0B; transform: translateY(0) rotate(0) scale(1); } 41.75% { fill: #12B886; transform: translateY(0) rotate(0) scale(1); animation-timing-function: ease-out; } 45.9% { fill: #12B886; transform: translateY(-10px) rotate(90deg) scale(1.15); animation-timing-function: ease-in; } 50% { fill: #12B886; transform: translateY(0) rotate(180deg) scale(1); } 54%, 92% { opacity: 1; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } 98%, 100% { opacity: 0; fill: #0A0A0B; transform: translateY(0) rotate(180deg) scale(1); } }
+.nk-flow-a0 { animation: nk-flow-a0 9s linear infinite; }
+.nk-flow-a1 { animation: nk-flow-a1 9s linear infinite; }
+.nk-flow-a2 { animation: nk-flow-a2 9s linear infinite; }
+.nk-flow-a3 { animation: nk-flow-a3 9s linear infinite; }
+.nk-flow-a4 { animation: nk-flow-a4 9s linear infinite; }
+.nk-flow-a5 { animation: nk-flow-a5 9s linear infinite; }
+.nk-flow-a6 { animation: nk-flow-a6 9s linear infinite; }
+.nk-flow-a7 { animation: nk-flow-a7 9s linear infinite; }
+
+/* Approval: spins in, wobbles while waiting, flips when the engineer approves */
+@keyframes nk-flow-dia { 0%, 60% { opacity: 0; fill: transparent; transform: rotate(-90deg) scale(.2); } 63% { opacity: 1; fill: transparent; transform: rotate(0) scale(1.25); } 64.5% { transform: rotate(0) scale(1); } 65.5% { transform: rotate(-12deg) scale(1); } 66.5% { transform: rotate(12deg) scale(1); } 67.5% { fill: transparent; transform: rotate(-6deg) scale(1); } 68% { fill: #0A0A0B; transform: rotate(0) scale(1); } 70% { fill: #0A0A0B; transform: rotate(90deg) scale(1.25); } 72%, 92% { opacity: 1; fill: transparent; transform: rotate(180deg) scale(1); } 98%, 100% { opacity: 0; fill: transparent; transform: rotate(180deg) scale(1); } }
+.nk-flow-dia { animation: nk-flow-dia 9s linear infinite; }
+
+/* Resolved: bounce, heartbeat, confetti */
+@keyframes nk-flow-res { 0%, 76% { opacity: 0; transform: scale(.2); } 79% { opacity: 1; transform: scale(1.2); } 80.5% { transform: scale(.92); } 82%, 92% { opacity: 1; transform: scale(1); } 98%, 100% { opacity: 0; transform: scale(1); } }
+@keyframes nk-flow-dot { 0%, 80% { opacity: 0; transform: rotate(-90deg) scale(.2); } 83% { opacity: 1; transform: rotate(0) scale(1.5); } 84.5% { transform: rotate(0) scale(.85); } 86% { transform: rotate(0) scale(1); } 88% { transform: rotate(0) scale(1.18); } 90%, 92% { opacity: 1; transform: rotate(0) scale(1); } 98%, 100% { opacity: 0; transform: rotate(0) scale(1); } }
+@keyframes nk-flow-cf { 0%, 82.5% { opacity: 0; transform: translate(0, 0) rotate(0) scale(.4); } 83% { opacity: 1; transform: translate(0, 0) rotate(0) scale(.6); animation-timing-function: ease-out; } 89% { opacity: 1; transform: translate(var(--dx), var(--dy)) rotate(200deg) scale(1); } 92%, 100% { opacity: 0; transform: translate(var(--dx), calc(var(--dy) + 12px)) rotate(260deg) scale(.8); } }
+.nk-flow-res { animation: nk-flow-res 9s linear infinite; }
+.nk-flow-dot { animation: nk-flow-dot 9s linear infinite; }
+.nk-flow-cf { animation: nk-flow-cf 9s linear infinite; }
+
+/* The status line under the flow, one message per stage */
+@keyframes nk-flow-m0 { 0%, 11.5% { opacity: 1; } 12%, 100% { opacity: 0; } }
+@keyframes nk-flow-m1 { 0%, 12% { opacity: 0; } 12.5%, 18.5% { opacity: 1; } 19%, 100% { opacity: 0; } }
+@keyframes nk-flow-m2 { 0%, 19% { opacity: 0; } 19.5%, 49.5% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes nk-flow-m3 { 0%, 50% { opacity: 0; } 50.5%, 61.5% { opacity: 1; } 62%, 100% { opacity: 0; } }
+@keyframes nk-flow-m4 { 0%, 62% { opacity: 0; } 62.5%, 71.5% { opacity: 1; } 72%, 100% { opacity: 0; } }
+@keyframes nk-flow-m5 { 0%, 72% { opacity: 0; } 72.5%, 91.5% { opacity: 1; } 92%, 100% { opacity: 0; } }
+.nk-flow-m0 { animation: nk-flow-m0 9s linear infinite; }
+.nk-flow-m1 { animation: nk-flow-m1 9s linear infinite; }
+.nk-flow-m2 { animation: nk-flow-m2 9s linear infinite; }
+.nk-flow-m3 { animation: nk-flow-m3 9s linear infinite; }
+.nk-flow-m4 { animation: nk-flow-m4 9s linear infinite; }
+.nk-flow-m5 { animation: nk-flow-m5 9s linear infinite; }
+
 /* On phones the long nav label is swapped for a short one */
 .nk-short { display: none; }
 @media (max-width: 600px) {
   .nk-long { display: none; }
   .nk-short { display: inline; }
+  /* Hero flow: a narrower diagram leaves room for the step labels */
+  .nk-flow { padding: 26px 16px 32px !important; gap: 12px !important; }
+  .nk-flow svg { width: 50% !important; }
+  .nk-flow ol { font-size: 13px !important; }
+  .nk-flow strong { font-size: 14px !important; }
 }
 
 :focus-visible { outline: 2px solid #0B7A58; outline-offset: 2px; }
@@ -113,4 +227,8 @@ a:hover { color: #0B7A58; }
 @media (prefers-reduced-motion: reduce) {
   .nk-rise, .nk-cursor, .nk-live, .nk-logo-cursor { animation: none; }
   .nk-btn, .nk-row, .nk-chip, .nk-card, .nk-cell { transition: none; }
+  /* The hero flow shows its finished state: every line drawn, the last message showing */
+  .nk-flow *, .nk-flow-msg { animation: none !important; }
+  .nk-flow-ln { stroke-dashoffset: 0; }
+  .nk-flow-m5 { opacity: 1; }
 }
