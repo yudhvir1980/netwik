@@ -176,10 +176,22 @@
 
     step().then(function () {
       var seconds = ((Date.now() - started) / 1000).toFixed(1);
-      var summary = mode === 'apply'
-        ? 'Applied in ' + totals.rounds + ' batch(es) over ' + seconds + 's. '
-          + 'Updated ' + totals.updated + ', failed ' + totals.failed + '.\n\n'
-        : 'Preview in ' + seconds + 's. Nothing was written.\n\n';
+      var status = last ? last.status : 0;
+      var summary;
+
+      /* Say plainly when the server refused. Reporting "Applied ... updated 0"
+         for a rejected request reads like success and hides the reason. */
+      if (status !== 200) {
+        var reason = (last && last.data && last.data.error) || 'The server refused the request.';
+        summary = 'NOT APPLIED. The server answered ' + status + ' after '
+          + seconds + 's.\n\n' + reason + '\n\n';
+      } else if (mode === 'apply') {
+        summary = 'Applied in ' + totals.rounds + ' batch(es) over ' + seconds + 's. '
+          + 'Updated ' + totals.updated + ', failed ' + totals.failed + '.\n\n';
+      } else {
+        summary = 'Preview in ' + seconds + 's. Nothing was written.\n\n';
+      }
+
       out.textContent = summary + JSON.stringify(last && last.data, null, 2);
       render();
     }).catch(function (error) {
