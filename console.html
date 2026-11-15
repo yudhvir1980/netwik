@@ -72,7 +72,11 @@
 <section style="padding: 44px 28px; border-bottom: 1px solid #E2E4E7; display: flex; flex-direction: column; gap: 16px">
 <h2 style="margin: 0; font-weight: 500; font-size: 23px; letter-spacing: -0.03em">Instance inspection</h2>
 <p style="margin: 0; color: #5B6068; font-size: 16px; max-width: 640px">Reads the ServiceNow instance and compares what is there against what the blueprint says should be there. Costs nothing, writes nothing, and reports which tables the vulnerability flow still has to create.</p>
-<button id="inspect" type="button" class="nk-btn" disabled style="font: inherit; font-weight: 600; background: #0A0A0B; color: #FFFFFF; border: 0; padding: 13px 20px; cursor: pointer; align-self: flex-start; opacity: .4">Inspect instance</button>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<button id="inspect" type="button" class="nk-btn" disabled style="font: inherit; font-weight: 600; background: #0A0A0B; color: #FFFFFF; border: 0; padding: 13px 20px; cursor: pointer; opacity: .4">Inspect instance</button>
+<button id="readiness" type="button" class="nk-btn" disabled style="font: inherit; font-weight: 600; background: #0A0A0B; color: #FFFFFF; border: 0; padding: 13px 20px; cursor: pointer; opacity: .4">Check matching readiness</button>
+</div>
+<p style="margin: 0; color: #5B6068; font-size: 16px; max-width: 640px">The second one answers the question the first one raised: do the device records actually carry a software version to match an advisory against, and do the hardware models carry end-of-support dates. Without those, estate matching cannot run.</p>
 </section>
 
 <section style="padding: 24px 28px 44px; border-bottom: 1px solid #E2E4E7">
