@@ -19,14 +19,16 @@ import { classify, needsAttention } from '../lib/versions.js';
 
 const VERSION_FIELD = 'firmware_version';
 
-/* Wireless controllers are deliberately absent: they live in cmdb_ci_netgear,
-   which carries no version on this instance, so they cannot be matched. The
-   response says so rather than quietly leaving them out. */
+/* Wireless controllers now carry a version, so they are matched. They live in
+   cmdb_ci_netgear alongside the instance's own demo records, so they are
+   selected by naming convention rather than by class. That is a heuristic, and
+   the response says so: a controller named outside the convention is missed. */
 const CLASSES = [
   { table: 'cmdb_ci_ip_router', label: 'SD-WAN edges' },
   { table: 'cmdb_ci_ip_firewall', label: 'Firewalls' },
   { table: 'cmdb_ci_ip_switch', label: 'Switches' },
-  { table: 'cmdb_ci_wap_network', label: 'Access points' }
+  { table: 'cmdb_ci_wap_network', label: 'Access points' },
+  { table: 'cmdb_ci_netgear', label: 'Wireless controllers', filter: 'nameLIKEWLC' }
 ];
 
 const FIELDS = [
@@ -96,7 +98,8 @@ export default async function handler(req, res) {
 
     const perClass = await mapLimited(CLASSES, 2, async function (entry) {
       const rows = await getRecords(entry.table, {
-        query: 'company=' + customer.sys_id,
+        query: 'company=' + customer.sys_id
+          + (entry.filter ? '^' + entry.filter : ''),
         fields: FIELDS,
         limit: 2000
       });
@@ -257,9 +260,10 @@ export default async function handler(req, res) {
         'Every device here is POTENTIALLY affected. Nothing in this instance '
           + 'records whether the vulnerable feature is actually enabled, so a '
           + 'person has to qualify the set before it becomes a true exposure.',
-        'Wireless controllers are excluded entirely: they sit in '
-          + 'cmdb_ci_netgear, which carries no version field on this instance, '
-          + 'so a controller-affecting advisory would be under-reported.',
+        'Wireless controllers are selected from cmdb_ci_netgear by name, '
+          + 'because that table also holds demo records belonging to the '
+          + 'instance itself. A controller named outside the WLC convention '
+          + 'would be missed.',
         'Version ordering is plausible rather than authoritative. Anything '
           + 'unreadable is reported as unknown and counted as needing '
           + 'attention, never as safe.'
