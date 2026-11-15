@@ -17,6 +17,7 @@
   var writeHint = document.getElementById('writehint');
   var schemaHint = document.getElementById('schemahint');
   var schemaButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-schemabtn'));
+  var runButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-runbtn'));
   var out = document.getElementById('out');
 
   var state = { user: null, liveCalls: false, snow: false, snowHost: null, snowWrite: false, snowSchema: false };
@@ -54,6 +55,7 @@
         ? 'Writing is switched off. Set SERVICENOW_WRITE_ENABLED to true in Vercel and redeploy.'
         : '';
     });
+    runButtons.forEach(function (b) { enable(b, Boolean(state.user) && state.snow); });
     schemaButtons.forEach(function (b) {
       var isApply = b.getAttribute('data-mode') === 'apply';
       enable(b, Boolean(state.user) && state.snow && (!isApply || state.snowSchema));
@@ -239,7 +241,8 @@
   schemaButtons.forEach(function (button) {
     button.addEventListener('click', function () {
       var mode = button.getAttribute('data-mode');
-      schemaButtons.forEach(function (b) { enable(b, false); });
+      runButtons.forEach(function (b) { enable(b, Boolean(state.user) && state.snow); });
+    schemaButtons.forEach(function (b) { enable(b, false); });
       var started = Date.now();
       var rounds = 0;
       var madeTables = 0;
@@ -289,6 +292,31 @@
       }).catch(function (error) {
         out.textContent = 'The request failed after '
           + ((Date.now() - started) / 1000).toFixed(1) + 's.\n\n' + String(error);
+        render();
+      });
+    });
+  });
+
+  runButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var mode = button.getAttribute('data-mode');
+      runButtons.forEach(function (b) { enable(b, false); });
+      var started = Date.now();
+      out.textContent = mode === 'apply'
+        ? 'Recording a run: advisory, vulnerable items, qualification tasks and stages.'
+        : 'Previewing the run. Nothing will be written.';
+
+      post('/api/run-advisory', { mode: mode }).then(function (result) {
+        var seconds = ((Date.now() - started) / 1000).toFixed(1);
+        var head = result.status !== 200
+          ? 'RUN FAILED. The server answered ' + result.status + ' after ' + seconds + 's.'
+          : (mode === 'apply' ? 'Run recorded in ' : 'Preview in ') + seconds + 's.';
+        out.textContent = head + String.fromCharCode(10, 10)
+          + JSON.stringify(result.data, null, 2);
+        render();
+      }).catch(function (error) {
+        out.textContent = 'The request failed after '
+          + ((Date.now() - started) / 1000).toFixed(1) + 's.' + String.fromCharCode(10, 10) + String(error);
         render();
       });
     });

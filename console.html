@@ -117,6 +117,15 @@
 </div>
 </section>
 
+<section style="padding: 44px 28px; border-bottom: 1px solid #E2E4E7; display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-weight: 500; font-size: 23px; letter-spacing: -0.03em">Run the advisory <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; color: #5B6068; letter-spacing: 0">stages 00, 02, 03</span></h2>
+<p style="margin: 0; color: #5B6068; font-size: 16px; max-width: 640px">The first auditable run. Records the advisory, writes a vulnerable item for every device needing action, raises the qualification questions only a person can answer, and stores each stage with its input, output and timings. Writes only to the seven flow tables. Deterministic, so it costs nothing.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<button id="run-preview" type="button" class="nk-runbtn" data-mode="preview" disabled style="font: inherit; font-size: 15px; background: #FFFFFF; color: #0A0A0B; border: 1px solid #0A0A0B; padding: 9px 15px; cursor: pointer; opacity: .4">Preview</button>
+<button id="run-apply" type="button" class="nk-runbtn" data-mode="apply" disabled style="font: inherit; font-size: 15px; font-weight: 600; background: #0A0A0B; color: #FFFFFF; border: 1px solid #0A0A0B; padding: 9px 15px; cursor: pointer; opacity: .4">Record a run</button>
+</div>
+</section>
+
 <section style="padding: 24px 28px 44px; border-bottom: 1px solid #E2E4E7">
 <pre id="out" aria-live="polite" style="margin: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.55; background: #131416; color: #F2F3F5; padding: 18px; overflow: auto; max-height: 460px; white-space: pre-wrap; word-break: break-word">Output appears here.</pre>
 </section>
