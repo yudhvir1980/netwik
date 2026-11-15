@@ -35,7 +35,7 @@ One consequence to accept: the repository gains a `package.json`, because the An
 ```
 netwik.co/                 static, public, unchanged
 netwik.co/docs/...         static, public, the documents area
-netwik.co/console          static, public to read; its actions need a session
+netwik.co/console.html     static, public to read; its actions need a session
 netwik.co/api/...          server only, holds every credential
 ```
 
@@ -153,6 +153,7 @@ Built and syntax-checked, with the session logic unit-tested for tampering, expi
 
 | File | What it does |
 |---|---|
+| `api/_lib/http.js` | Node request and response helpers. Vercel's Node runtime passes `(req, res)`, **not** a Web Request returning a Web Response. Returning a Response does not fail loudly: nothing writes to `res` and the request hangs until the gateway times out |
 | `api/_lib/session.js` | Signed session cookie using `node:crypto` only. No server-side store, no dependency. The cookie is `HttpOnly`, `Secure`, `SameSite=Lax`, with an eight hour life |
 | `api/_lib/auth.js` | The two accounts, constant-time password comparison through fixed-length digests, the session guard, and a JSON helper |
 | `api/login.js` | Sets the cookie. Fixed delay on failure |
@@ -204,5 +205,5 @@ Changing `SESSION_SECRET` invalidates every session immediately, which is the em
 1. Generate a session secret: `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`
 2. In Vercel, add `SESSION_SECRET`, `PASSWORD_YUDHVIR`, `PASSWORD_ADMIN` and `ANTHROPIC_API_KEY`. Leave `LIVE_CALLS_ENABLED` unset or `false` for now.
 3. Add `SERVICENOW_INSTANCE`, `SERVICENOW_USER` and `SERVICENOW_PASSWORD` for the integration user. The host may be given with or without `https://`.
-4. Deploy. Visit `/console` and sign in. Press **Inspect instance**: it costs nothing and tells us what is really there.
+4. Deploy. Visit `/console.html` and sign in. Clean URLs are off on this project, so the extension is required, which matches how every other page on the site links. Press **Inspect instance**: it costs nothing and tells us what is really there.
 5. To take the latency measurement, set `LIVE_CALLS_ENABLED` to `true`, redeploy, press the button once, record the elapsed seconds in section 4, then set it back to `false`.

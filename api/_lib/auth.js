@@ -7,6 +7,7 @@
 
 import { createHash, timingSafeEqual } from 'node:crypto';
 import { readSession } from './session.js';
+import { cookieHeader, sendJson } from './http.js';
 
 const USERS = ['yudhvir', 'admin'];
 
@@ -31,21 +32,14 @@ export function checkCredentials(username, password) {
 
 /* Returns the session payload, or null. Every route that spends money or
    touches ServiceNow must call this before doing anything else. */
-export function requireSession(request) {
+export function requireSession(req) {
   try {
-    return readSession(request);
+    return readSession(cookieHeader(req));
   } catch (error) {
     return null;
   }
 }
 
-export function json(body, status) {
-  return new Response(JSON.stringify(body), {
-    status: status || 200,
-    headers: { 'content-type': 'application/json; charset=utf-8' }
-  });
-}
-
-export function unauthorised() {
-  return json({ error: 'Authentication required.' }, 401);
+export function unauthorised(res) {
+  sendJson(res, 401, { error: 'Authentication required.' });
 }

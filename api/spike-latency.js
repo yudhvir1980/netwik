@@ -9,7 +9,8 @@
    Delete it once the numbers are recorded in platform-architecture.md. */
 
 import Anthropic from '@anthropic-ai/sdk';
-import { requireSession, unauthorised, json } from './_lib/auth.js';
+import { requireSession, unauthorised } from './_lib/auth.js';
+import { sendJson, methodOf } from './_lib/http.js';
 
 const MODEL = 'claude-opus-5';
 const FALLBACK_MODEL = 'claude-opus-4-8';
@@ -39,23 +40,26 @@ function estimateUsd(usage) {
   return Number((input + output).toFixed(5));
 }
 
-export default async function handler(request) {
+export default async function handler(req, res) {
   /* POST only, so nothing can trigger spend by merely fetching a URL. */
-  if (request.method !== 'POST') {
-    return json({ error: 'Use POST.' }, 405);
+  if (methodOf(req) !== 'POST') {
+    sendJson(res, 405, { error: 'Use POST.' });
+    return;
   }
 
-  const session = requireSession(request);
-  if (!session) return unauthorised();
+  const session = requireSession(req);
+  if (!session) { unauthorised(res); return; }
 
   if (process.env.LIVE_CALLS_ENABLED !== 'true') {
-    return json({
+    sendJson(res, 403, {
       error: 'Live model calls are switched off. Set LIVE_CALLS_ENABLED to true '
         + 'in the Vercel environment to allow spend.'
-    }, 403);
+    });
+    return;
   }
   if (!process.env.ANTHROPIC_API_KEY) {
-    return json({ error: 'ANTHROPIC_API_KEY is not set.' }, 500);
+    sendJson(res, 500, { error: 'ANTHROPIC_API_KEY is not set.' });
+    return;
   }
 
   const client = new Anthropic();
@@ -85,10 +89,10 @@ export default async function handler(request) {
       try {
         response = await client.messages.create(common);
       } catch (retryError) {
-        return describeError(retryError, Date.now() - started);
+        describeError(res, retryError, Date.now() - started); return;
       }
     } else {
-      return describeError(error, Date.now() - started);
+      describeError(res, error, Date.now() - started); return;
     }
   }
 
@@ -98,7 +102,7 @@ export default async function handler(request) {
     .map(function (block) { return block.text; })
     .join('');
 
-  return json({
+  sendJson(res, 200, {
     ok: true,
     requestedBy: session.u,
     elapsedMs: elapsedMs,
@@ -114,23 +118,26 @@ export default async function handler(request) {
   });
 }
 
-function describeError(error, elapsedMs) {
+function describeError(res, error, elapsedMs) {
   if (error instanceof Anthropic.AuthenticationError) {
-    return json({ error: 'The Anthropic API key was rejected.', elapsedMs: elapsedMs }, 502);
+    sendJson(res, 502, { error: 'The Anthropic API key was rejected.', elapsedMs: elapsedMs });
+    return;
   }
   if (error instanceof Anthropic.RateLimitError) {
-    return json({ error: 'Rate limited by the Anthropic API.', elapsedMs: elapsedMs }, 429);
+    sendJson(res, 429, { error: 'Rate limited by the Anthropic API.', elapsedMs: elapsedMs });
+    return;
   }
   if (error instanceof Anthropic.APIError) {
-    return json({
+    sendJson(res, 502, {
       error: 'Anthropic API error ' + error.status + ': ' + error.message,
       elapsedMs: elapsedMs
-    }, 502);
+    });
+    return;
   }
-  return json({
+  sendJson(res, 504, {
     error: 'Call failed: ' + (error && error.message ? error.message : 'unknown'),
     elapsedMs: elapsedMs,
     note: 'If this reads like a timeout, the function duration cap is shorter '
       + 'than the call. That is the number this spike exists to find.'
-  }, 504);
+  });
 }

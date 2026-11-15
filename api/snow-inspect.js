@@ -7,7 +7,8 @@
    Costs nothing. Reads only. Needs a session because it uses the ServiceNow
    credential. */
 
-import { requireSession, unauthorised, json } from './_lib/auth.js';
+import { requireSession, unauthorised } from './_lib/auth.js';
+import { sendJson, methodOf } from './_lib/http.js';
 import {
   probeTable, probeField, mapLimited, instanceHost, isConfigured,
   ServiceNowError, ConfigError
@@ -66,18 +67,20 @@ const FIELDS = [
   ['cmdb_ci_ip_firewall', 'u_exposure_zone']
 ];
 
-export default async function handler(request) {
-  if (request.method !== 'POST') {
-    return json({ error: 'Use POST.' }, 405);
+export default async function handler(req, res) {
+  if (methodOf(req) !== 'POST') {
+    sendJson(res, 405, { error: 'Use POST.' });
+    return;
   }
-  const session = requireSession(request);
-  if (!session) return unauthorised();
+  const session = requireSession(req);
+  if (!session) { unauthorised(res); return; }
 
   if (!isConfigured()) {
-    return json({
+    sendJson(res, 503, {
       error: 'ServiceNow is not configured. Set SERVICENOW_INSTANCE, '
         + 'SERVICENOW_USER and SERVICENOW_PASSWORD in the Vercel environment.'
-    }, 503);
+    });
+    return;
   }
 
   const started = Date.now();
@@ -127,7 +130,7 @@ export default async function handler(request) {
       return row.group === 'Vulnerability flow' && row.exists !== true;
     }).map(function (row) { return row.table; });
 
-    return json({
+    sendJson(res, 200, {
       ok: true,
       instance: instanceHost(),
       inspectedBy: session.u,
@@ -139,13 +142,15 @@ export default async function handler(request) {
     });
   } catch (error) {
     if (error instanceof ConfigError) {
-      return json({ error: error.message }, 503);
+      sendJson(res, 503, { error: error.message });
+      return;
     }
     if (error instanceof ServiceNowError) {
-      return json({ error: error.message, detail: error.detail }, 502);
+      sendJson(res, 502, { error: error.message, detail: error.detail });
+      return;
     }
-    return json({
+    sendJson(res, 500, {
       error: 'Inspection failed: ' + (error && error.message ? error.message : 'unknown')
-    }, 500);
+    });
   }
 }

@@ -56,9 +56,11 @@ export function clearCookie() {
   return COOKIE + '=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0';
 }
 
-export function readSession(request) {
-  const header = request.headers.get('cookie') || '';
+/* Takes the raw Cookie header string, so it does not care whether the caller
+   had a Node request or a Web one. */
+export function readSession(header) {
   const prefix = COOKIE + '=';
+  if (typeof header !== 'string' || !header) return null;
   const entry = header
     .split(';')
     .map(function (part) { return part.trim(); })

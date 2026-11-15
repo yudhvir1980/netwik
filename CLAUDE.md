@@ -8,7 +8,9 @@ Netwik is a personal project, not a company. The site shows friends, colleagues 
 
 It is a plain static site made of HTML, CSS and vanilla JavaScript. There is no build step, no package manager, no linter and no tests. Fonts load from Google Fonts. It is deployed on Vercel from the repository root and served at `netwik.co`, so a push to the default branch publishes the site. It was briefly on GitHub Pages; anything that still says so is out of date.
 
-A logged-in agent console is planned in the same Vercel project, which will add server-side functions and a package manager to parts of this repository. The static pages described below stay as they are. See `docs/platform-architecture.md`.
+A logged-in agent console lives in the same Vercel project at `console.html`, which adds server-side functions under `api/` and a package manager to that part of the repository. The static pages described below stay as they are. See `docs/platform-architecture.md`.
+
+**Two rules for `api/`, both learned the hard way.** Handlers take Node's `(req, res)`, never a Web Request returning a Web Response: returning a Response does not error, it hangs the request until the gateway times out. Always reply through the helpers in `api/_lib/http.js` so every path ends the response. And clean URLs are off, so pages are linked with their `.html` extension, as the rest of the site already does.
 
 ## Running locally
 
