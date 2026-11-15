@@ -14,7 +14,7 @@
  *   funnel    a population draining through named reductions
  *   grid      every device in the estate, one square each
  *   gate      a question only a person can answer, and the answer
- *   rows      a list of things with a label, a bar and a tone
+ *   rows      a list of things with a label, a note, an outcome and a tone
  *   board     the closing dashboard
  */
 (function () {
@@ -78,11 +78,11 @@
       viz: {
         kind: 'rows',
         rows: [
-          { label: 'Affected range', sub: '17.6.1 through 17.9.4', value: 'parsed', bar: 1, tone: 'hot' },
-          { label: 'Affected exact', sub: '17.12.1', value: 'parsed', bar: 1, tone: 'hot' },
-          { label: 'Fixed in train 17.9', sub: '17.9.5 and later', value: 'parsed', bar: 1, tone: 'good' },
-          { label: 'Fixed in train 17.12', sub: '17.12.2 and later', value: 'parsed', bar: 1, tone: 'good' },
-          { label: 'Qualifying condition', sub: 'HTTP server enabled on the management interface', value: 'noted', bar: 1, tone: 'warn' }
+          { label: 'Affected range', sub: '17.6.1 through 17.9.4', value: 'parsed', tone: 'hot' },
+          { label: 'Affected exact', sub: '17.12.1', value: 'parsed', tone: 'hot' },
+          { label: 'Fixed in train 17.9', sub: '17.9.5 and later', value: 'parsed', tone: 'good' },
+          { label: 'Fixed in train 17.12', sub: '17.12.2 and later', value: 'parsed', tone: 'good' },
+          { label: 'Qualifying condition', sub: 'HTTP server enabled on the management interface', value: 'noted', tone: 'warn' }
         ]
       },
       log: [
@@ -142,11 +142,11 @@
       viz: {
         kind: 'funnel',
         rows: [
-          { label: 'Devices in scope', value: 755, bar: 1, tone: 'plain' },
-          { label: 'Built by this vendor', value: 745, bar: 0.986, tone: 'plain' },
-          { label: 'Inside the affected range', value: 12, bar: 0.26, tone: 'hot' },
-          { label: 'At a regulated site', value: 7, bar: 0.17, tone: 'warn' },
-          { label: 'Reachable from the internet', value: 0, bar: 0.02, tone: 'good' }
+          { label: 'Devices in scope', value: 755, tone: 'plain' },
+          { label: 'Built by this vendor', value: 745, tone: 'plain' },
+          { label: 'Inside the affected range', value: 12, tone: 'hot' },
+          { label: 'At a regulated site', value: 7, tone: 'warn' },
+          { label: 'Reachable from the internet', value: 0, tone: 'good' }
         ],
         sites: [
           { label: 'PNQ', sub: 'Pune, regulated', value: 5 },
@@ -210,9 +210,9 @@
       viz: {
         kind: 'rows',
         rows: [
-          { label: 'Critical', sub: '2 core switches at PNQ, regulated, exploited flaw', value: '48 hours', bar: 1, tone: 'hot' },
-          { label: 'High', sub: '5 access switches at LON, no validation window needed', value: '7 days', bar: 0.62, tone: 'warn' },
-          { label: 'Moderate', sub: '2 switches at NCL behind a validated change freeze', value: '30 days', bar: 0.3, tone: 'plain' }
+          { label: 'Critical', sub: '2 core switches at PNQ, regulated, exploited flaw', value: '48 hours', tone: 'hot' },
+          { label: 'High', sub: '5 access switches at LON, no validation window needed', value: '7 days', tone: 'warn' },
+          { label: 'Moderate', sub: '2 switches at NCL behind a validated change freeze', value: '30 days', tone: 'plain' }
         ]
       },
       log: [
@@ -239,11 +239,11 @@
       viz: {
         kind: 'rows',
         rows: [
-          { label: 'Service owners', sub: 'what breaks, when, and what you must do', value: 'drafted', bar: 1, tone: 'plain' },
-          { label: 'Security operations', sub: 'the flaw, the nine devices, the compensating controls', value: 'drafted', bar: 1, tone: 'plain' },
-          { label: 'Quality and validation', sub: 'which validated systems are touched and why', value: 'drafted', bar: 1, tone: 'warn' },
-          { label: 'Customer CTO office', sub: 'exposure, cost, and the decision being asked for', value: 'drafted', bar: 1, tone: 'warn' },
-          { label: 'Approval to send', sub: 'held until a person releases it', value: 'waiting', bar: 0.5, tone: 'hot' }
+          { label: 'Service owners', sub: 'what breaks, when, and what you must do', value: 'drafted', tone: 'plain' },
+          { label: 'Security operations', sub: 'the flaw, the nine devices, the compensating controls', value: 'drafted', tone: 'plain' },
+          { label: 'Quality and validation', sub: 'which validated systems are touched and why', value: 'drafted', tone: 'warn' },
+          { label: 'Customer CTO office', sub: 'exposure, cost, and the decision being asked for', value: 'drafted', tone: 'warn' },
+          { label: 'Approval to send', sub: 'held until a person releases it', value: 'waiting', tone: 'hot' }
         ]
       },
       log: [
@@ -270,11 +270,11 @@
       viz: {
         kind: 'rows',
         rows: [
-          { label: 'Upgrade to 17.9.5', sub: '7 devices, a reboot each, inside a window', value: 'preferred', bar: 1, tone: 'good' },
-          { label: 'Disable the HTTP server', sub: '2 devices, no reboot, removes the condition', value: 'immediate', bar: 0.8, tone: 'good' },
-          { label: 'Access control in front', sub: 'buys time on the two under freeze', value: 'interim', bar: 0.55, tone: 'warn' },
-          { label: 'Replace the hardware', sub: '1 edge router past end of support, no fix exists', value: 'procurement', bar: 0.35, tone: 'hot' },
-          { label: 'Accept with an expiry', sub: 'only with CTO sign-off and a re-review date', value: 'last resort', bar: 0.2, tone: 'hot' }
+          { label: 'Upgrade to 17.9.5', sub: '7 devices, a reboot each, inside a window', value: 'preferred', tone: 'good' },
+          { label: 'Disable the HTTP server', sub: '2 devices, no reboot, removes the condition', value: 'immediate', tone: 'good' },
+          { label: 'Access control in front', sub: 'buys time on the two under freeze', value: 'interim', tone: 'warn' },
+          { label: 'Replace the hardware', sub: '1 edge router past end of support, no fix exists', value: 'procurement', tone: 'hot' },
+          { label: 'Accept with an expiry', sub: 'only with CTO sign-off and a re-review date', value: 'last resort', tone: 'hot' }
         ]
       },
       log: [
@@ -301,11 +301,11 @@
       viz: {
         kind: 'rows',
         rows: [
-          { label: 'Wave 1, tonight', sub: 'LON tier 3, 2 devices, canary', value: '22:00', bar: 0.25, tone: 'good' },
-          { label: 'Wave 2, tomorrow', sub: 'LON tier 2, 3 devices, second half of each pair', value: '22:00', bar: 0.5, tone: 'good' },
-          { label: 'Wave 3, Saturday', sub: 'PNQ tier 1, 2 devices, validation window open', value: '02:00', bar: 0.75, tone: 'warn' },
-          { label: 'Wave 4, held', sub: 'NCL 2 devices, change freeze until the 28th', value: 'blocked', bar: 1, tone: 'hot' },
-          { label: 'Approval of the order', sub: 'a person signs the sequence, not the agent', value: 'waiting', bar: 0.5, tone: 'hot' }
+          { label: 'Wave 1, tonight', sub: 'LON tier 3, 2 devices, canary', value: '22:00', tone: 'good' },
+          { label: 'Wave 2, tomorrow', sub: 'LON tier 2, 3 devices, second half of each pair', value: '22:00', tone: 'good' },
+          { label: 'Wave 3, Saturday', sub: 'PNQ tier 1, 2 devices, validation window open', value: '02:00', tone: 'warn' },
+          { label: 'Wave 4, held', sub: 'NCL 2 devices, change freeze until the 28th', value: 'blocked', tone: 'hot' },
+          { label: 'Approval of the order', sub: 'a person signs the sequence, not the agent', value: 'waiting', tone: 'hot' }
         ]
       },
       log: [
@@ -333,11 +333,11 @@
       viz: {
         kind: 'rows',
         rows: [
-          { label: 'Justification', sub: 'advisory, CVSS, the qualified condition, the deadline', value: '9 of 9', bar: 1, tone: 'plain' },
-          { label: 'Implementation plan', sub: 'per model, from the device history', value: '9 of 9', bar: 1, tone: 'plain' },
-          { label: 'Test plan', sub: 'what proves the device came back correctly', value: '9 of 9', bar: 1, tone: 'plain' },
-          { label: 'Backout plan', sub: 'drawn from 3 upgrades that failed on this model', value: '9 of 9', bar: 1, tone: 'good' },
-          { label: 'Emergency CAB', sub: '2 critical changes need the shorter path', value: 'submitted', bar: 0.6, tone: 'warn' }
+          { label: 'Justification', sub: 'advisory, CVSS, the qualified condition, the deadline', value: '9 of 9', tone: 'plain' },
+          { label: 'Implementation plan', sub: 'per model, from the device history', value: '9 of 9', tone: 'plain' },
+          { label: 'Test plan', sub: 'what proves the device came back correctly', value: '9 of 9', tone: 'plain' },
+          { label: 'Backout plan', sub: 'drawn from 3 upgrades that failed on this model', value: '9 of 9', tone: 'good' },
+          { label: 'Emergency CAB', sub: '2 critical changes need the shorter path', value: 'submitted', tone: 'warn' }
         ]
       },
       log: [
@@ -364,10 +364,10 @@
       viz: {
         kind: 'rows',
         rows: [
-          { label: 'Overlapping change', sub: 'CHG0041204 touches the same two switches on Thursday', value: 'conflict', bar: 1, tone: 'hot' },
-          { label: 'Blackout window', sub: 'quarter end freeze, PNQ, 24th to 27th', value: 'conflict', bar: 0.8, tone: 'hot' },
-          { label: 'Validated system freeze', sub: 'NCL, already reflected in wave 4', value: 'known', bar: 0.5, tone: 'warn' },
-          { label: 'Submission', sub: 'held until both conflicts are resolved', value: 'blocked', bar: 1, tone: 'hot' }
+          { label: 'Overlapping change', sub: 'CHG0041204 touches the same two switches on Thursday', value: 'conflict', tone: 'hot' },
+          { label: 'Blackout window', sub: 'quarter end freeze, PNQ, 24th to 27th', value: 'conflict', tone: 'hot' },
+          { label: 'Validated system freeze', sub: 'NCL, already reflected in wave 4', value: 'known', tone: 'warn' },
+          { label: 'Submission', sub: 'held until both conflicts are resolved', value: 'blocked', tone: 'hot' }
         ]
       },
       log: [
@@ -394,11 +394,11 @@
       viz: {
         kind: 'rows',
         rows: [
-          { label: 'Wave 1, LON tier 3', sub: '2 devices, both on 17.9.5', value: 'complete', bar: 1, tone: 'good' },
-          { label: 'Wave 2, LON tier 2', sub: '3 devices, 1 rolled back on a failed boot', value: '2 of 3', bar: 0.66, tone: 'warn' },
-          { label: 'Wave 2 retry', sub: 'rebuilt and upgraded the following night', value: 'complete', bar: 1, tone: 'good' },
-          { label: 'Wave 3, PNQ tier 1', sub: '2 devices inside the validation window', value: 'complete', bar: 1, tone: 'good' },
-          { label: 'Marked done but unchanged', sub: '1 device still reporting 17.6.6, item reopened', value: 'caught', bar: 1, tone: 'hot' }
+          { label: 'Wave 1, LON tier 3', sub: '2 devices, both on 17.9.5', value: 'complete', tone: 'good' },
+          { label: 'Wave 2, LON tier 2', sub: '3 devices, 1 rolled back on a failed boot', value: '2 of 3', tone: 'warn' },
+          { label: 'Wave 2 retry', sub: 'rebuilt and upgraded the following night', value: 'complete', tone: 'good' },
+          { label: 'Wave 3, PNQ tier 1', sub: '2 devices inside the validation window', value: 'complete', tone: 'good' },
+          { label: 'Marked done but unchanged', sub: '1 device still reporting 17.6.6, item reopened', value: 'caught', tone: 'hot' }
         ]
       },
       log: [
@@ -425,11 +425,11 @@
       viz: {
         kind: 'funnel',
         rows: [
-          { label: 'Confirmed vulnerable', value: 9, bar: 1, tone: 'hot' },
-          { label: 'Upgraded and verified', value: 7, bar: 0.78, tone: 'good' },
-          { label: 'Closed by configuration', value: 2, bar: 0.22, tone: 'good' },
-          { label: 'Residual exposure', value: 0, bar: 0.02, tone: 'good' },
-          { label: 'Cannot be remediated', value: 1, bar: 0.11, tone: 'warn' }
+          { label: 'Confirmed vulnerable', value: 9, tone: 'hot' },
+          { label: 'Upgraded and verified', value: 7, tone: 'good' },
+          { label: 'Closed by configuration', value: 2, tone: 'good' },
+          { label: 'Residual exposure', value: 0, tone: 'good' },
+          { label: 'Cannot be remediated', value: 1, tone: 'warn' }
         ],
         sites: [
           { label: 'PNQ', sub: 'clear', value: 0 },
@@ -500,11 +500,11 @@
           { label: 'Open exceptions', value: '1' }
         ],
         rows: [
-          { label: 'Advisory to first evidence', sub: 'the match that found the twelve', value: 'under a minute', bar: 1, tone: 'good' },
-          { label: 'Advisory to last device fixed', sub: 'bounded by change windows, not by analysis', value: '6 days', bar: 0.6, tone: 'good' },
-          { label: 'Decisions with a recorded reason', sub: 'every stage wrote its own input and output', value: '100%', bar: 1, tone: 'good' },
-          { label: 'Human approvals captured', sub: 'qualification, sending, sequencing, CAB, acceptance', value: '5', bar: 0.5, tone: 'warn' },
-          { label: 'Audit pack', sub: 'assembled from the run record, not reconstructed', value: 'ready', bar: 1, tone: 'good' }
+          { label: 'Advisory to first evidence', sub: 'the match that found the twelve', value: 'under a minute', tone: 'good' },
+          { label: 'Advisory to last device fixed', sub: 'bounded by change windows, not by analysis', value: '6 days', tone: 'good' },
+          { label: 'Decisions with a recorded reason', sub: 'every stage wrote its own input and output', value: '100%', tone: 'good' },
+          { label: 'Human approvals captured', sub: 'qualification, sending, sequencing, CAB, acceptance', value: '5', tone: 'warn' },
+          { label: 'Audit pack', sub: 'assembled from the run record, not reconstructed', value: 'ready', tone: 'good' }
         ]
       },
       log: [
@@ -521,7 +521,7 @@
     engineer: { label: 'Engineer answers', tone: 'warn' },
     human: { label: 'Human approves', tone: 'warn' },
     cab: { label: 'CAB approves', tone: 'warn' },
-    cto: { label: 'Customer CTO signs', tone: 'hot' },
+    cto: { label: 'Customer CTO signs', tone: 'warn' },
     block: { label: 'Agent blocks', tone: 'hot' }
   };
 

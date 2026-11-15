@@ -27,7 +27,7 @@ There is nothing to run, so a change is checked by loading it. Since the walkthr
 - `index.html`, and a filtered address such as `?process=Change&domain=WAN`
 - a walkthrough, `use-case.html?id=wan-outage-triage`, and an unknown id such as `use-case.html?id=nope`, which must fall back to the "not written up yet" section
 - `built-on.html`, clicking through both sets of tabs
-- `workflow.html`, letting it play to the end, then clicking stages in the rail out of order
+- `workflow.html`, letting it play to the end, then clicking stages in the timeline out of order
 - any page at phone width, and again with "reduce motion" turned on
 
 ## Voice and content rules
@@ -49,9 +49,11 @@ There is nothing to run, so a change is checked by loading it. Since the walkthr
 - `workflow.html` + `workflow-data.js` + `workflow.js`: the customer-facing replay of the zero-day vulnerability flow, fourteen stages in about two minutes. This is the page to show someone who has not seen the work before; `console.html` is the operator tool behind it and is not for that audience.
   - One playhead, in seconds of replay time, advanced by `Netwik.run` and nothing else, so the page still keeps to one tick loop. Everything drawn is a pure function of that playhead: seeking to a stage and playing into it give the same picture, and no scene holds state between ticks.
   - A scene is rebuilt only when the stage index changes, and then gets `update(p)` each tick with `p` running 0 to 1 across the stage. Adding a stage means adding an entry to `STAGES` in `workflow-data.js`; adding a *kind* of picture means a new `scene*` function and one line in `buildScene`. Most stages reuse `rowList`.
+  - The page is light, not a dark panel. The timeline under the play controls is the table of contents: one segment per stage, as wide as the stage is long, coloured by who acts (green agent, amber person, red agent stops the flow) and hatched where the stage is designed but not built. Below it the stage text sits on the left and the scene on the right, with a fixed minimum height so the controls never move between stages. Do not bring back the tall stage list, decorative bars or the hours counting up in the hero: the hero comparison is the static totals drawn to scale.
+  - The replay starts when it scrolls into view (an `IntersectionObserver` that only sets the playing flag), not on page load.
   - Stage numbers are not indices. Stage 7 was withdrawn from the design, and stage 2 has a second screen numbered `2.5`, so never derive one from the other: `progressOf` looks a stage up by its number.
   - Honesty is load bearing here, not decoration. Each stage carries `status`, shown as "built and running today" or "designed, not built yet", and only stages 0, 2 and 3 are the former. The device counts are real, from a match against the instance; the hours are labelled on the page as my estimate. Do not quietly promote a stage to built.
-  - Under reduced motion there is no loop at all, so the page paints the last stage finished and the play control is removed rather than left dead; a rail click then lands on that stage already complete.
+  - Under reduced motion there is no loop at all, so the page paints the last stage finished and the play control is removed rather than left dead; a timeline or arrow click then lands on that stage already complete.
 - `use-cases.html` and `incident-agent.html` are redirect stubs for the old addresses, each doing it three ways: a canonical link, a meta refresh and a `location.replace`.
 
 **Generated markup is coupled to element IDs.** Both `use-cases.js` and `built-on.js` reach for IDs in the HTML (`#matrix`, `#proc-chips`, `#dom-chips`, `#cases`, `#count`, `#empty`, `#reset`; and `#how-*`, `#ctx-*`, `#build-layers`) mostly without null checks, so renaming one of those IDs breaks the page's rendering or animation rather than degrading it.

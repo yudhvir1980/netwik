@@ -5,8 +5,12 @@
  * that playhead, so seeking to a stage and playing into it produce the same
  * picture. Clicking a stage moves the playhead; nothing keeps hidden state.
  *
- * Scenes are rebuilt only when the stage changes. Within a stage the scene
- * gets an update(p) call each tick, p running 0 to 1 across the stage.
+ * The timeline is the table of contents: one segment per stage, as wide as
+ * the stage is long, coloured by who acts in it and hatched where the stage
+ * is designed but not built.
+ *
+ * Scenes and the stage text are rebuilt only when the stage changes. Within a
+ * stage the scene gets an update(p) call each tick, p running 0 to 1.
  *
  * Nodes are built with el(), which sets textContent, so no value is ever
  * interpolated into markup.
@@ -21,11 +25,13 @@
   var STEP = 0.06;          /* seconds of replay per tick, matching interval 60 */
   var still = N.still;
 
+  /* fg is text on white, solid is a fill, mid is the same fill not yet
+     reached on the timeline, tint is a quiet background. */
   var TONES = {
-    plain: { fg: '#A3A7AE', bar: '#4A4D53' },
-    good: { fg: '#2EE6A6', bar: '#12B886' },
-    warn: { fg: '#F5A524', bar: '#C97F12' },
-    hot: { fg: '#FF6B6E', bar: '#E5484D' }
+    plain: { fg: '#3D4147', solid: '#8B9097', mid: '#D5D8DC', tint: '#EEF0F2' },
+    good: { fg: '#0B7A58', solid: '#12B886', mid: '#A9E1CC', tint: '#DFF3EB' },
+    warn: { fg: '#8A5300', solid: '#F5A524', mid: '#FAD58E', tint: '#FCEBC8' },
+    hot: { fg: '#C2343A', solid: '#E5484D', mid: '#F4ABAD', tint: '#FADCDD' }
   };
 
   function tone(name) { return TONES[name] || TONES.plain; }
@@ -41,7 +47,12 @@
   function id(name) { return document.getElementById(name); }
   function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
 
-  /* Eases a bar so it settles rather than stopping dead. */
+  function set(elementId, text) {
+    var node = id(elementId);
+    if (node) node.textContent = text;
+  }
+
+  /* Eases a number so it settles rather than stopping dead. */
   function ease(p) { return 1 - Math.pow(1 - clamp(p, 0, 1), 3); }
 
   /* A stagger: row i of n starts at i/n and finishes a third of the way later. */
@@ -53,6 +64,13 @@
   function num(value) {
     return String(Math.round(value)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
+
+  function mmss(seconds) {
+    var s = Math.floor(seconds);
+    return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+  }
+
+  function stageLabel(n) { return n === 2.5 ? '2b' : String(n); }
 
   /* ---- the timeline ----------------------------------------------------- */
 
@@ -82,9 +100,7 @@
     return 0;
   }
 
-  /* ---- the stage rail --------------------------------------------------- */
-
-  var railRows = [];
+  var segs = [];
 
   function buildRail(onSeek) {
     var host = id('wf-rail');
@@ -92,129 +108,124 @@
     marks.forEach(function (m, i) {
       var s = m.stage;
       var aut = D.autonomy[s.autonomy] || D.autonomy.agent;
-      var row = el('button', 'nk-wf-row');
-      row.type = 'button';
-      row.setAttribute('aria-label', 'Stage ' + s.n + ', ' + s.name);
+      var t = tone(aut.tone);
+      var name = 'Stage ' + stageLabel(s.n) + ': ' + s.name;
 
-      var top = sty(el('span'), 'display: flex; align-items: baseline; gap: 10px');
-      var numEl = sty(el('span', 'nk-wf-rownum', s.n === 2.5 ? '2b' : String(s.n)),
-        'font-family: var(--mono); font-size: 12px; color: #6B7076; flex: none; width: 20px');
-      var nameEl = sty(el('span', null, s.name),
-        'font-size: 14px; line-height: 1.3; flex: 1 1 auto; min-width: 0');
-      top.appendChild(numEl);
-      top.appendChild(nameEl);
+      var seg = el('button', 'nk-wf-seg');
+      seg.type = 'button';
+      seg.title = name;
+      seg.setAttribute('aria-label', name + '. ' + aut.label + '. '
+        + (s.status === 'running' ? 'Built and running today.' : 'Designed, not built yet.'));
+      seg.setAttribute('data-status', s.status);
+      sty(seg, 'flex: ' + s.secs + ' 1 0');
 
-      var meta = sty(el('span'),
-        'display: flex; align-items: center; gap: 8px; padding-left: 30px; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: #6B7076');
-      var autEl = sty(el('span', null, aut.label), 'color: ' + tone(aut.tone).fg);
-      meta.appendChild(autEl);
-      if (s.status === 'running') {
-        meta.appendChild(sty(el('span', null, '· live today'), 'color: #6B7076'));
-      }
+      var track = sty(el('span', 'nk-wf-track'), 'background: ' + t.mid);
+      var fill = sty(el('span', 'nk-wf-fill'), 'background: ' + t.solid);
+      track.appendChild(fill);
+      seg.appendChild(track);
+      seg.appendChild(el('span', 'nk-wf-num', stageLabel(s.n)));
 
-      var bar = sty(el('span', 'nk-wf-rowbar'), 'width: 0');
-      var track = sty(el('span'), 'display: block; height: 2px; margin: 8px 0 0 30px; background: #26282C');
-      track.appendChild(bar);
-
-      row.appendChild(top);
-      row.appendChild(meta);
-      row.appendChild(track);
-      row.addEventListener('click', function () { onSeek(i); });
-      host.appendChild(row);
-
-      railRows.push({ row: row, bar: bar, num: numEl, name: nameEl });
+      seg.addEventListener('click', function () { onSeek(i); });
+      host.appendChild(seg);
+      segs.push({ seg: seg, fill: fill });
     });
   }
 
   function paintRail(idx, p) {
-    railRows.forEach(function (r, i) {
-      var done = i < idx;
-      var active = i === idx;
-      r.row.setAttribute('aria-current', active ? 'step' : 'false');
-      r.row.style.opacity = active ? '1' : (done ? '.72' : '.38');
-      r.row.style.background = active ? '#1C2A26' : 'transparent';
-      r.row.style.borderLeftColor = active ? '#2EE6A6' : (done ? '#4A4D53' : 'transparent');
-      r.num.style.color = active ? '#2EE6A6' : '#6B7076';
-      r.bar.style.width = (done ? 100 : (active ? Math.round(p * 100) : 0)) + '%';
-      r.bar.style.background = active ? '#2EE6A6' : '#4A4D53';
+    segs.forEach(function (r, i) {
+      r.fill.style.width = (i < idx ? 100 : (i === idx ? p * 100 : 0)) + '%';
+    });
+  }
+
+  function markRail(idx) {
+    segs.forEach(function (r, i) {
+      if (i === idx) r.seg.setAttribute('aria-current', 'step');
+      else r.seg.removeAttribute('aria-current');
     });
   }
 
   /* ---- scenes ----------------------------------------------------------- */
 
-  function sceneShell(host) {
-    host.textContent = '';
-    return sty(host, 'position: relative; min-height: 300px');
-  }
+  var LINE = '#E2E4E7';
 
-  /* A row of label, sub-label, bar and value. The workhorse of the page. */
-  function rowList(host, rows, opts) {
-    var options = opts || {};
-    var list = sty(el('div'), 'display: flex; flex-direction: column; gap: 2px');
+  /* A list of things, each with a note and an outcome. The workhorse. */
+  function rowList(host, rows) {
+    var list = sty(el('div'), 'display: flex; flex-direction: column; border-top: 1px solid ' + LINE);
     var built = [];
 
     rows.forEach(function (r) {
       var t = tone(r.tone);
       var wrap = sty(el('div', 'nk-wf-item'),
-        'padding: 13px 0; border-bottom: 1px solid #26282C; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px');
+        'padding: 13px 0; border-bottom: 1px solid ' + LINE + '; display: flex; align-items: flex-start; gap: 12px');
 
-      var left = sty(el('div'), 'flex: 1 1 260px; min-width: 0');
-      left.appendChild(sty(el('div', null, r.label), 'font-size: 15px; color: #F2F3F5'));
+      wrap.appendChild(sty(el('span'),
+        'flex: none; width: 8px; height: 8px; margin-top: 8px; background: ' + t.solid));
+
+      var left = sty(el('div'), 'flex: 1 1 auto; min-width: 0');
+      left.appendChild(sty(el('div', null, r.label), 'font-size: 16px; font-weight: 500; color: #0A0A0B'));
       if (r.sub) {
         left.appendChild(sty(el('div', null, r.sub),
-          'font-size: 13px; line-height: 1.4; color: #8B9097; margin-top: 2px'));
+          'font-size: 14px; line-height: 1.4; color: #5B6068; margin-top: 2px'));
       }
-
-      var value = sty(el('div', null, ''),
-        'flex: none; font-family: var(--mono); font-size: 13px; color: ' + t.fg);
-
       wrap.appendChild(left);
+
+      var value = sty(el('span', null, r.value),
+        'flex: none; margin-top: 2px; font-family: var(--mono); font-size: 12px; padding: 3px 8px; white-space: nowrap; color: '
+        + t.fg + '; background: ' + t.tint);
       wrap.appendChild(value);
 
-      var track = sty(el('div'), 'flex: 1 1 100%; height: 3px; background: #26282C; margin-top: 4px');
-      var bar = sty(el('div'), 'height: 100%; width: 0; background: ' + t.bar);
-      track.appendChild(bar);
-      wrap.appendChild(track);
-
       list.appendChild(wrap);
-      built.push({ wrap: wrap, bar: bar, value: value, row: r });
+      built.push({ wrap: wrap, value: value });
     });
 
     host.appendChild(list);
 
     return function (p) {
       built.forEach(function (b, i) {
-        var q = options.instant ? 1 : step(p, i, built.length);
-        b.wrap.style.opacity = String(0.25 + 0.75 * clamp(q * 3, 0, 1));
-        b.bar.style.width = (ease(q) * (b.row.bar === undefined ? 1 : b.row.bar) * 100) + '%';
-        if (typeof b.row.value === 'number') {
-          b.value.textContent = q > 0.02 ? num(b.row.value * ease(q)) : '';
-        } else {
-          b.value.textContent = q > 0.55 ? b.row.value : '';
-        }
+        var q = step(p, i, built.length);
+        b.wrap.style.opacity = String(0.3 + 0.7 * clamp(q * 3, 0, 1));
+        b.value.style.visibility = q > 0.55 ? 'visible' : 'hidden';
       });
     };
   }
 
+  /* A row of bordered cells, each a number counting up over a caption. */
+  function cellRow(host, items, size) {
+    var wrap = sty(el('div'), 'display: flex; flex-wrap: wrap; gap: 10px');
+    var cells = [];
+    items.forEach(function (it) {
+      var cell = sty(el('div'),
+        'flex: 1 1 120px; box-sizing: border-box; min-width: 0; border: 1px solid ' + LINE + '; background: #FFFFFF; padding: 14px 16px');
+      var v = sty(el('div', null, '0'),
+        'font-size: ' + size + '; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: #0A0A0B');
+      cell.appendChild(v);
+      cell.appendChild(sty(el('div', null, it.label),
+        'font-size: 14px; font-weight: 500; line-height: 1.3; color: #0A0A0B; margin-top: 10px'));
+      if (it.sub) {
+        cell.appendChild(sty(el('div', null, it.sub), 'font-size: 13px; color: #5B6068; margin-top: 1px'));
+      }
+      wrap.appendChild(cell);
+      cells.push({ v: v, target: Number(String(it.value).replace(/[^0-9.]/g, '')) || 0 });
+    });
+    host.appendChild(wrap);
+    return cells;
+  }
+
   function sceneIntake(host, viz) {
-    sceneShell(host);
-    var card = sty(el('div'),
-      'border: 1px solid #2A2C30; background: #0E0F11; padding: 0');
-    var head = sty(el('div'),
-      'display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1px solid #2A2C30; font-size: 13px; color: #8B9097');
-    head.appendChild(sty(el('span', 'nk-live'), 'width: 7px; height: 7px; background: #E5484D; flex: none'));
-    head.appendChild(el('span', null, 'Vendor advisory, inbound'));
+    var card = sty(el('div'), 'border: 1px solid ' + LINE + '; background: #FFFFFF');
+    var head = sty(el('div', null, 'Vendor advisory, inbound'),
+      'padding: 12px 18px; border-bottom: 1px solid ' + LINE + '; font-size: 14px; color: #5B6068');
     card.appendChild(head);
 
-    var body = sty(el('div'), 'padding: 6px 18px 18px');
+    var body = sty(el('div'), 'padding: 4px 18px');
     var built = [];
-    viz.fields.forEach(function (f) {
-      var row = sty(el('div'),
-        'display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 11px 0; border-bottom: 1px solid #1E2023');
-      row.appendChild(sty(el('span', null, f[0]),
-        'flex: none; width: 92px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: #6B7076'));
+    viz.fields.forEach(function (f, i) {
+      var row = sty(el('div', 'nk-wf-item'),
+        'display: flex; flex-wrap: wrap; gap: 2px 18px; padding: 12px 0'
+        + (i ? '; border-top: 1px solid ' + LINE : ''));
+      row.appendChild(sty(el('span', null, f[0]), 'flex: none; width: 84px; font-size: 14px; color: #5B6068'));
       var val = sty(el('span', null, ''),
-        'flex: 1 1 200px; min-width: 0; font-family: var(--mono); font-size: 13px; line-height: 1.5; color: #F2F3F5; word-break: break-word');
+        'flex: 1 1 200px; min-width: 0; min-height: 1.5em; font-size: 16px; font-weight: 500; color: #0A0A0B; overflow-wrap: anywhere');
       row.appendChild(val);
       body.appendChild(row);
       built.push({ row: row, val: val, text: f[1] });
@@ -222,53 +233,53 @@
     card.appendChild(body);
     host.appendChild(card);
 
-    var stamp = sty(el('div', null,
+    var stamp = sty(el('p', 'nk-wf-item',
       'Checked against every advisory already recorded. No prior record found, so one is created rather than a second investigation into the same flaw.'),
-      'margin-top: 16px; font-size: 13px; line-height: 1.5; color: #8B9097');
+      'margin: 16px 0 0; padding-left: 14px; border-left: 2px solid #12B886; font-size: 14px; line-height: 1.5; color: #3D4147');
     host.appendChild(stamp);
 
     return function (p) {
       built.forEach(function (b, i) {
-        var q = step(p, i, built.length);
-        b.row.style.opacity = String(0.2 + 0.8 * clamp(q * 4, 0, 1));
-        b.val.textContent = q <= 0 ? '' : N.scramble(b.text, clamp(q * 1.3, 0, 1));
+        var q = step(p * 0.8, i, built.length);
+        b.row.style.opacity = String(0.3 + 0.7 * clamp(q * 4, 0, 1));
+        b.val.textContent = b.text.slice(0, Math.round(b.text.length * clamp(q * 1.3, 0, 1)));
       });
-      stamp.style.opacity = String(clamp((p - 0.75) * 4, 0, 1));
+      stamp.style.opacity = String(clamp((p - 0.75) * 6, 0, 1));
     };
   }
 
+  /* A population draining through named reductions. The number is the
+     picture, so there is no bar to draw out of proportion. */
   function sceneFunnel(host, viz) {
-    sceneShell(host);
-    var update = rowList(host, viz.rows);
+    var list = sty(el('div'), 'border-top: 1px solid ' + LINE);
+    var built = [];
+    viz.rows.forEach(function (r) {
+      var row = sty(el('div', 'nk-wf-item'),
+        'display: flex; align-items: baseline; gap: 18px; padding: 10px 0; border-bottom: 1px solid ' + LINE);
+      var v = sty(el('span', null, '0'),
+        'flex: none; width: 68px; text-align: right; font-size: 30px; line-height: 1.1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: '
+        + tone(r.tone).fg);
+      row.appendChild(v);
+      row.appendChild(sty(el('span', null, r.label), 'font-size: 16px; color: #0A0A0B'));
+      list.appendChild(row);
+      built.push({ row: row, v: v, target: r.value });
+    });
+    host.appendChild(list);
 
-    var sitesWrap = null;
     var siteCells = [];
     if (viz.sites) {
-      sitesWrap = sty(el('div'),
-        'margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px');
-      viz.sites.forEach(function (s) {
-        var cell = sty(el('div'),
-          'flex: 1 1 140px; min-width: 0; border: 1px solid #2A2C30; padding: 14px 16px');
-        cell.appendChild(sty(el('div', null, s.label),
-          'font-family: var(--mono); font-size: 13px; color: #2EE6A6'));
-        cell.appendChild(sty(el('div', null, s.sub),
-          'font-size: 12px; color: #6B7076; margin-top: 2px'));
-        var v = sty(el('div', null, '0'),
-          'font-size: 30px; line-height: 1.1; letter-spacing: -.03em; color: #F2F3F5; margin-top: 10px');
-        cell.appendChild(v);
-        sitesWrap.appendChild(cell);
-        siteCells.push({ cell: cell, v: v, target: s.value });
-      });
-      host.appendChild(sitesWrap);
+      host.appendChild(sty(el('div'), 'height: 20px'));
+      siteCells = cellRow(host, viz.sites, '30px');
     }
 
     return function (p) {
-      update(p);
+      built.forEach(function (b, i) {
+        var q = step(p * 0.7, i, built.length);
+        b.row.style.opacity = String(0.3 + 0.7 * clamp(q * 3, 0, 1));
+        b.v.textContent = num(b.target * ease(q));
+      });
       siteCells.forEach(function (c, i) {
-        var q = clamp((p - 0.55 - i * 0.07) * 5, 0, 1);
-        c.cell.style.opacity = String(0.2 + 0.8 * q);
-        c.cell.style.borderColor = q > 0.9 ? '#2A2C30' : '#1E2023';
-        c.v.textContent = num(c.target * ease(q));
+        c.v.textContent = num(c.target * ease((p - 0.55 - i * 0.07) * 5));
       });
     };
   }
@@ -276,8 +287,7 @@
   /* 755 squares, one per device, each taking its colour as the sweep reaches
      it. The point of the picture is the ratio: twelve lit cells in a wall. */
   function sceneGrid(host, viz) {
-    sceneShell(host);
-
+    var COLOURS = { unseen: '#ECEEF0', front: '#0A0A0B', hot: '#E5484D', dim: '#A9AEB6', clear: '#BFE6D6' };
     var hot = {}, dim = {};
     var i;
     for (i = 0; i < viz.hot; i++) hot[(i * 61 + 29) % viz.total] = true;
@@ -286,7 +296,10 @@
       if (!hot[k]) dim[k] = true;
     }
 
-    var grid = sty(el('div', 'nk-wf-grid'), '');
+    host.appendChild(sty(el('div', null, num(viz.total) + ' devices, one square each'),
+      'font-size: 14px; color: #5B6068; margin-bottom: 12px'));
+
+    var grid = el('div', 'nk-wf-grid');
     var cells = [];
     var painted = [];
     for (i = 0; i < viz.total; i++) {
@@ -297,15 +310,13 @@
     }
     host.appendChild(grid);
 
-    var legend = sty(el('div'),
-      'margin-top: 18px; display: flex; flex-direction: column; gap: 9px');
+    var legend = sty(el('div'), 'margin-top: 18px; display: flex; flex-direction: column; gap: 8px');
     var legendRows = [];
     viz.legend.forEach(function (entry) {
-      var row = sty(el('div'),
-        'display: flex; align-items: baseline; gap: 10px; font-size: 13px; color: #8B9097');
-      var swatchColour = entry[0] === 'hot' ? '#E5484D' : (entry[0] === 'dim' ? '#3A3D42' : '#1F6B55');
+      var row = sty(el('div', 'nk-wf-item'),
+        'display: flex; align-items: baseline; gap: 10px; font-size: 14px; color: #3D4147');
       row.appendChild(sty(el('span'),
-        'flex: none; width: 9px; height: 9px; background: ' + swatchColour));
+        'flex: none; width: 9px; height: 9px; background: ' + (COLOURS[entry[0]] || COLOURS.clear)));
       row.appendChild(el('span', null, entry[1]));
       legend.appendChild(row);
       legendRows.push(row);
@@ -316,11 +327,11 @@
       var front = clamp(p * 1.15, 0, 1) * viz.total;
       for (var j = 0; j < cells.length; j++) {
         var colour;
-        if (j > front) colour = '#1A1B1E';
-        else if (j > front - 14) colour = '#2EE6A6';
-        else if (hot[j]) colour = '#E5484D';
-        else if (dim[j]) colour = '#3A3D42';
-        else colour = '#1F6B55';
+        if (j > front) colour = COLOURS.unseen;
+        else if (j > front - 14 && front < viz.total) colour = COLOURS.front;
+        else if (hot[j]) colour = COLOURS.hot;
+        else if (dim[j]) colour = COLOURS.dim;
+        else colour = COLOURS.clear;
         /* Only the cells the sweep is crossing change, so the comparison is
            against what was last written rather than the computed style. */
         if (painted[j] !== colour) {
@@ -328,66 +339,60 @@
           painted[j] = colour;
         }
       }
-      legendRows.forEach(function (row, k) {
-        row.style.opacity = String(clamp((p - 0.6 - k * 0.08) * 6, 0, 1));
+      legendRows.forEach(function (row, n) {
+        row.style.opacity = String(clamp((p - 0.6 - n * 0.08) * 6, 0, 1));
       });
     };
   }
 
   /* A stage that stops and waits for a person. The waiting is the content. */
   function sceneGate(host, viz) {
-    sceneShell(host);
-
-    var banner = sty(el('div'),
-      'border: 1px solid #C97F12; background: #1E1708; padding: 16px 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px');
-    var pip = sty(el('span', 'nk-live'), 'width: 9px; height: 9px; background: #F5A524; flex: none');
+    var banner = sty(el('div'), '');
+    var pip = sty(el('span', 'nk-live'), 'width: 9px; height: 9px; flex: none');
+    var bannerText = sty(el('span', null, ''), 'font-size: 15px; font-weight: 500');
     banner.appendChild(pip);
-    var bannerText = sty(el('span', null, 'Waiting on a person'),
-      'font-size: 14px; color: #F5A524; letter-spacing: .02em');
     banner.appendChild(bannerText);
-    var who = sty(el('span', null, viz.who),
-      'font-size: 13px; color: #8B9097; margin-left: auto');
-    banner.appendChild(who);
+    banner.appendChild(sty(el('span', null, viz.who), 'font-size: 14px; color: #3D4147; margin-left: auto'));
     host.appendChild(banner);
 
-    var question = sty(el('p', null, viz.question),
-      'margin: 22px 0 0; font-size: clamp(20px, 2.2vw, 26px); line-height: 1.25; letter-spacing: -.02em; color: #F2F3F5');
-    host.appendChild(question);
+    host.appendChild(sty(el('p', null, viz.question),
+      'margin: 22px 0 0; font-size: clamp(20px, 2.2vw, 26px); font-weight: 500; line-height: 1.25; letter-spacing: -.025em; color: #0A0A0B'));
 
     var opts = sty(el('div'), 'margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px');
     var optCells = [];
     viz.options.forEach(function (o) {
-      var t = tone(o.tone);
-      var cell = sty(el('div'),
-        'flex: 1 1 200px; min-width: 0; border: 1px solid #2A2C30; padding: 14px 16px');
-      cell.appendChild(sty(el('div', null, o.label), 'font-size: 15px; color: ' + t.fg));
-      cell.appendChild(sty(el('div', null, o.note),
-        'font-size: 13px; line-height: 1.4; color: #8B9097; margin-top: 4px'));
+      var cell = sty(el('div', 'nk-wf-item'),
+        'flex: 1 1 180px; min-width: 0; border: 1px solid ' + LINE + '; background: #FFFFFF; padding: 14px 16px');
+      cell.appendChild(sty(el('div', null, o.label), 'font-size: 16px; font-weight: 500; color: ' + tone(o.tone).fg));
+      cell.appendChild(sty(el('div', null, o.note), 'font-size: 14px; line-height: 1.4; color: #5B6068; margin-top: 3px'));
       opts.appendChild(cell);
       optCells.push(cell);
     });
     host.appendChild(opts);
 
-    var answer = sty(el('div'),
-      'margin-top: 20px; border-left: 2px solid #2EE6A6; padding: 2px 0 2px 16px');
-    answer.appendChild(sty(el('div', null, 'Answered'),
-      'font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #2EE6A6'));
+    var answer = sty(el('div', 'nk-wf-item'),
+      'margin-top: 20px; border-left: 2px solid #12B886; padding: 2px 0 2px 14px');
+    answer.appendChild(sty(el('div', null, 'The answer, recorded with who gave it'), 'font-size: 13px; color: #0B7A58'));
     var answerText = sty(el('div', null, ''),
-      'font-family: var(--mono); font-size: 13px; line-height: 1.6; color: #F2F3F5; margin-top: 6px; min-height: 2.6em');
+      'font-size: 16px; line-height: 1.45; color: #0A0A0B; margin-top: 4px; min-height: 2.9em');
     answer.appendChild(answerText);
     host.appendChild(answer);
 
+    var BASE = 'padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; border: 1px solid ';
+    var wasAnswered = null;
+
     return function (p) {
       var answered = p > 0.55;
-      pip.style.background = answered ? '#12B886' : '#F5A524';
-      pip.className = answered ? '' : 'nk-live';
-      bannerText.textContent = answered ? 'Answered, the flow continues' : 'Waiting on a person';
-      bannerText.style.color = answered ? '#2EE6A6' : '#F5A524';
-      banner.style.borderColor = answered ? '#1F6B55' : '#C97F12';
-      banner.style.background = answered ? '#0F1A16' : '#1E1708';
+      if (answered !== wasAnswered) {
+        wasAnswered = answered;
+        sty(banner, BASE + (answered ? '#12B886; background: #EAF7F1' : '#F5A524; background: #FFF6E3'));
+        pip.style.background = answered ? '#12B886' : '#F5A524';
+        pip.className = answered ? '' : 'nk-live';
+        bannerText.textContent = answered ? 'Answered, the flow continues' : 'Stopped, waiting on a person';
+        bannerText.style.color = answered ? '#0B7A58' : '#8A5300';
+      }
       optCells.forEach(function (cell, i) {
-        var q = clamp((p - 0.2 - i * 0.1) * 6, 0, 1);
-        cell.style.opacity = String(0.2 + 0.8 * q);
+        cell.style.opacity = String(0.3 + 0.7 * clamp((p - 0.15 - i * 0.1) * 6, 0, 1));
       });
       var typed = clamp((p - 0.6) / 0.3, 0, 1);
       answer.style.opacity = String(clamp(typed * 4, 0, 1));
@@ -396,27 +401,13 @@
   }
 
   function sceneBoard(host, viz) {
-    sceneShell(host);
-    var top = sty(el('div'), 'display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px');
-    var cells = [];
-    viz.headline.forEach(function (h) {
-      var cell = sty(el('div'),
-        'flex: 1 1 130px; min-width: 0; border: 1px solid #2A2C30; padding: 14px 16px');
-      var v = sty(el('div', null, '0'),
-        'font-size: clamp(28px, 3.4vw, 40px); line-height: 1; letter-spacing: -.04em; color: #F2F3F5');
-      cell.appendChild(v);
-      cell.appendChild(sty(el('div', null, h.label),
-        'font-size: 12px; line-height: 1.35; color: #8B9097; margin-top: 8px'));
-      top.appendChild(cell);
-      cells.push({ v: v, target: Number(String(h.value).replace(/[^0-9.]/g, '')) || 0, raw: h.value });
-    });
-    host.appendChild(top);
+    var cells = cellRow(host, viz.headline, 'clamp(26px, 3vw, 36px)');
+    host.appendChild(sty(el('div'), 'height: 20px'));
     var update = rowList(host, viz.rows);
 
     return function (p) {
       cells.forEach(function (c, i) {
-        var q = clamp((p - i * 0.06) * 2.4, 0, 1);
-        c.v.textContent = num(c.target * ease(q));
+        c.v.textContent = num(c.target * ease((p - i * 0.06) * 2.4));
       });
       update(clamp((p - 0.25) / 0.75, 0, 1));
     };
@@ -425,13 +416,13 @@
   function buildScene(stage) {
     var host = id('wf-scene');
     if (!host) return function () {};
+    host.textContent = '';
     var viz = stage.viz;
     if (viz.kind === 'intake') return sceneIntake(host, viz);
     if (viz.kind === 'funnel') return sceneFunnel(host, viz);
     if (viz.kind === 'grid') return sceneGrid(host, viz);
     if (viz.kind === 'gate') return sceneGate(host, viz);
     if (viz.kind === 'board') return sceneBoard(host, viz);
-    sceneShell(host);
     return rowList(host, viz.rows);
   }
 
@@ -450,10 +441,10 @@
       host.textContent = '';
       logShown = 0;
     }
+    if (want === logShown) return;
     while (logShown < want) {
-      var row = sty(el('div', 'nk-wf-logline'),
-        'display: flex; gap: 10px; padding: 2px 0');
-      row.appendChild(sty(el('span', null, '>'), 'flex: none; color: #2EE6A6'));
+      var row = sty(el('div', 'nk-wf-logline'), 'display: flex; gap: 10px');
+      row.appendChild(sty(el('span', null, '>'), 'flex: none; color: #0B7A58'));
       row.appendChild(el('span', null, lines[logShown].text));
       host.appendChild(row);
       logShown++;
@@ -461,54 +452,44 @@
     host.scrollTop = host.scrollHeight;
   }
 
-  /* ---- the header and the counters -------------------------------------- */
+  /* ---- the stage text and the counters ---------------------------------- */
 
-  function paintHeader(mark, p) {
-    var s = mark.stage;
+  function hours(h) { return h + (h === 1 ? ' hour' : ' hours'); }
+
+  /* Depends on the stage alone, so it is written once per stage, not per tick. */
+  function paintStage(idx) {
+    var s = marks[idx].stage;
     var aut = D.autonomy[s.autonomy] || D.autonomy.agent;
-    var numEl = id('wf-stage-num');
-    if (numEl) numEl.textContent = 'Stage ' + (s.n === 2.5 ? '2, continued' : s.n);
-    var nameEl = id('wf-stage-name');
-    if (nameEl) nameEl.textContent = s.name;
-    var headEl = id('wf-stage-head');
-    if (headEl) headEl.textContent = s.head;
-    var bodyEl = id('wf-stage-body');
-    if (bodyEl) bodyEl.textContent = s.body;
-    var agentEl = id('wf-stage-agent');
-    if (agentEl) agentEl.textContent = s.agent + ' agent';
+    var t = tone(aut.tone);
+    var built = s.status === 'running';
+
+    set('wf-stage-num', 'Stage ' + (s.n === 2.5 ? '2, continued' : s.n));
+    set('wf-stage-name', s.name);
+    set('wf-stage-head', s.head);
+    set('wf-stage-body', s.body);
+    set('wf-stage-agent', s.agent + ' agent');
+    set('wf-stage-effort', hours(s.manual) + ' by hand, ' + hours(s.assisted) + ' with the agents');
+
     var autEl = id('wf-stage-autonomy');
     if (autEl) {
       autEl.textContent = aut.label;
-      autEl.style.color = tone(aut.tone).fg;
-      autEl.style.borderColor = tone(aut.tone).bar;
+      autEl.style.color = t.fg;
+      autEl.style.background = t.tint;
     }
     var statusEl = id('wf-stage-status');
     if (statusEl) {
-      statusEl.textContent = s.status === 'running' ? 'Built and running today' : 'Designed, not built yet';
-      statusEl.style.color = s.status === 'running' ? '#2EE6A6' : '#8B9097';
+      statusEl.textContent = built ? 'Built and running today' : 'Designed, not built yet';
+      statusEl.style.color = built ? '#0B7A58' : '#3D4147';
     }
-    var pb = id('wf-stage-bar');
-    if (pb) pb.style.width = Math.round(p * 100) + '%';
+
+    var prev = id('wf-prev');
+    if (prev) prev.disabled = idx === 0;
+    var next = id('wf-next');
+    if (next) next.disabled = idx === marks.length - 1;
+    markRail(idx);
   }
 
   function paintCounters(head) {
-    var manual = 0, assisted = 0;
-    marks.forEach(function (m) {
-      var p = clamp((head - m.start) / m.stage.secs, 0, 1);
-      manual += m.stage.manual * p;
-      assisted += m.stage.assisted * p;
-    });
-
-    var mEl = id('wf-manual');
-    if (mEl) mEl.textContent = manual.toFixed(manual < 10 ? 1 : 0);
-    var aEl = id('wf-assisted');
-    if (aEl) aEl.textContent = assisted.toFixed(assisted < 10 ? 1 : 0);
-    var sEl = id('wf-saved');
-    if (sEl) {
-      var saved = manual > 0 ? Math.round((1 - assisted / manual) * 100) : 0;
-      sEl.textContent = saved + '%';
-    }
-
     var assessed = 755 * progressOf(2, head);
     /* Twelve are found by matching; qualification takes three of them back
        out, because a person confirmed the feature was switched off. */
@@ -522,25 +503,14 @@
     set('wf-stat-vulnerable', num(confirmed));
     set('wf-stat-fixed', num(fixed));
     set('wf-stat-decisions', num(decisions));
-
-    var cEl = id('wf-clock');
-    if (cEl) {
-      var secs = Math.floor(head);
-      cEl.textContent = Math.floor(secs / 60) + ':' + (secs % 60 < 10 ? '0' : '') + (secs % 60);
-    }
-    var bar = id('wf-bar');
-    if (bar) bar.style.width = (head / TOTAL * 100) + '%';
-  }
-
-  function set(elementId, text) {
-    var node = id(elementId);
-    if (node) node.textContent = text;
+    set('wf-clock', mmss(head));
   }
 
   /* ---- the loop --------------------------------------------------------- */
 
   var head = 0;
-  var playing = !still;
+  var playing = false;
+  var started = false;      /* true once the visitor or the page has pressed play */
   var shownIdx = -1;
   var update = function () {};
 
@@ -559,30 +529,27 @@
     if (idx !== shownIdx) {
       shownIdx = idx;
       update = buildScene(mark.stage);
+      paintStage(idx);
     }
     update(p);
     paintRail(idx, p);
-    paintHeader(mark, p);
     paintCounters(head);
     paintLog(head);
   }
 
   function setPlaying(on) {
     playing = on;
+    if (on) started = true;
     var btn = id('wf-play');
-    if (!btn) return;
-    btn.textContent = on ? 'Pause' : (head >= TOTAL ? 'Replay' : 'Play');
-    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (btn) btn.textContent = on ? 'Pause' : (head >= TOTAL ? 'Replay' : 'Play');
   }
 
   /* Under reduced motion there is no loop to play into a stage, so a seek
      lands on that stage already finished rather than on an empty scene. */
   function seek(i) {
+    i = clamp(i, 0, marks.length - 1);
     head = still ? marks[i].end - 0.001 : marks[i].start;
     shownIdx = -1;
-    logShown = 0;
-    var host = id('wf-log');
-    if (host) host.textContent = '';
     paint();
     if (!still) setPlaying(true);
   }
@@ -592,37 +559,52 @@
   var playBtn = id('wf-play');
   if (playBtn) {
     playBtn.addEventListener('click', function () {
-      if (head >= TOTAL) { head = 0; shownIdx = -1; logShown = 0; id('wf-log').textContent = ''; }
+      if (head >= TOTAL) { seek(0); return; }
       setPlaying(!playing);
     });
   }
-  var restartBtn = id('wf-restart');
-  if (restartBtn) restartBtn.addEventListener('click', function () { seek(0); });
+  var prevBtn = id('wf-prev');
+  if (prevBtn) prevBtn.addEventListener('click', function () { seek(indexAt(head) - 1); });
+  var nextBtn = id('wf-next');
+  if (nextBtn) nextBtn.addEventListener('click', function () { seek(indexAt(head) + 1); });
 
-  var totalEl = id('wf-total');
-  if (totalEl) {
-    var t = Math.round(TOTAL);
-    totalEl.textContent = Math.floor(t / 60) + ':' + (t % 60 < 10 ? '0' : '') + (t % 60);
-  }
+  /* The hero comparison is the totals of the same data, drawn to scale. */
+  set('wf-total', mmss(Math.round(TOTAL)));
   set('wf-manual-total', String(Math.round(D.totals.manual)));
   set('wf-assisted-total', String(Math.round(D.totals.assisted)));
+  var assistedBar = id('wf-assisted-bar');
+  if (assistedBar && D.totals.manual > 0) {
+    assistedBar.style.width = (D.totals.assisted / D.totals.manual * 100) + '%';
+  }
 
   if (still) {
     /* Reduced motion: no loop, so the last stage is shown finished and the
        play control is removed rather than left there doing nothing. */
     head = TOTAL;
-    paint();
     if (playBtn) playBtn.style.display = 'none';
-    if (restartBtn) restartBtn.textContent = 'Back to the first stage';
   } else {
-    setPlaying(true);
+    /* The replay starts when it scrolls into view, not behind the visitor's
+       back while they are still reading the introduction. */
+    var player = id('replay');
+    if (player && 'IntersectionObserver' in window) {
+      var watcher = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          if (!entries[i].isIntersecting) continue;
+          watcher.disconnect();
+          if (!started) setPlaying(true);
+          return;
+        }
+      }, { threshold: 0.3 });
+      watcher.observe(player);
+    } else {
+      setPlaying(true);
+    }
   }
 
   N.run({
     interval: 60,
     blocks: 6,
     onTick: function () {
-      if (still) return;
       if (playing) {
         head += STEP;
         if (head >= TOTAL) { head = TOTAL; setPlaying(false); }

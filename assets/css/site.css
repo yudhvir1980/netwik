@@ -239,43 +239,58 @@ a:hover { color: #0B7A58; }
 
 /* ---- workflow.html: the zero-day replay ------------------------------- */
 /* The replay has one playhead and rebuilds a scene per stage. Everything
-   here is either a hover state, a keyframe or a responsive rule, because
-   those are the things the inline styles in workflow.js cannot do. */
+   here is either a hover or state rule, a pseudo-element or a responsive
+   rule, because those are the things inline styles cannot do. */
 
-.nk-wf-btn { font: inherit; font-size: 13px; min-height: 34px; padding: 0 14px; border: 1px solid var(--panel-line); background: transparent; color: var(--panel-text); cursor: pointer; transition: background .2s ease, border-color .2s ease; }
-.nk-wf-btn:hover { background: #26282C; border-color: #4A4D53; }
+.nk-wf-play { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; min-width: 104px; padding: 0 18px; border: 1px solid var(--ink); background: var(--ink); color: #FFFFFF; cursor: pointer; transition: background .2s ease; }
+.nk-wf-play:hover { background: #2B2D31; }
+.nk-wf-btn { font: inherit; font-size: 18px; line-height: 1; min-height: 44px; min-width: 44px; padding: 0; border: 1px solid var(--line); background: #FFFFFF; color: var(--ink); cursor: pointer; transition: background .2s ease, border-color .2s ease; }
+.nk-wf-btn:hover { background: #F4F5F6; border-color: var(--ink); }
+.nk-wf-btn:disabled { background: #FFFFFF; border-color: var(--line); color: #C3C7CD; cursor: default; }
 
-.nk-wf-compare { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 32px; padding-top: 10px; border-top: 1px solid var(--line); }
+/* The timeline. One segment per stage, as wide as the stage is long. The
+   track carries who acts (its colour) and whether the stage exists yet
+   (hatched means designed, not built). */
+.nk-wf-rail { display: flex; gap: 3px; }
+.nk-wf-seg { font: inherit; min-width: 0; padding: 16px 0 6px; border: 0; background: transparent; color: #7A8088; cursor: pointer; display: flex; flex-direction: column; gap: 8px; }
+.nk-wf-track { position: relative; display: block; height: 10px; overflow: hidden; transition: height .15s ease, margin .15s ease; }
+.nk-wf-fill { display: block; height: 100%; width: 0; }
+.nk-wf-hatch { position: relative; }
+.nk-wf-seg[data-status="designed"] .nk-wf-track::after, .nk-wf-hatch::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .7) 0, rgba(255, 255, 255, .7) 2px, transparent 2px, transparent 6px); }
+.nk-wf-seg:hover .nk-wf-track, .nk-wf-seg[aria-current="step"] .nk-wf-track { height: 18px; margin-top: -8px; }
+.nk-wf-num { font-family: var(--mono); font-size: 11px; line-height: 1; text-align: left; }
+.nk-wf-seg:hover, .nk-wf-seg[aria-current="step"] { color: var(--ink); }
+.nk-wf-seg[aria-current="step"] .nk-wf-num { font-weight: 700; }
 
-.nk-wf-body { display: flex; flex-wrap: wrap; align-items: stretch; }
-.nk-wf-rail { flex: 0 0 272px; min-width: 0; border-right: 1px solid var(--panel-line); }
-.nk-wf-main { flex: 1 1 440px; min-width: 0; }
-
-/* A stage in the rail. The left border is the only thing marking the active
-   one, so it is on the button itself rather than a child. */
-.nk-wf-row { font: inherit; text-align: left; width: 100%; display: flex; flex-direction: column; gap: 4px; padding: 10px 16px 10px 14px; border: 0; border-left: 2px solid transparent; background: transparent; color: var(--panel-text); cursor: pointer; transition: opacity .3s ease, background .3s ease, border-color .3s ease; }
-.nk-wf-row:hover { background: #1E2023 !important; opacity: 1 !important; }
-.nk-wf-rowbar { display: block; height: 100%; transition: width .12s linear, background .3s ease; }
+.nk-wf-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.nk-wf-text { padding: 36px 28px 32px; }
+.nk-wf-stage { padding: 36px 28px 32px; min-height: 500px; border-left: 1px solid var(--line); background: #FAFAFB; }
 
 /* One square per device. 755 of them, so the ratio is the picture. */
 .nk-wf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9px, 1fr)); gap: 2px; }
-.nk-wf-grid span { aspect-ratio: 1 / 1; background: #1A1B1E; transition: background .3s ease; }
+.nk-wf-grid span { aspect-ratio: 1 / 1; background: #ECEEF0; transition: background .3s ease; }
 
 .nk-wf-item { transition: opacity .3s ease; }
 
-.nk-wf-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-top: 18px; background: var(--panel-line); border-top: 1px solid var(--panel-line); }
-.nk-wf-stats > div { background: var(--panel); padding: 16px 20px; }
+.nk-wf-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.nk-wf-stats > div { background: #FFFFFF; padding: 18px 28px; }
 
-.nk-wf-log { font-family: var(--mono); font-size: 12px; line-height: 1.7; color: var(--panel-muted); height: 92px; overflow: hidden; }
+.nk-wf-log { font-family: var(--mono); font-size: 12px; line-height: 1.7; color: var(--muted); height: 82px; overflow: hidden; }
 .nk-wf-logline { animation: nk-rise .35s ease-out both; }
 
 @media (max-width: 860px) {
-  .nk-wf-compare { grid-template-columns: minmax(0, 1fr); gap: 22px; }
-  .nk-wf-rail { flex: 1 1 100%; border-right: 0; border-bottom: 1px solid var(--panel-line); }
+  .nk-wf-body { grid-template-columns: minmax(0, 1fr); }
+  .nk-wf-text { padding: 28px 28px 24px; }
+  .nk-wf-stage { padding: 28px; min-height: 460px; border-left: 0; border-top: 1px solid var(--line); }
   .nk-wf-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .nk-wf-rail { gap: 2px; }
+  .nk-wf-num { font-size: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .nk-wf-logline { animation: none; }
-  .nk-wf-btn, .nk-wf-row, .nk-wf-rowbar, .nk-wf-grid span, .nk-wf-item { transition: none; }
+  .nk-wf-play, .nk-wf-btn, .nk-wf-track, .nk-wf-grid span, .nk-wf-item { transition: none; }
 }
