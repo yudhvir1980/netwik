@@ -391,8 +391,10 @@
       var state = el('span', 'nk-wf-stepstate', '');
       row.appendChild(state);
       row.addEventListener('click', function () {
-        if (!run || run.phase !== 'done') return;
+        if (!run || (run.phase !== 'done' && i > run.idx)) return;
         run.view = i;
+        /* Looking back at a finished step stops the view following the run. */
+        run.follow = i === run.idx;
         paint();
       });
       host.appendChild(row);
@@ -412,7 +414,7 @@
       if (r.state.textContent !== words) r.state.textContent = words;
       r.state.style.color = st === 'waiting' ? '#8A5300' : (st === 'running' ? '#0A0A0B' : '#5B6068');
       r.row.setAttribute('data-state', st);
-      r.row.disabled = !(run && run.phase === 'done');
+      r.row.disabled = !(run && (run.phase === 'done' || i <= run.idx));
       r.row.setAttribute('aria-label', 'Step ' + r.n + ', ' + r.name + (words ? '. ' + words : ''));
       r.mark.style.background = st === 'todo' ? r.tone.mid : r.tone.solid;
       r.mark.className = 'nk-wf-mark' + (st === 'running' || st === 'waiting' ? ' nk-live' : '');
@@ -562,7 +564,7 @@
       return;
     }
     run.idx += 1;
-    run.view = run.idx;
+    if (run.follow) run.view = run.idx;
     run.p = 0;
     run.hold = 0;
   }
@@ -585,7 +587,7 @@
     if (busy()) return;
     run = {
       scenario: D.build(pick.vendor, pick.flaw),
-      idx: 0, view: 0, p: 0, hold: 0,
+      idx: 0, view: 0, follow: true, p: 0, hold: 0,
       phase: 'running',
       decisions: {}
     };
