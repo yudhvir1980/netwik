@@ -15,9 +15,11 @@
   var match = document.getElementById('match');
   var fixButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-fixbtn'));
   var writeHint = document.getElementById('writehint');
+  var schemaHint = document.getElementById('schemahint');
+  var schemaButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-schemabtn'));
   var out = document.getElementById('out');
 
-  var state = { user: null, liveCalls: false, snow: false, snowHost: null, snowWrite: false };
+  var state = { user: null, liveCalls: false, snow: false, snowHost: null, snowWrite: false, snowSchema: false };
 
   function enable(button, on) {
     if (!button) return;
@@ -52,6 +54,15 @@
         ? 'Writing is switched off. Set SERVICENOW_WRITE_ENABLED to true in Vercel and redeploy.'
         : '';
     });
+    schemaButtons.forEach(function (b) {
+      var isApply = b.getAttribute('data-mode') === 'apply';
+      enable(b, Boolean(state.user) && state.snow && (!isApply || state.snowSchema));
+    });
+    if (schemaHint) {
+      schemaHint.textContent = state.user && state.snow && !state.snowSchema
+        ? 'Create is unavailable: schema changes are switched off. Set SERVICENOW_SCHEMA_ENABLED to true in Vercel and redeploy, then switch it back off once the tables exist.'
+        : '';
+    }
     if (writeHint) {
       writeHint.textContent = state.user && state.snow && !state.snowWrite
         ? 'Apply is unavailable: writing is switched off. Set SERVICENOW_WRITE_ENABLED to true in Vercel and redeploy, because functions read environment variables at deploy time.'
@@ -81,6 +92,7 @@
       state.snow = Boolean(data.serviceNowConfigured);
       state.snowHost = data.serviceNowHost || null;
       state.snowWrite = Boolean(data.serviceNowWriteEnabled);
+      state.snowSchema = Boolean(data.serviceNowSchemaEnabled);
       render();
     }).catch(function () {
       who.textContent = 'Could not reach the server.';
@@ -219,6 +231,66 @@
   fixButtons.forEach(function (button) {
     button.addEventListener('click', function () {
       runFix(button, button.getAttribute('data-fix'), button.getAttribute('data-mode'));
+    });
+  });
+
+  /* Creating roughly eighty objects needs several rounds: tables first, then
+     columns, because a reference column needs its target table to exist. */
+  schemaButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var mode = button.getAttribute('data-mode');
+      schemaButtons.forEach(function (b) { enable(b, false); });
+      var started = Date.now();
+      var rounds = 0;
+      var madeTables = 0;
+      var madeFields = 0;
+      var last = null;
+
+      function step() {
+        rounds++;
+        out.textContent = (mode === 'apply' ? 'Creating' : 'Previewing')
+          + ' the flow tables. Round ' + rounds + '.'
+          + (madeTables || madeFields
+              ? ' Tables ' + madeTables + ', columns ' + madeFields + ' so far.' : '');
+
+        return post('/api/snow-create-tables', { mode: mode, batch: 25 })
+          .then(function (result) {
+            last = result;
+            var data = result.data || {};
+            if (data.created) {
+              madeTables += (data.created.tables || []).length;
+              madeFields += (data.created.fields || []).length;
+            }
+            var progressed = data.created
+              && ((data.created.tables || []).length + (data.created.fields || []).length) > 0;
+            if (result.status === 200 && mode === 'apply' && data.done === false
+                && rounds < 25 && progressed) {
+              return step();
+            }
+            return null;
+          });
+      }
+
+      step().then(function () {
+        var seconds = ((Date.now() - started) / 1000).toFixed(1);
+        var status = last ? last.status : 0;
+        var summary;
+        if (status !== 200) {
+          summary = 'NOT CREATED. The server answered ' + status + ' after ' + seconds + 's.\n\n'
+            + ((last && last.data && last.data.error) || 'The server refused the request.') + '\n\n';
+        } else if (mode === 'apply') {
+          summary = 'Created ' + madeTables + ' tables and ' + madeFields
+            + ' columns in ' + rounds + ' round(s) over ' + seconds + 's.\n\n';
+        } else {
+          summary = 'Preview in ' + seconds + 's. Nothing was created.\n\n';
+        }
+        out.textContent = summary + JSON.stringify(last && last.data, null, 2);
+        render();
+      }).catch(function (error) {
+        out.textContent = 'The request failed after '
+          + ((Date.now() - started) / 1000).toFixed(1) + 's.\n\n' + String(error);
+        render();
+      });
     });
   });
 
