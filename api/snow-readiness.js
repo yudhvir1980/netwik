@@ -35,10 +35,7 @@ const VERSION_FIELDS = [
   'u_firmware_version', 'u_version', 'u_ios_version', 'u_pan_os_version'
 ];
 
-const MODEL_LIFECYCLE_FIELDS = [
-  'end_of_support', 'end_of_sale', 'end_of_life', 'end_of_extended_support',
-  'u_end_of_support', 'u_end_of_sale'
-];
+const TODAY = new Date().toISOString().slice(0, 10);
 
 function populatedFields(record) {
   const out = [];
@@ -111,10 +108,6 @@ export default async function handler(req, res) {
       report.modelRef = sample[0].model_id ? 'set' : 'empty';
 
       /* The number that decides whether stage 2 is possible at all. */
-      report.modelIds = sample
-        .map(function (r) { return r.model_id; })
-        .filter(function (v) { return v && String(v).trim() !== ''; });
-
       const usable = Object.keys(report.versionCandidates);
       if (usable.length) {
         const field = usable[0];
@@ -137,40 +130,86 @@ export default async function handler(req, res) {
       return report;
     });
 
-    /* End-of-support dates drive the one population nobody can patch. Look at
-       the models the estate actually references, not whatever sits first in a
-       table full of demo workstations. */
-    const referenced = [];
-    devices.forEach(function (d) {
-      (d.modelIds || []).forEach(function (id) {
-        if (referenced.indexOf(id) === -1) referenced.push(id);
-      });
-      delete d.modelIds;
-    });
+    /* ---- verification of the three data repairs ------------------------ */
 
-    const estateModels = await mapLimited(referenced.slice(0, 8), 3, async function (id) {
+    const scope = customer ? 'company=' + customer.sys_id : null;
+
+    /* 1. Exposure. A healthy estate has most devices NOT internet-facing. */
+    const exposure = scope ? await mapLimited(
+      ['cmdb_ci_ip_router', 'cmdb_ci_ip_firewall', 'cmdb_ci_ip_switch', 'cmdb_ci_wap_network'],
+      3,
+      async function (table) {
+        const yes = await countRecords(table, { query: scope + '^internet_facing=true' });
+        const no = await countRecords(table, { query: scope + '^internet_facing=false' });
+        return { table: table, internetFacing: yes, notInternetFacing: no };
+      }
+    ) : [];
+
+    /* 2. Lifecycle, across every model the estate uses rather than a sample. */
+    const modelIdSet = {};
+    if (scope) {
+      await mapLimited(DEVICE_CLASSES, 3, async function (table) {
+        const rows = await getRecords(table, {
+          query: scope + '^model_idISNOTEMPTY', fields: ['model_id'], limit: 2000
+        });
+        rows.forEach(function (r) { if (r.model_id) modelIdSet[r.model_id] = true; });
+        return null;
+      });
+    }
+    const modelIds = Object.keys(modelIdSet);
+
+    const estateModels = [];
+    for (let i = 0; i < modelIds.length; i += 40) {
+      const chunk = modelIds.slice(i, i + 40);
       const rows = await getRecords('cmdb_hardware_product_model', {
-        query: 'sys_id=' + id, limit: 1
+        query: 'sys_idIN' + chunk.join(','),
+        fields: ['sys_id', 'name', 'display_name', 'u_end_of_support', 'u_end_of_sale'],
+        limit: chunk.length
       });
-      if (!rows.length) return { sys_id: id, found: false };
-      const m = rows[0];
-      return {
-        name: m.name || m.display_name || '(unnamed)',
-        manufacturer: m.manufacturer || null,
-        lifecycleFields: pick(m, MODEL_LIFECYCLE_FIELDS),
-        lifecycleFieldsPresent: MODEL_LIFECYCLE_FIELDS.filter(function (f) {
-          return m[f] !== undefined;
-        })
-      };
-    });
+      rows.forEach(function (m) {
+        const support = String(m.u_end_of_support || '').trim();
+        estateModels.push({
+          sys_id: m.sys_id,
+          name: m.name || m.display_name || '(unnamed)',
+          endOfSupport: support || null,
+          endOfSale: String(m.u_end_of_sale || '').trim() || null,
+          pastEndOfSupport: Boolean(support) && support.slice(0, 10) < TODAY
+        });
+      });
+    }
 
-    const withLifecycle = estateModels.filter(function (m) {
-      return m.lifecycleFields && Object.keys(m.lifecycleFields).length;
-    }).length;
+    const pastSupport = estateModels.filter(function (m) { return m.pastEndOfSupport; });
+
+    /* 3. The number the exception path exists for: devices on a model whose
+          support has already ended, and which therefore can never be patched. */
+    let unpatchableDevices = 0;
+    const unpatchableByModel = [];
+    for (let i = 0; i < pastSupport.length && i < 6; i++) {
+      let total = 0;
+      await mapLimited(DEVICE_CLASSES, 3, async function (table) {
+        total += (await countRecords(table, {
+          query: scope + '^model_id=' + pastSupport[i].sys_id
+        })) || 0;
+        return null;
+      });
+      unpatchableDevices += total;
+      unpatchableByModel.push({ model: pastSupport[i].name, devices: total });
+    }
+
+    /* 4. Controllers. */
+    const controllers = scope ? {
+      found: await countRecords('cmdb_ci_netgear', { query: scope + '^nameLIKEWLC' }),
+      withVersion: await countRecords('cmdb_ci_netgear', {
+        query: scope + '^nameLIKEWLC^firmware_versionISNOTEMPTY'
+      })
+    } : null;
 
     const modelReport = {
-      referencedByEstate: estateModels.length,
-      withEndOfSupportDate: withLifecycle,
+      modelsUsedByEstate: estateModels.length,
+      withEndOfSupportDate: estateModels.filter(function (m) { return m.endOfSupport; }).length,
+      pastEndOfSupport: pastSupport.length,
+      unpatchableDevices: unpatchableDevices,
+      unpatchableByModel: unpatchableByModel,
       models: estateModels
     };
 
@@ -189,10 +228,22 @@ export default async function handler(req, res) {
         }
       }
     });
-    if (modelReport.referencedByEstate && !modelReport.withEndOfSupportDate) {
-      verdict.push('cmdb_hardware_product_model: none of the models the estate '
-        + 'references carries an end-of-support date, so the devices that can '
-        + 'never be patched cannot be identified.');
+    if (modelReport.modelsUsedByEstate && !modelReport.withEndOfSupportDate) {
+      verdict.push('No model the estate uses carries an end-of-support date, so '
+        + 'the devices that can never be patched cannot be identified.');
+    } else if (!modelReport.unpatchableDevices) {
+      verdict.push('Lifecycle dates are set, but no device sits on a model whose '
+        + 'support has already ended. The exception path and the CTO sign-off '
+        + 'therefore have no population to act on.');
+    }
+    if (controllers && controllers.found && controllers.withVersion < controllers.found) {
+      verdict.push('Wireless controllers: ' + controllers.withVersion + ' of '
+        + controllers.found + ' carry a version.');
+    }
+    const allExposed = exposure.filter(function (e) { return e.notInternetFacing === 0 && e.internetFacing > 0; });
+    if (allExposed.length) {
+      verdict.push('Every device in ' + allExposed.map(function (e) { return e.table; }).join(', ')
+        + ' still claims to be internet-facing.');
     }
 
     sendJson(res, 200, {
@@ -202,6 +253,8 @@ export default async function handler(req, res) {
       elapsedMs: Date.now() - started,
       customer: customer ? { name: customer.name, sys_id: customer.sys_id } : null,
       devices: devices,
+      exposure: exposure,
+      controllers: controllers,
       hardwareModels: modelReport,
       blockers: verdict
     });
