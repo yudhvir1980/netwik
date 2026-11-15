@@ -19,6 +19,11 @@ import {
   ServiceNowError, ConfigError
 } from '../lib/servicenow.js';
 
+/* cmdb_ci_netgear is the parent of the other four, so a query against it
+   returns every network device. Counts from it overlap the leaf classes and
+   must never be added to them. */
+const PARENT_CLASS = 'cmdb_ci_netgear';
+
 const DEVICE_CLASSES = [
   'cmdb_ci_ip_router',
   'cmdb_ci_ip_firewall',
@@ -85,6 +90,11 @@ export default async function handler(req, res) {
       const report = { table: table };
 
       report.total = await countRecords(table);
+      if (table === PARENT_CLASS) {
+        report.note = 'Parent class. These counts include every router, '
+          + 'switch, firewall and access point, so they overlap the other rows '
+          + 'rather than adding to them.';
+      }
 
       if (customer) {
         try {
@@ -187,17 +197,18 @@ export default async function handler(req, res) {
     const pastSupport = estateModels.filter(function (m) { return m.pastEndOfSupport; });
 
     /* 3. The number the exception path exists for: devices on a model whose
-          support has already ended, and which therefore can never be patched. */
+          support has already ended, and which therefore can never be patched.
+
+          Counted once, against cmdb_ci_netgear alone. That table is the PARENT
+          class of the routers, switches, firewalls and access points, so a
+          query against it returns all of them. Summing it alongside the leaf
+          classes, as this did before, counts the same device twice. */
     let unpatchableDevices = 0;
     const unpatchableByModel = [];
-    for (let i = 0; i < pastSupport.length && i < 6; i++) {
-      let total = 0;
-      await mapLimited(DEVICE_CLASSES, 3, async function (table) {
-        total += (await countRecords(table, {
-          query: scope + '^model_id=' + pastSupport[i].sys_id
-        })) || 0;
-        return null;
-      });
+    for (let i = 0; i < pastSupport.length && i < 8; i++) {
+      const total = (await countRecords(PARENT_CLASS, {
+        query: scope + '^model_id=' + pastSupport[i].sys_id
+      })) || 0;
       unpatchableDevices += total;
       unpatchableByModel.push({ model: pastSupport[i].name, devices: total });
     }
