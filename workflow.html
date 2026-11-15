@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A zero-day, start to finish: Netwik</title>
+<meta name="description" content="A stage by stage replay of agents handling a zero-day network advisory: 755 devices assessed, twelve affected, nine remediated, one exception signed. Every point where a person is still required is marked.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<a class="nk-skip" href="#main">Skip to content</a>
+<div style="display: flex; justify-content: center; min-height: 100vh; background: #FFFFFF; color: #0A0A0B; font-family: 'Inter Tight', Inter, system-ui, sans-serif; font-size: 17px; line-height: 1.5">
+
+<div class="nk-margin nk-margin-left" aria-hidden="true"><div class="nk-margin-inner"></div></div>
+
+<div style="flex: 0 1 1140px; min-width: 0; border-left: 1px solid #E2E4E7; border-right: 1px solid #E2E4E7">
+
+<header style="position: sticky; top: 0; z-index: 5; background: #FFFFFF; border-bottom: 1px solid #E2E4E7">
+<div style="padding: 12px 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 20px">
+<a href="index.html" class="nk-logo" aria-label="Netwik home" style="font-size: 22px; min-height: 44px; color: #0B0F0E"><span>netwik</span><span class="nk-logo-prompt">&gt;</span><span class="nk-logo-cursor" aria-hidden="true"></span></a>
+<nav aria-label="Main" style="display: flex; align-items: center; gap: 4px 18px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap">
+<a href="index.html#use-cases" style="text-decoration: none; padding: 13px 0; color: #3D4147">Use cases</a>
+<a href="workflow.html" aria-current="page" style="text-decoration: underline; text-underline-offset: 6px; padding: 13px 0; color: #0A0A0B"><span class="nk-long">A zero-day, start to finish</span><span class="nk-short">Zero-day</span></a>
+<a href="built-on.html" style="text-decoration: none; padding: 13px 0; color: #3D4147"><span class="nk-long">What agents are built on</span><span class="nk-short">Built on</span></a>
+</nav>
+</div>
+</header>
+
+<main id="main">
+
+<section style="padding: 64px 28px 44px; border-bottom: 1px solid #E2E4E7; display: flex; flex-direction: column; gap: 26px">
+<div class="nk-rise" style="display: flex; align-items: center; gap: 10px; border: 1px solid #E2E4E7; padding: 7px 12px; font-size: 14px; color: #3D4147; align-self: flex-start">
+<span class="nk-live" style="width: 7px; height: 7px; background: #E5484D"></span>
+<span>Zero-day vulnerability management</span>
+</div>
+
+<h1 class="nk-rise" style="margin: 0; font-weight: 500; font-size: clamp(40px, 5.6vw, 76px); line-height: 1.03; letter-spacing: -0.045em; max-width: 900px; animation-delay: .08s">A vendor publishes at 09:00. Which of your 755 devices are affected, and who has to decide what?</h1>
+
+<p class="nk-rise" style="margin: 0; font-size: 20px; line-height: 1.45; color: #5B6068; max-width: 620px; animation-delay: .16s">That question normally takes a fortnight of spreadsheets, calls and chasing. Below is the whole thing as fourteen stages, replayed in two minutes, with every point where a person is still required marked in amber.</p>
+
+<div class="nk-rise nk-wf-compare" style="animation-delay: .22s">
+<div>
+<div style="font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #5B6068">Doing it by hand</div>
+<div style="display: flex; align-items: baseline; gap: 8px; margin-top: 10px"><span id="wf-manual" style="font-size: clamp(40px, 5vw, 60px); line-height: 1; letter-spacing: -.045em">0</span><span style="font-size: 18px; color: #5B6068">of <span id="wf-manual-total">102</span> hours</span></div>
+<p style="margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: #5B6068">Exporting the estate, reading versions, writing nine change records from scratch, then reconstructing the audit trail afterwards.</p>
+</div>
+<div>
+<div style="font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #5B6068">With the agents</div>
+<div style="display: flex; align-items: baseline; gap: 8px; margin-top: 10px"><span id="wf-assisted" style="font-size: clamp(40px, 5vw, 60px); line-height: 1; letter-spacing: -.045em; color: #0B7A58">0</span><span style="font-size: 18px; color: #5B6068">of <span id="wf-assisted-total">13</span> hours</span></div>
+<p style="margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: #5B6068">The hours that remain are the judgements and the physical work. Nothing here removes the engineer who touches the device at 02:00.</p>
+</div>
+<div>
+<div style="font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #5B6068">Human effort removed</div>
+<div style="display: flex; align-items: baseline; gap: 8px; margin-top: 10px"><span id="wf-saved" style="font-size: clamp(40px, 5vw, 60px); line-height: 1; letter-spacing: -.045em">0%</span></div>
+<p style="margin: 10px 0 0; font-size: 14px; line-height: 1.45; color: #5B6068">The hours on both sides are my estimate of the effort, not a measurement. The device numbers are real, from a live instance.</p>
+</div>
+</div>
+</section>
+
+<section style="padding: 0; border-bottom: 1px solid #E2E4E7">
+
+<div style="background: #131416; color: #F2F3F5">
+
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding: 14px 22px; border-bottom: 1px solid #2A2C30">
+<span style="display: flex; align-items: center; gap: 9px; font-size: 13px; color: #8B9097"><span class="nk-live" style="width: 7px; height: 7px; background: #2EE6A6"></span>Replaying NETWIK-DEMO-0001</span>
+<span style="font-family: var(--mono); font-size: 13px; color: #8B9097"><span id="wf-clock">0:00</span> / <span id="wf-total">2:02</span></span>
+<span style="flex: 1 1 120px; min-width: 60px; height: 2px; background: #26282C"><span id="wf-bar" style="display: block; height: 100%; width: 0; background: #2EE6A6"></span></span>
+<span style="display: flex; gap: 8px">
+<button type="button" id="wf-play" class="nk-wf-btn" aria-pressed="true">Pause</button>
+<button type="button" id="wf-restart" class="nk-wf-btn">Restart</button>
+</span>
+<span style="font-size: 12px; color: #6B7076">Illustrative replay</span>
+</div>
+
+<div class="nk-wf-body">
+
+<div class="nk-wf-rail">
+<div style="padding: 16px 0 10px 18px; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: #6B7076">The fourteen stages</div>
+<div id="wf-rail"></div>
+<p style="margin: 14px 18px 20px; font-size: 12px; line-height: 1.5; color: #6B7076">Pick any stage to jump to it. Stage 7 is absent because it was withdrawn from the design and renumbering the rest would break every reference to them.</p>
+</div>
+
+<div class="nk-wf-main">
+
+<div style="padding: 22px 24px 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px">
+<span id="wf-stage-num" style="font-family: var(--mono); font-size: 12px; color: #2EE6A6">Stage 0</span>
+<span id="wf-stage-autonomy" style="font-size: 11px; letter-spacing: .06em; text-transform: uppercase; border: 1px solid #12B886; color: #2EE6A6; padding: 3px 8px">Agent alone</span>
+<span id="wf-stage-agent" style="font-size: 12px; color: #6B7076">Advisory Intake agent</span>
+<span id="wf-stage-status" style="margin-left: auto; font-size: 12px; color: #2EE6A6">Built and running today</span>
+</div>
+
+<div style="height: 2px; margin: 14px 24px 0; background: #26282C"><span id="wf-stage-bar" style="display: block; height: 100%; width: 0; background: #2EE6A6"></span></div>
+
+<div style="padding: 18px 24px 0">
+<h2 id="wf-stage-name" style="margin: 0; font-weight: 500; font-size: clamp(24px, 2.8vw, 34px); line-height: 1.12; letter-spacing: -.035em">Intake and de-duplication</h2>
+<p id="wf-stage-head" style="margin: 10px 0 0; font-size: 18px; line-height: 1.4; color: #F2F3F5">An advisory arrives and is checked against what is already known.</p>
+<p id="wf-stage-body" style="margin: 10px 0 0; font-size: 15px; line-height: 1.55; color: #8B9097; max-width: 620px">The vendor publishes. The agent records it and links supersessions rather than opening a second investigation into one problem.</p>
+</div>
+
+<div id="wf-scene" style="padding: 24px 24px 8px"></div>
+
+<div class="nk-wf-stats">
+<div><div id="wf-stat-assessed" style="font-size: 26px; line-height: 1; letter-spacing: -.03em">0</div><div style="font-size: 12px; color: #6B7076; margin-top: 6px">Devices assessed</div></div>
+<div><div id="wf-stat-vulnerable" style="font-size: 26px; line-height: 1; letter-spacing: -.03em; color: #FF6B6E">0</div><div style="font-size: 12px; color: #6B7076; margin-top: 6px">Confirmed vulnerable</div></div>
+<div><div id="wf-stat-fixed" style="font-size: 26px; line-height: 1; letter-spacing: -.03em; color: #2EE6A6">0</div><div style="font-size: 12px; color: #6B7076; margin-top: 6px">Remediated and verified</div></div>
+<div><div id="wf-stat-decisions" style="font-size: 26px; line-height: 1; letter-spacing: -.03em; color: #F5A524">0</div><div style="font-size: 12px; color: #6B7076; margin-top: 6px">Human decisions captured</div></div>
+</div>
+
+<div style="border-top: 1px solid #2A2C30; padding: 14px 24px 20px">
+<div style="font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: #6B7076; margin-bottom: 8px">Run record</div>
+<div id="wf-log" class="nk-wf-log"></div>
+</div>
+
+</div>
+</div>
+</div>
+</section>
+
+<section style="padding: 72px 28px; border-bottom: 1px solid #E2E4E7; display: flex; flex-wrap: wrap; gap: 44px">
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(30px, 3.4vw, 44px); line-height: 1.06; letter-spacing: -.04em">What is actually built, and what is a design</h2>
+<p style="margin: 0; color: #5B6068">Three of these stages run against a live ServiceNow instance today: intake, estate matching, and the qualification tasks that stop the flow and ask a person a question. They are marked <span style="color: #0B7A58">built and running today</span> in the replay.</p>
+<p style="margin: 0; color: #5B6068">The rest are designed, written up and sequenced, but not built. I would rather show you the join than hide it, because the interesting part of this work is not the demo. It is which stages turned out to need a model at all.</p>
+<p style="margin: 0; color: #5B6068">Of the fourteen, one needs judgement from a model: reading a vendor's prose into comparable version ranges. The other thirteen are ordinary code. A version comparison that a model gets right 99 times in 100 is a version comparison that marks seven devices safe when they are not.</p>
+<a href="built-on.html" class="nk-btn" style="align-self: flex-start; background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px">What agents are built on &nbsp;→</a>
+</div>
+
+<div style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 14px">
+<div style="border: 1px solid #E2E4E7; padding: 20px 22px">
+<div style="font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #5B6068">The numbers in the replay</div>
+<p style="margin: 10px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">755 devices, 10 built by another vendor, 12 inside the affected range, 7 of those at sites under regulatory validation, 0 reachable from the internet. Those came from a real match against a real instance, not from my imagination.</p>
+</div>
+<div style="border: 1px solid #E2E4E7; padding: 20px 22px">
+<div style="font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #5B6068">Where the honest answer was duller</div>
+<p style="margin: 10px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">I expected a perimeter emergency. Once the exposure data was repaired, none of the twelve faced the internet. It turned into a change-window and regulatory problem instead, which is less dramatic and much more like the real job.</p>
+</div>
+<div style="border: 1px solid #E2E4E7; padding: 20px 22px">
+<div style="font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #5B6068">What the agents are never allowed to do</div>
+<p style="margin: 10px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">Call a device qualified without a person confirming it. Send anything outside the organisation unapproved. Accept a risk. Submit a change that collides with another. Those are not settings, they are the shape of the flow.</p>
+</div>
+</div>
+</section>
+
+<section id="contact" style="padding: 96px 28px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 22px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(36px, 4.6vw, 60px); line-height: 1.03; letter-spacing: -0.045em">Want this run against your estate?</h2>
+<p style="margin: 0; color: #5B6068; max-width: 560px">Netwik is a personal project. If there is a use case I should build, you have a suggestion, or you want help with agents on your own network, email me.</p>
+<a href="mailto:hi@netwik.co" class="nk-btn" style="background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px">Email hi@netwik.co</a>
+</section>
+
+</main>
+
+<footer style="padding: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px; font-size: 14px; color: #5B6068">
+<span class="nk-logo" style="font-size: 18px; color: #0B0F0E"><span>netwik</span><span class="nk-logo-prompt">&gt;</span><span class="nk-logo-cursor nk-logo-still" aria-hidden="true"></span></span>
+<span>A personal project showing AI agents for LAN, WAN, wireless and DDI operations</span>
+<a href="mailto:hi@netwik.co" style="padding: 12px 0">hi@netwik.co</a>
+</footer>
+
+</div>
+
+<div class="nk-margin nk-margin-right" aria-hidden="true"><div class="nk-margin-inner"></div></div>
+
+</div>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/workflow-data.js"></script>
+<script src="assets/js/workflow.js"></script>
+</body>
+</html>

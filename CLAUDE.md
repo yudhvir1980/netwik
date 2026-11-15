@@ -27,6 +27,7 @@ There is nothing to run, so a change is checked by loading it. Since the walkthr
 - `index.html`, and a filtered address such as `?process=Change&domain=WAN`
 - a walkthrough, `use-case.html?id=wan-outage-triage`, and an unknown id such as `use-case.html?id=nope`, which must fall back to the "not written up yet" section
 - `built-on.html`, clicking through both sets of tabs
+- `workflow.html`, letting it play to the end, then clicking stages in the rail out of order
 - any page at phone width, and again with "reduce motion" turned on
 
 ## Voice and content rules
@@ -40,18 +41,24 @@ There is nothing to run, so a change is checked by loading it. Since the walkthr
 
 **Use cases are data.** `assets/js/data.js` exposes `window.NetwikData = { PROCS, DOMS, ALL }`. An entry in `ALL` with an `id` and a `detail` object has a walkthrough at `use-case.html?id=<id>`; one without shows on the home page as "Coming soon". Adding a walkthrough means adding a `detail` object and nothing else. Of the 17 use cases, three are written up: `wan-outage-triage`, `change-evaluator` and `playbooks`. Copy the shape of one of those; the README lists the fields. `detail.steps` must have exactly five rows, because the run panel treats the fifth as the approval step.
 
-**Three pages, three scripts.** Scripts are plain `<script>` tags at the end of the body, and the order matters: `site.js` first, then `data.js`, then the page script.
+**Four pages, four scripts.** Scripts are plain `<script>` tags at the end of the body, and the order matters: `site.js` first, then the page's data file, then the page script.
 - `index.html` + `use-cases.js`: the catalogue (coverage map, filter chips, cards, count), all generated from the data. Filters sync to `?process=` and `?domain=` through `history.replaceState`. Each process has its own animated square pattern on its cards, from the `vizColor` function.
 - The home page hero shows the incident flow (signal, plan, eight agents in parallel, approve, resolved). It is inline SVG in `index.html`, animated only by CSS keyframes (`.nk-flow-*` in `site.css`) on one 9 s loop, so every keyframe percentage is a share of 9 s and the packets' `animation-delay`s are set to match. It uses no JS. Its step labels are placed at percentages of the SVG height, so moving a shape means moving its label too.
 - `use-case.html` + `use-case.js`: builds the whole walkthrough into `#uc` with `innerHTML` from the data entry, in a fixed order (01 Context, 02 Foundation, 03 Autonomy), each section linking to its anchor in `built-on.html`. The page is an empty shell without JavaScript.
 - `built-on.html` + `built-on.js`: the three-layer diagram, the context steps and the "at work" steps. This is the one page script that does not read `data.js`; the tab copy is in `tabData` and `ctxData` in the script, not in the HTML. Tabs change only on click; do not bring back auto-advancing tabs or scrambled body text.
+- `workflow.html` + `workflow-data.js` + `workflow.js`: the customer-facing replay of the zero-day vulnerability flow, fourteen stages in about two minutes. This is the page to show someone who has not seen the work before; `console.html` is the operator tool behind it and is not for that audience.
+  - One playhead, in seconds of replay time, advanced by `Netwik.run` and nothing else, so the page still keeps to one tick loop. Everything drawn is a pure function of that playhead: seeking to a stage and playing into it give the same picture, and no scene holds state between ticks.
+  - A scene is rebuilt only when the stage index changes, and then gets `update(p)` each tick with `p` running 0 to 1 across the stage. Adding a stage means adding an entry to `STAGES` in `workflow-data.js`; adding a *kind* of picture means a new `scene*` function and one line in `buildScene`. Most stages reuse `rowList`.
+  - Stage numbers are not indices. Stage 7 was withdrawn from the design, and stage 2 has a second screen numbered `2.5`, so never derive one from the other: `progressOf` looks a stage up by its number.
+  - Honesty is load bearing here, not decoration. Each stage carries `status`, shown as "built and running today" or "designed, not built yet", and only stages 0, 2 and 3 are the former. The device counts are real, from a match against the instance; the hours are labelled on the page as my estimate. Do not quietly promote a stage to built.
+  - Under reduced motion there is no loop at all, so the page paints the last stage finished and the play control is removed rather than left dead; a rail click then lands on that stage already complete.
 - `use-cases.html` and `incident-agent.html` are redirect stubs for the old addresses, each doing it three ways: a canonical link, a meta refresh and a `location.replace`.
 
 **Generated markup is coupled to element IDs.** Both `use-cases.js` and `built-on.js` reach for IDs in the HTML (`#matrix`, `#proc-chips`, `#dom-chips`, `#cases`, `#count`, `#empty`, `#reset`; and `#how-*`, `#ctx-*`, `#build-layers`) mostly without null checks, so renaming one of those IDs breaks the page's rendering or animation rather than degrading it.
 
 **Follow each file's escaping convention.** `use-case.js` concatenates `innerHTML`, so every value out of the data goes through its `esc()` helper. `use-cases.js` never uses `innerHTML`: it builds nodes with its `el(tag, cls, text)` helper, which sets `textContent`. New generated markup should stay with whichever approach its file already uses.
 
-**Pages are self-contained, with no templating.** The `<head>`, the sticky header and nav, the contact section, the footer and the two `.nk-margin` side columns are copied into `index.html`, `use-case.html` and `built-on.html`. A site-wide change has to be made in all three. The copies differ slightly: `aria-current` marks the current page, and the home page links to `#use-cases` where the others link to `index.html#use-cases`.
+**Pages are self-contained, with no templating.** The `<head>`, the sticky header and nav, the contact section, the footer and the two `.nk-margin` side columns are copied into `index.html`, `use-case.html`, `built-on.html` and `workflow.html`. A site-wide change has to be made in all four. The copies differ slightly: `aria-current` marks the current page, and the home page links to `#use-cases` where the others link to `index.html#use-cases`.
 
 **Most styling is inline.** Layout, spacing, type and colours are set in `style="..."` attributes in the HTML, and in style strings in JS for generated markup. `assets/css/site.css` holds the `:root` tokens and the `nk-` classes for things inline styles can't do: hover states (which use `!important` to beat inline styles), keyframe animations, `aria-pressed` states, responsive rules and the reduced-motion overrides. Hex colours are hardcoded across the HTML, the JS and the CSS rather than read from the CSS variables, so to change a colour, grep for the hex value in all three.
 

@@ -212,9 +212,13 @@ a:hover { color: #0B7A58; }
 
 /* On phones the long nav label is swapped for a short one */
 .nk-short { display: none; }
-@media (max-width: 600px) {
+/* Three nav items need the short labels sooner than the hero does. */
+@media (max-width: 860px) {
   .nk-long { display: none; }
   .nk-short { display: inline; }
+}
+
+@media (max-width: 600px) {
   /* Hero flow: a narrower diagram leaves room for the step labels */
   .nk-flow { padding: 26px 16px 32px !important; gap: 12px !important; }
   .nk-flow svg { width: 50% !important; }
@@ -231,4 +235,47 @@ a:hover { color: #0B7A58; }
   .nk-flow *, .nk-flow-msg { animation: none !important; }
   .nk-flow-ln { stroke-dashoffset: 0; }
   .nk-flow-m5 { opacity: 1; }
+}
+
+/* ---- workflow.html: the zero-day replay ------------------------------- */
+/* The replay has one playhead and rebuilds a scene per stage. Everything
+   here is either a hover state, a keyframe or a responsive rule, because
+   those are the things the inline styles in workflow.js cannot do. */
+
+.nk-wf-btn { font: inherit; font-size: 13px; min-height: 34px; padding: 0 14px; border: 1px solid var(--panel-line); background: transparent; color: var(--panel-text); cursor: pointer; transition: background .2s ease, border-color .2s ease; }
+.nk-wf-btn:hover { background: #26282C; border-color: #4A4D53; }
+
+.nk-wf-compare { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 32px; padding-top: 10px; border-top: 1px solid var(--line); }
+
+.nk-wf-body { display: flex; flex-wrap: wrap; align-items: stretch; }
+.nk-wf-rail { flex: 0 0 272px; min-width: 0; border-right: 1px solid var(--panel-line); }
+.nk-wf-main { flex: 1 1 440px; min-width: 0; }
+
+/* A stage in the rail. The left border is the only thing marking the active
+   one, so it is on the button itself rather than a child. */
+.nk-wf-row { font: inherit; text-align: left; width: 100%; display: flex; flex-direction: column; gap: 4px; padding: 10px 16px 10px 14px; border: 0; border-left: 2px solid transparent; background: transparent; color: var(--panel-text); cursor: pointer; transition: opacity .3s ease, background .3s ease, border-color .3s ease; }
+.nk-wf-row:hover { background: #1E2023 !important; opacity: 1 !important; }
+.nk-wf-rowbar { display: block; height: 100%; transition: width .12s linear, background .3s ease; }
+
+/* One square per device. 755 of them, so the ratio is the picture. */
+.nk-wf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9px, 1fr)); gap: 2px; }
+.nk-wf-grid span { aspect-ratio: 1 / 1; background: #1A1B1E; transition: background .3s ease; }
+
+.nk-wf-item { transition: opacity .3s ease; }
+
+.nk-wf-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; margin-top: 18px; background: var(--panel-line); border-top: 1px solid var(--panel-line); }
+.nk-wf-stats > div { background: var(--panel); padding: 16px 20px; }
+
+.nk-wf-log { font-family: var(--mono); font-size: 12px; line-height: 1.7; color: var(--panel-muted); height: 92px; overflow: hidden; }
+.nk-wf-logline { animation: nk-rise .35s ease-out both; }
+
+@media (max-width: 860px) {
+  .nk-wf-compare { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .nk-wf-rail { flex: 1 1 100%; border-right: 0; border-bottom: 1px solid var(--panel-line); }
+  .nk-wf-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nk-wf-logline { animation: none; }
+  .nk-wf-btn, .nk-wf-row, .nk-wf-rowbar, .nk-wf-grid span, .nk-wf-item { transition: none; }
 }
