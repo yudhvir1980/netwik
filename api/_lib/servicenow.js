@@ -97,27 +97,35 @@ export function isConfigured() {
   return configProblem() === null;
 }
 
-async function request(path, params, options) {
+/* The single transport. Exported so the write module can reuse the error
+   handling without duplicating it, and so every call to the instance goes
+   through one place. Reads in this file only ever pass GET. */
+export async function apiRequest(method, path, options) {
+  const opts = options || {};
   const cfg = config();
-  const timeout = (options && options.timeoutMs) || DEFAULT_TIMEOUT_MS;
+  const timeout = opts.timeoutMs || DEFAULT_TIMEOUT_MS;
 
   const url = new URL('https://' + cfg.host + path);
-  Object.keys(params || {}).forEach(function (key) {
-    const value = params[key];
+  Object.keys(opts.params || {}).forEach(function (key) {
+    const value = opts.params[key];
     if (value !== undefined && value !== null) url.searchParams.set(key, String(value));
   });
 
   const controller = new AbortController();
   const timer = setTimeout(function () { controller.abort(); }, timeout);
 
+  const headers = {
+    accept: 'application/json',
+    authorization: authHeader(cfg)
+  };
+  if (opts.body) headers['content-type'] = 'application/json';
+
   let response;
   try {
     response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-        authorization: authHeader(cfg)
-      },
+      method: method,
+      headers: headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
       signal: controller.signal
     });
   } catch (error) {
@@ -126,7 +134,7 @@ async function request(path, params, options) {
       throw new ServiceNowError(
         'The instance did not answer within ' + timeout + 'ms. A developer '
         + 'instance that has been idle may be hibernating.',
-        { table: path, cause: 'timeout' }
+        { path: path, cause: 'timeout' }
       );
     }
     throw new ServiceNowError('Could not reach the instance.', { cause: 'network' });
@@ -177,6 +185,13 @@ async function request(path, params, options) {
   }
 
   return body;
+}
+
+function request(path, params, options) {
+  return apiRequest('GET', path, {
+    params: params,
+    timeoutMs: options && options.timeoutMs
+  });
 }
 
 /* Rows from a table. `fields` keeps the payload small, which matters on a

@@ -13,6 +13,7 @@
   var inspect = document.getElementById('inspect');
   var readiness = document.getElementById('readiness');
   var match = document.getElementById('match');
+  var fixButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-fixbtn'));
   var out = document.getElementById('out');
 
   var state = { user: null, liveCalls: false, snow: false, snowHost: null };
@@ -41,6 +42,7 @@
     enable(inspect, Boolean(state.user) && state.snow);
     enable(readiness, Boolean(state.user) && state.snow);
     enable(match, Boolean(state.user) && state.snow);
+    fixButtons.forEach(function (b) { enable(b, Boolean(state.user) && state.snow); });
   }
 
   function readJson(response) {
@@ -139,6 +141,58 @@
   match.addEventListener('click', function () {
     runAction(match, '/api/match-advisory',
       'Matching the worked advisory against the estate. No model call, no spend.');
+  });
+
+  /* Apply runs in batches, because a capped function cannot patch hundreds of
+     records in one invocation. Keep calling until the server says it is done. */
+  function runFix(button, fix, mode) {
+    fixButtons.forEach(function (b) { enable(b, false); });
+    var started = Date.now();
+    var totals = { updated: 0, failed: 0, rounds: 0 };
+    var last = null;
+
+    function step() {
+      totals.rounds++;
+      out.textContent = (mode === 'apply' ? 'Applying' : 'Previewing') + ' "' + fix + '"…'
+        + (totals.rounds > 1 ? '\n\nBatch ' + totals.rounds
+            + '. Updated so far: ' + totals.updated + '.' : '');
+
+      return post('/api/snow-fix-data', { fix: fix, mode: mode, batch: 120 })
+        .then(function (result) {
+          last = result;
+          var data = result.data || {};
+          var applied = data.result && data.result.applied;
+          if (applied) {
+            totals.updated += applied.updated || 0;
+            totals.failed += applied.failed || 0;
+          }
+          if (result.status === 200 && mode === 'apply' && data.done === false
+              && totals.rounds < 40 && applied && applied.updated > 0) {
+            return step();
+          }
+          return null;
+        });
+    }
+
+    step().then(function () {
+      var seconds = ((Date.now() - started) / 1000).toFixed(1);
+      var summary = mode === 'apply'
+        ? 'Applied in ' + totals.rounds + ' batch(es) over ' + seconds + 's. '
+          + 'Updated ' + totals.updated + ', failed ' + totals.failed + '.\n\n'
+        : 'Preview in ' + seconds + 's. Nothing was written.\n\n';
+      out.textContent = summary + JSON.stringify(last && last.data, null, 2);
+      render();
+    }).catch(function (error) {
+      out.textContent = 'The request failed after '
+        + ((Date.now() - started) / 1000).toFixed(1) + 's.\n\n' + String(error);
+      render();
+    });
+  }
+
+  fixButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      runFix(button, button.getAttribute('data-fix'), button.getAttribute('data-mode'));
+    });
   });
 
   refresh();
