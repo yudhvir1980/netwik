@@ -162,6 +162,10 @@ Built and syntax-checked, with the session logic unit-tested for tampering, expi
 | `api/spike-latency.js` | The measurement. Authenticated, POST only, behind the kill switch |
 | `api/_lib/servicenow.js` | **Read-only** ServiceNow client. Basic authentication, credentials in the header and never in a URL, an eight second timeout, and explicit handling of a hibernating instance, rejected credentials, a missing role and a missing table. Nothing in it writes |
 | `api/snow-inspect.js` | Probes thirty tables and four custom fields, compares the counts against the blueprint and reports what is missing. Authenticated, costs nothing, writes nothing |
+| `api/snow-readiness.js` | Verifies the data foundation: which version field is in use, the internet-facing split per class, every model the estate uses, and how many devices sit on a model past end of support |
+| `api/match-advisory.js` + `lib/versions.js` | Stage 2. Deterministic version comparison for the IOS XE and PAN-OS formats the instance uses, then the funnel from the whole estate to the short list needing action |
+| `api/snow-fix-data.js` + `lib/servicenow-write.js` | The three data repairs, behind `SERVICENOW_WRITE_ENABLED`. Record updates only, confined to an allow-list of fields per table |
+| `api/snow-create-tables.js` + `lib/servicenow-schema.js` + `lib/vuln-schema.js` | Stage 0. Creates the seven flow tables and their 74 columns, behind the separate `SERVICENOW_SCHEMA_ENABLED`. Create-only, idempotent, and no code path anywhere issues a delete |
 | `console.html`, `assets/js/console.js` | The console page. Public to read, actions gated by the server |
 | `.env.example` | Every variable the server needs, with a note on each |
 | `package.json`, `.gitignore` | The Anthropic SDK at version 1.8, and keeping `node_modules` out of the repository |
