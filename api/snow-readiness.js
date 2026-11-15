@@ -111,13 +111,21 @@ export default async function handler(req, res) {
       report.modelRef = sample[0].model_id ? 'set' : 'empty';
 
       /* The number that decides whether stage 2 is possible at all. */
+      report.modelIds = sample
+        .map(function (r) { return r.model_id; })
+        .filter(function (v) { return v && String(v).trim() !== ''; });
+
       const usable = Object.keys(report.versionCandidates);
       if (usable.length) {
         const field = usable[0];
         report.versionFieldInUse = field;
+        /* Scoped to the customer. Counting against the table total compares
+           against a developer instance's demo records too, which produces a
+           false shortfall every time. */
+        const scope = customer ? 'company=' + customer.sys_id + '^' : '';
         try {
           report.withVersion = await countRecords(table, {
-            query: field + 'ISNOTEMPTY'
+            query: scope + field + 'ISNOTEMPTY'
           });
         } catch (error) {
           report.withVersion = null;
@@ -129,13 +137,41 @@ export default async function handler(req, res) {
       return report;
     });
 
-    /* End-of-support dates drive the one population nobody can patch. */
-    const models = await getRecords('cmdb_hardware_product_model', { limit: 3 });
+    /* End-of-support dates drive the one population nobody can patch. Look at
+       the models the estate actually references, not whatever sits first in a
+       table full of demo workstations. */
+    const referenced = [];
+    devices.forEach(function (d) {
+      (d.modelIds || []).forEach(function (id) {
+        if (referenced.indexOf(id) === -1) referenced.push(id);
+      });
+      delete d.modelIds;
+    });
+
+    const estateModels = await mapLimited(referenced.slice(0, 8), 3, async function (id) {
+      const rows = await getRecords('cmdb_hardware_product_model', {
+        query: 'sys_id=' + id, limit: 1
+      });
+      if (!rows.length) return { sys_id: id, found: false };
+      const m = rows[0];
+      return {
+        name: m.name || m.display_name || '(unnamed)',
+        manufacturer: m.manufacturer || null,
+        lifecycleFields: pick(m, MODEL_LIFECYCLE_FIELDS),
+        lifecycleFieldsPresent: MODEL_LIFECYCLE_FIELDS.filter(function (f) {
+          return m[f] !== undefined;
+        })
+      };
+    });
+
+    const withLifecycle = estateModels.filter(function (m) {
+      return m.lifecycleFields && Object.keys(m.lifecycleFields).length;
+    }).length;
+
     const modelReport = {
-      sampled: models.length,
-      populatedFields: models.length ? populatedFields(models[0]) : [],
-      lifecycleFields: models.length ? pick(models[0], MODEL_LIFECYCLE_FIELDS) : {},
-      exampleNames: models.map(function (m) { return m.name || m.display_name || '(unnamed)'; })
+      referencedByEstate: estateModels.length,
+      withEndOfSupportDate: withLifecycle,
+      models: estateModels
     };
 
     const verdict = [];
@@ -143,14 +179,20 @@ export default async function handler(req, res) {
       if (!d.versionFieldInUse) {
         verdict.push(d.table + ': no software version field is populated, so '
           + 'advisory matching cannot run against it.');
-      } else if (d.withVersion !== null && d.total && d.withVersion < d.total) {
-        verdict.push(d.table + ': ' + d.withVersion + ' of ' + d.total
-          + ' records carry ' + d.versionFieldInUse + '.');
+      } else {
+        /* Compare like with like: both sides scoped to the customer, because
+           the table total includes the instance's own demo records. */
+        const scoped = d.ownedByCustomer;
+        if (d.withVersion !== null && scoped && d.withVersion < scoped) {
+          verdict.push(d.table + ': only ' + d.withVersion + ' of ' + scoped
+            + ' customer-owned records carry ' + d.versionFieldInUse + '.');
+        }
       }
     });
-    if (!Object.keys(modelReport.lifecycleFields).length) {
-      verdict.push('cmdb_hardware_product_model: no end-of-support date is '
-        + 'populated, so the devices that can never be patched cannot be identified.');
+    if (modelReport.referencedByEstate && !modelReport.withEndOfSupportDate) {
+      verdict.push('cmdb_hardware_product_model: none of the models the estate '
+        + 'references carries an end-of-support date, so the devices that can '
+        + 'never be patched cannot be identified.');
     }
 
     sendJson(res, 200, {

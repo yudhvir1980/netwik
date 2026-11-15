@@ -89,11 +89,30 @@ Revised volume: 6 rotas.
 
 Revised volume: 7 schedules.
 
-## 3.6 New field on device records
+## 3.6 Device fields: confirmed against the instance, 15 November
 
-| Field | Table | Values | Why |
-|---|---|---|---|
-| `u_exposure_zone` | Network and security device classes | internet-facing, perimeter, internal, management, operational-technology | With configuration state out of phase 1, exposure zone is the main input that narrows the affected population. Without it, risk scoring has almost nothing to work with |
+Read from the live instance rather than proposed. These are the fields the flow binds to.
+
+| Need | Field to use | State |
+|---|---|---|
+| Software version | **`firmware_version`** | Populated on every customer-owned router, switch, firewall and access point. Real formats: `17.9.5a` for IOS XE, `10.2.11-h1` for PAN-OS |
+| Software version, duplicate | `u_software_version` | Carries the same value. Use `firmware_version` as the single source and treat this as a mirror |
+| Exposure | **`internet_facing`** | Already present and populated. **This replaces the `u_exposure_zone` field proposed in the previous revision, which is withdrawn.** Binary rather than a zone, which is less expressive but real today |
+| Site | `u_site_code`, plus `location` to reach `u_site_tier` and `u_gxp` | Present. Site tier and the GxP flag are confirmed on `cmn_location` |
+| Role | `u_device_role` | Present |
+| Model | `model_id` | Set on every sampled device |
+| Ownership | `company` | **Scope every query to Veridian Life Sciences plc.** The instance also holds its own demo records, so an unscoped count is meaningless |
+| Routing | `support_group`, `managed_by_group` | Present, so a change can be assigned without inventing an owner |
+| Lifecycle | `install_status`, `operational_status` | Present, so retired kit can be excluded from the affected population |
+
+### Two gaps that block part of the flow
+
+| Gap | Effect | Fix |
+|---|---|---|
+| **No end-of-support date on the hardware models the estate references** | Stage 6 cannot identify the devices that can never be patched, which removes the exception path, the CTO sign-off and the demo's closing beat | Populate an end-of-support and end-of-sale date on the network models, at minimum on the ageing ones the blueprint planted |
+| **Wireless controllers carry no version.** They sit in `cmdb_ci_netgear`, which has no version field populated and is mixed with the instance's demo records | Controllers cannot be matched against an advisory, so a controller-affecting advisory would under-report | Populate `firmware_version` on the controller records, or move them to a class that has it |
+
+Neither blocks stages 0 to 4 against routers, switches, firewalls and access points, which is where the build starts.
 
 ## 5.1 New tables for the vulnerability flow
 
