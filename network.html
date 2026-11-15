@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The network the agents work on: Netwik</title>
+<meta name="description" content="The network behind the Netwik demos, counted from a live ServiceNow instance: 755 devices, how one site is put together, and how sites are connected.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<a class="nk-skip" href="#main">Skip to content</a>
+<div style="display: flex; justify-content: center; min-height: 100vh; background: #FFFFFF; color: #0A0A0B; font-family: 'Inter Tight', Inter, system-ui, sans-serif; font-size: 17px; line-height: 1.5">
+
+<div class="nk-margin nk-margin-left" aria-hidden="true"><div class="nk-margin-inner"></div></div>
+
+<div style="flex: 0 1 1140px; min-width: 0; border-left: 1px solid #E2E4E7; border-right: 1px solid #E2E4E7">
+
+<header style="position: sticky; top: 0; z-index: 5; background: #FFFFFF; border-bottom: 1px solid #E2E4E7">
+<div style="padding: 12px 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 20px">
+<a href="index.html" class="nk-logo" aria-label="Netwik home" style="font-size: 22px; min-height: 44px; color: #0B0F0E"><span>netwik</span><span class="nk-logo-prompt">&gt;</span><span class="nk-logo-cursor" aria-hidden="true"></span></a>
+<nav aria-label="Main" style="display: flex; align-items: center; gap: 4px 18px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap">
+<a href="index.html#use-cases" style="text-decoration: none; padding: 13px 0; color: #3D4147">Use cases</a>
+<a href="customer.html" aria-current="page" style="text-decoration: underline; text-underline-offset: 6px; padding: 13px 0; color: #0A0A0B"><span class="nk-long">The customer</span><span class="nk-short">Customer</span></a>
+<a href="workflow.html" style="text-decoration: none; padding: 13px 0; color: #3D4147"><span class="nk-long">A zero-day, start to finish</span><span class="nk-short">Zero-day</span></a>
+<a href="built-on.html" style="text-decoration: none; padding: 13px 0; color: #3D4147"><span class="nk-long">What agents are built on</span><span class="nk-short">Built on</span></a>
+</nav>
+</div>
+</header>
+
+<main id="main">
+
+<section style="padding: 40px 28px 56px; border-bottom: 1px solid #E2E4E7">
+<nav aria-label="The customer" class="nk-cu-switch"><a href="customer.html" class="nk-cu-tab">The company</a><a href="network.html" class="nk-cu-tab" aria-current="page">The network</a></nav>
+<div style="margin-top: 36px; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 40px 56px">
+<div style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+<p class="nk-rise" style="margin: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: #0B7A58">Counted from the instance</p>
+<h1 class="nk-rise" style="margin: 0; font-weight: 500; font-size: clamp(38px, 5vw, 62px); line-height: 1.02; letter-spacing: -.045em; animation-delay: .06s">The network the agents work on: 755 devices.</h1>
+<p class="nk-rise" style="margin: 0; font-size: 19px; line-height: 1.5; color: #5B6068; max-width: 540px; animation-delay: .12s">Veridian's network is made up, but it is really there: every device is a record in a ServiceNow instance that the agents read. The numbers on this page were counted from that instance on <span id="nw-checked"></span>, not taken from a design.</p>
+<p class="nk-rise" style="margin: 0; font-size: 17px; line-height: 1.5; color: #3D4147; max-width: 540px; animation-delay: .18s">The design covers all 31 sites. What is loaded today adds up to five of them: a data centre, the London head office, the Newcastle and Pune plants, and one sales office.</p>
+</div>
+<div id="nw-stats" class="nk-cu-stats nk-rise" style="flex: 1 1 380px; min-width: 0; animation-delay: .2s"></div>
+</div>
+</section>
+
+<section style="padding: 64px 28px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.08; letter-spacing: -.035em">Every device, one square each</h2>
+<p style="margin: 12px 0 0; color: #5B6068; max-width: 680px">Most of a network is Wi-Fi. The few devices that connect sites and guard the way in are the ones a fault hurts most. Choose a kind to pick it out.</p>
+<div id="nw-kind-chips" style="margin-top: 24px; display: flex; flex-wrap: wrap; gap: 8px"></div>
+<div id="nw-grid" class="nk-cu-grid" role="img" aria-label="755 squares, one for each device: 650 Wi-Fi access points, 86 switches, 10 firewalls and 9 WAN edge routers."></div>
+<div id="nw-kinds" class="nk-cu-kinds"></div>
+<p id="nw-controllers" style="margin: 16px 0 0; font-size: 14px; color: #5B6068; max-width: 680px"></p>
+</section>
+
+<section style="padding: 64px 28px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.08; letter-spacing: -.035em">How one site is put together</h2>
+<p style="margin: 12px 0 0; color: #5B6068; max-width: 680px">Every site of the same kind is built the same way. Choose a kind of site to see what one of them holds. Traffic comes in at the top and reaches people at the bottom.</p>
+<div id="nw-tier-chips" style="margin-top: 24px; display: flex; flex-wrap: wrap; gap: 8px"></div>
+<div id="nw-design" class="nk-cu-design"></div>
+<p style="margin: 16px 0 0; font-size: 14px; color: #5B6068; max-width: 680px">This is the standard design for one site. Equipment is, for example, Cisco for switches, Wi-Fi and WAN, and Palo Alto Networks for firewalls.</p>
+</section>
+
+<section style="padding: 64px 28px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.08; letter-spacing: -.035em">A few facts the agents rely on</h2>
+<p style="margin: 12px 0 0; color: #5B6068; max-width: 680px">Each of these came out of the same count. The agents use them to decide what matters first.</p>
+<div id="nw-facts" class="nk-cu-facts"></div>
+</section>
+
+<section style="padding: 64px 28px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.08; letter-spacing: -.035em">How sites are connected</h2>
+<p style="margin: 12px 0 0; color: #5B6068; max-width: 680px">Every site has two ways out, so one can fail. <span id="nw-links-count"></span> lines are recorded in the instance today.</p>
+<div id="nw-links" class="nk-cu-links"></div>
+<p style="margin: 16px 0 0; font-size: 14px; color: #5B6068; max-width: 680px">Carriers are, for example, BT and Vodafone in Europe, Verizon and Lumen in the Americas, and Tata Communications and Singtel in Asia Pacific.</p>
+</section>
+
+<section style="padding: 64px 28px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.08; letter-spacing: -.035em">A year of history</h2>
+<p style="margin: 12px 0 0; color: #5B6068; max-width: 680px">Agents learn from what has already happened. The instance holds the records below. They are rounded, because the instance also holds a few sample records of its own.</p>
+<div id="nw-history" class="nk-cu-history"></div>
+</section>
+
+<section style="padding: 64px 28px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.08; letter-spacing: -.035em">Where the information comes from</h2>
+<p style="margin: 12px 0 0; color: #5B6068; max-width: 680px">Today the agents read one system. In a real estate they would read the others as well. The product names are examples.</p>
+<div id="nw-tools" class="nk-cu-tools"></div>
+</section>
+
+<section style="padding: 56px 28px; border-bottom: 1px solid #E2E4E7; display: flex; flex-wrap: wrap; gap: 16px">
+<a href="workflow.html" class="nk-card" style="flex: 1 1 300px; min-width: 0; border: 1px solid #E2E4E7; padding: 24px 26px; text-decoration: none; color: #0A0A0B"><span style="display: block; font-size: 14px; color: #5B6068">Now see it used</span><span style="display: block; margin-top: 6px; font-size: 24px; font-weight: 500; letter-spacing: -.03em; line-height: 1.15">Publish a security alert &nbsp;→</span></a>
+<a href="customer.html" class="nk-card" style="flex: 1 1 300px; min-width: 0; border: 1px solid #E2E4E7; padding: 24px 26px; text-decoration: none; color: #0A0A0B"><span style="display: block; font-size: 14px; color: #5B6068">Back to</span><span style="display: block; margin-top: 6px; font-size: 24px; font-weight: 500; letter-spacing: -.03em; line-height: 1.15">The company &nbsp;→</span></a>
+</section>
+
+<section id="contact" style="padding: 96px 28px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 22px; border-bottom: 1px solid #E2E4E7">
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(36px, 4.6vw, 60px); line-height: 1.03; letter-spacing: -0.045em">Want this run against your estate?</h2>
+<p style="margin: 0; color: #5B6068; max-width: 560px">Netwik is a personal project. If there is a use case I should build, you have a suggestion, or you want help with agents on your own network, email me.</p>
+<a href="mailto:hi@netwik.co" class="nk-btn" style="background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px">Email hi@netwik.co</a>
+</section>
+
+</main>
+
+<footer style="padding: 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 32px; font-size: 14px; color: #5B6068">
+<span class="nk-logo" style="font-size: 18px; color: #0B0F0E"><span>netwik</span><span class="nk-logo-prompt">&gt;</span><span class="nk-logo-cursor nk-logo-still" aria-hidden="true"></span></span>
+<span>A personal project showing AI agents for LAN, WAN, wireless and DDI operations</span>
+<a href="mailto:hi@netwik.co" style="padding: 12px 0">hi@netwik.co</a>
+</footer>
+
+</div>
+
+<div class="nk-margin nk-margin-right" aria-hidden="true"><div class="nk-margin-inner"></div></div>
+
+</div>
+<script src="assets/js/site.js"></script>
+<script src="assets/js/customer-data.js"></script>
+<script src="assets/js/network.js"></script>
+</body>
+</html>

@@ -302,3 +302,77 @@ a:hover { color: #0B7A58; }
   .nk-wf-in { animation: none; }
   .nk-wf-play, .nk-wf-btn, .nk-wf-step, .nk-wf-tab, .nk-wf-choice, .nk-wf-grid span { transition: none; }
 }
+
+/* customer.html and network.html: the made-up customer and its network.
+   Both pages are built by JS from customer-data.js and share these classes. */
+.nk-cu-switch { display: inline-flex; border: 1px solid var(--line); }
+.nk-cu-tab { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; font-size: 15px; font-weight: 500; text-decoration: none; color: var(--ink-2); transition: background .2s ease; }
+.nk-cu-tab:hover { background: #F4F5F6; color: var(--ink); }
+.nk-cu-tab[aria-current="page"] { background: var(--ink); color: #FFFFFF; }
+
+.nk-cu-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--ink); }
+.nk-cu-stat { padding: 18px 16px 20px 0; border-bottom: 1px solid var(--line); }
+.nk-cu-statnum { font-size: clamp(30px, 3.4vw, 42px); font-weight: 500; line-height: 1; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+.nk-cu-statlabel { margin-top: 8px; font-size: 15px; color: var(--muted); }
+
+.nk-cu-chip { display: inline-flex; align-items: center; gap: 8px; }
+.nk-cu-chip[aria-pressed="true"] > span:first-child:empty { outline: 1px solid #FFFFFF; }
+
+.nk-cu-mapwrap { margin-top: 20px; border: 1px solid var(--line); }
+.nk-cu-map { overflow-x: auto; padding: 12px; background: #FAFAFB; }
+.nk-cu-map svg { display: block; width: 100%; min-width: 720px; height: auto; }
+.nk-cu-dot { cursor: pointer; transition: opacity .2s ease; }
+.nk-cu-dot circle { transition: r .15s ease; }
+.nk-cu-sitecard { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 18px 28px; padding: 20px 22px; border-top: 1px solid var(--line); min-height: 64px; }
+.nk-cu-ring { display: inline-block; width: 11px; height: 11px; margin-right: 8px; vertical-align: -1px; border: 1.5px solid var(--ink); border-radius: 50%; }
+.nk-cu-sitelist { margin-top: 32px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 32px; }
+.nk-cu-site { font: inherit; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 0 11px; border: 1px solid var(--line); background: #FFFFFF; color: var(--ink); cursor: pointer; transition: background .2s ease, opacity .2s ease; }
+.nk-cu-site:hover { background: #F4F5F6; }
+.nk-cu-site[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #FFFFFF; }
+
+.nk-cu-tiers { margin-top: 32px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+.nk-cu-who { margin-top: 32px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.nk-cu-path { margin-top: 40px; }
+.nk-cu-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.nk-cu-table { overflow-x: auto; }
+.nk-cu-table table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.nk-cu-table th, .nk-cu-table td { text-align: left; padding: 12px 14px 12px 0; border-top: 1px solid var(--line); font-weight: 400; vertical-align: baseline; }
+.nk-cu-table thead th { border-top: 0; padding-top: 0; font-size: 13px; color: var(--muted); }
+.nk-cu-table tbody th { font-weight: 500; white-space: nowrap; }
+
+.nk-cu-grid { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(14px, 1fr)); gap: 3px; }
+.nk-cu-grid span { aspect-ratio: 1 / 1; transition: opacity .2s ease; }
+.nk-cu-kinds { margin-top: 28px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 24px; }
+.nk-cu-kinds > div { transition: opacity .2s ease; }
+
+.nk-cu-design { margin-top: 20px; border: 1px solid var(--line); padding: 22px 24px 8px; }
+.nk-cu-drow { display: grid; grid-template-columns: minmax(0, 250px) 70px minmax(0, 1fr); gap: 4px 20px; align-items: start; padding: 14px 0; border-top: 1px solid var(--line); }
+.nk-cu-dnum { font-size: 24px; font-weight: 500; line-height: 1.1; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.nk-cu-dsquares { display: flex; flex-wrap: wrap; gap: 3px; padding-top: 4px; }
+
+.nk-cu-facts, .nk-cu-links { margin-top: 32px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.nk-cu-links { gap: 20px 24px; }
+.nk-cu-history { margin-top: 32px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.nk-cu-tools { margin-top: 24px; border-bottom: 1px solid var(--line); }
+
+@media (max-width: 1000px) {
+  .nk-cu-tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nk-cu-facts, .nk-cu-links, .nk-cu-kinds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 860px) {
+  .nk-cu-sitelist, .nk-cu-who { grid-template-columns: minmax(0, 1fr); }
+  .nk-cu-steps { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .nk-cu-history { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .nk-cu-drow { grid-template-columns: minmax(0, 1fr) auto; }
+  .nk-cu-dsquares { grid-column: 1 / -1; }
+}
+@media (max-width: 600px) {
+  .nk-cu-tiers, .nk-cu-facts { grid-template-columns: minmax(0, 1fr); }
+  .nk-cu-design { padding: 18px 16px 4px; }
+  .nk-cu-grid { grid-template-columns: repeat(auto-fill, minmax(10px, 1fr)); gap: 2px; }
+  /* Four nav items have to fit on one line under the logo. */
+  nav[aria-label="Main"] { gap: 4px 12px !important; font-size: 12px !important; letter-spacing: .04em !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nk-cu-tab, .nk-cu-dot, .nk-cu-dot circle, .nk-cu-site, .nk-cu-grid span, .nk-cu-kinds > div { transition: none; }
+}
