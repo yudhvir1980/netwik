@@ -96,7 +96,13 @@ export default async function handler(req, res) {
         }
       }
 
-      const sample = await getRecords(table, { limit: 3 });
+      /* Scoped to the customer. Sampling the table unscoped returns the
+         instance's own demo records, which is why cmdb_ci_netgear reported no
+         version field even after its controllers were given one. */
+      const sample = await getRecords(table, {
+        query: customer ? 'company=' + customer.sys_id : undefined,
+        limit: 3
+      });
       if (!sample.length) {
         report.sampled = 0;
         return report;
@@ -240,9 +246,16 @@ export default async function handler(req, res) {
       verdict.push('Wireless controllers: ' + controllers.withVersion + ' of '
         + controllers.found + ' carry a version.');
     }
-    const allExposed = exposure.filter(function (e) { return e.notInternetFacing === 0 && e.internetFacing > 0; });
-    if (allExposed.length) {
-      verdict.push('Every device in ' + allExposed.map(function (e) { return e.table; }).join(', ')
+    /* Only the classes that should be mostly internal are a problem when they
+       are all exposed. Edges and firewalls terminating an internet transport
+       are supposed to read as internet-facing, and flagging them was wrong. */
+    const SHOULD_BE_INTERNAL = ['cmdb_ci_ip_switch', 'cmdb_ci_wap_network'];
+    const wronglyExposed = exposure.filter(function (e) {
+      return SHOULD_BE_INTERNAL.indexOf(e.table) !== -1
+        && e.notInternetFacing === 0 && e.internetFacing > 0;
+    });
+    if (wronglyExposed.length) {
+      verdict.push('Every device in ' + wronglyExposed.map(function (e) { return e.table; }).join(', ')
         + ' still claims to be internet-facing.');
     }
 

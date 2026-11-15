@@ -53,6 +53,12 @@ const LIFECYCLE_RULES = [
 
 const CONTROLLER_VERSION = '17.9.5';
 
+/* Lifecycle has to cover every class that holds estate hardware, including
+   cmdb_ci_netgear. Using only the exposure list left the wireless controllers,
+   the SD-WAN controllers and Panorama with no dates at all. */
+const LIFECYCLE_CLASSES = EXPOSURE_RULE.map(function (r) { return r.table; })
+  .concat(['cmdb_ci_netgear']);
+
 function lifecycleFor(name) {
   const text = String(name || '');
   for (let i = 0; i < LIFECYCLE_RULES.length; i++) {
@@ -121,8 +127,8 @@ async function lifecycleWork(customer, mode) {
   /* Which models the estate actually uses, rather than whatever sits first in
      a table full of the instance's own demo workstations. */
   const ids = {};
-  for (let i = 0; i < EXPOSURE_RULE.length; i++) {
-    const rows = await getRecords(EXPOSURE_RULE[i].table, {
+  for (let i = 0; i < LIFECYCLE_CLASSES.length; i++) {
+    const rows = await getRecords(LIFECYCLE_CLASSES[i], {
       query: 'company=' + customer.sys_id + '^model_idISNOTEMPTY',
       fields: ['model_id'], limit: 2000
     });
