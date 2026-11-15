@@ -46,6 +46,6 @@ python -m http.server 8000
 
 Then visit http://localhost:8000.
 
-## Publish with GitHub Pages
+## Publish
 
-In the repository on GitHub, go to **Settings → Pages**, choose **Deploy from a branch**, pick the branch and the `/ (root)` folder, and save.
+The site is deployed on Vercel from the repository root and served at [netwik.co](https://netwik.co). A push to the default branch publishes it. No build step runs; Vercel serves the files as they are.
