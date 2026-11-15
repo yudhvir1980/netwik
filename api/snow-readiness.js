@@ -12,12 +12,12 @@
 
    Reads only. Costs nothing. Needs a session. */
 
-import { requireSession, unauthorised } from './_lib/auth.js';
-import { sendJson, methodOf } from './_lib/http.js';
+import { requireSession, unauthorised } from '../lib/auth.js';
+import { sendJson, methodOf } from '../lib/http.js';
 import {
   getRecords, countRecords, mapLimited, instanceHost, configProblem,
   ServiceNowError, ConfigError
-} from './_lib/servicenow.js';
+} from '../lib/servicenow.js';
 
 const DEVICE_CLASSES = [
   'cmdb_ci_ip_router',

@@ -1,8 +1,8 @@
 /* POST { username, password } -> sets the session cookie. */
 
-import { checkCredentials } from './_lib/auth.js';
-import { issueCookie } from './_lib/session.js';
-import { sendJson, sendJsonWithCookie, methodOf, readJsonBody } from './_lib/http.js';
+import { checkCredentials } from '../lib/auth.js';
+import { issueCookie } from '../lib/session.js';
+import { sendJson, sendJsonWithCookie, methodOf, readJsonBody } from '../lib/http.js';
 
 export default async function handler(req, res) {
   if (methodOf(req) !== 'POST') {

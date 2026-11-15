@@ -9,8 +9,8 @@
    Delete it once the numbers are recorded in platform-architecture.md. */
 
 import Anthropic from '@anthropic-ai/sdk';
-import { requireSession, unauthorised } from './_lib/auth.js';
-import { sendJson, methodOf } from './_lib/http.js';
+import { requireSession, unauthorised } from '../lib/auth.js';
+import { sendJson, methodOf } from '../lib/http.js';
 
 const MODEL = 'claude-opus-5';
 const FALLBACK_MODEL = 'claude-opus-4-8';

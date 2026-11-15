@@ -3,9 +3,9 @@
    able to ask whether the viewer may run anything. Reveals no secret and no
    instance credential, only whether one is present. */
 
-import { requireSession } from './_lib/auth.js';
-import { sendJson } from './_lib/http.js';
-import { isConfigured, instanceHost } from './_lib/servicenow.js';
+import { requireSession } from '../lib/auth.js';
+import { sendJson } from '../lib/http.js';
+import { isConfigured, instanceHost } from '../lib/servicenow.js';
 
 export default async function handler(req, res) {
   const session = requireSession(req);

@@ -22,13 +22,13 @@
    controllers  Wireless controllers carry no version, so they are invisible to
                 advisory matching. */
 
-import { requireSession, unauthorised } from './_lib/auth.js';
-import { sendJson, methodOf, readJsonBody } from './_lib/http.js';
+import { requireSession, unauthorised } from '../lib/auth.js';
+import { sendJson, methodOf, readJsonBody } from '../lib/http.js';
 import {
   getRecords, countRecords, instanceHost, configProblem,
   ServiceNowError, ConfigError
-} from './_lib/servicenow.js';
-import { patchMany, writeProblem, isWriteEnabled, WriteRefused } from './_lib/servicenow-write.js';
+} from '../lib/servicenow.js';
+import { patchMany, writeProblem, isWriteEnabled, WriteRefused } from '../lib/servicenow-write.js';
 
 /* True only where a device genuinely terminates an internet transport. */
 const EXPOSURE_RULE = [

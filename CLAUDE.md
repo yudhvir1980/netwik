@@ -10,7 +10,7 @@ It is a plain static site made of HTML, CSS and vanilla JavaScript. There is no 
 
 A logged-in agent console lives in the same Vercel project at `console.html`, which adds server-side functions under `api/` and a package manager to that part of the repository. The static pages described below stay as they are. See `docs/platform-architecture.md`.
 
-**Two rules for `api/`, both learned the hard way.** Handlers take Node's `(req, res)`, never a Web Request returning a Web Response: returning a Response does not error, it hangs the request until the gateway times out. Always reply through the helpers in `api/_lib/http.js` so every path ends the response. And clean URLs are off, so pages are linked with their `.html` extension, as the rest of the site already does.
+**Two rules for `api/`, both learned the hard way.** Handlers take Node's `(req, res)`, never a Web Request returning a Web Response: returning a Response does not error, it hangs the request until the gateway times out. Always reply through the helpers in `lib/http.js` so every path ends the response. Shared modules live in `lib/`, not inside `api/`, because everything under `api/` counts towards the hobby plan’s function limit. And clean URLs are off, so pages are linked with their `.html` extension, as the rest of the site already does.
 
 ## Running locally
 

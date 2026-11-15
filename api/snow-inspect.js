@@ -7,12 +7,12 @@
    Costs nothing. Reads only. Needs a session because it uses the ServiceNow
    credential. */
 
-import { requireSession, unauthorised } from './_lib/auth.js';
-import { sendJson, methodOf } from './_lib/http.js';
+import { requireSession, unauthorised } from '../lib/auth.js';
+import { sendJson, methodOf } from '../lib/http.js';
 import {
   probeTable, probeField, mapLimited, instanceHost, configProblem,
   ServiceNowError, ConfigError
-} from './_lib/servicenow.js';
+} from '../lib/servicenow.js';
 
 /* Expected counts come from the blueprint, sections 3 to 5. They are targets,
    not assertions: "close enough" is fine, "zero" is the signal worth seeing. */

@@ -9,13 +9,13 @@
    is the answer every scanner already gives and nobody trusts. The funnel shows
    how a few hundred becomes a short list, and why each device left the set. */
 
-import { requireSession, unauthorised } from './_lib/auth.js';
-import { sendJson, methodOf, readJsonBody } from './_lib/http.js';
+import { requireSession, unauthorised } from '../lib/auth.js';
+import { sendJson, methodOf, readJsonBody } from '../lib/http.js';
 import {
   getRecords, mapLimited, instanceHost, configProblem,
   ServiceNowError, ConfigError
-} from './_lib/servicenow.js';
-import { classify, needsAttention } from './_lib/versions.js';
+} from '../lib/servicenow.js';
+import { classify, needsAttention } from '../lib/versions.js';
 
 const VERSION_FIELD = 'firmware_version';
 
