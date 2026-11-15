@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent console: Netwik</title>
+<meta name="description" content="The console where the Netwik agents are run. Readable by anyone; running an agent needs a sign-in.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/site.css">
+</head>
+<body>
+<a class="nk-skip" href="#main">Skip to content</a>
+<div style="display: flex; justify-content: center; min-height: 100vh; background: #FFFFFF; color: #0A0A0B; font-family: 'Inter Tight', Inter, system-ui, sans-serif; font-size: 17px; line-height: 1.5">
+
+<div class="nk-margin nk-margin-left" aria-hidden="true"><div class="nk-margin-inner"></div></div>
+
+<div style="flex: 0 1 1140px; min-width: 0; border-left: 1px solid #E2E4E7; border-right: 1px solid #E2E4E7">
+
+<header style="position: sticky; top: 0; z-index: 5; background: #FFFFFF; border-bottom: 1px solid #E2E4E7">
+<div style="padding: 12px 28px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 20px">
+<a href="index.html" class="nk-logo" aria-label="Netwik home" style="font-size: 22px; min-height: 44px; color: #0B0F0E"><span>netwik</span><span class="nk-logo-prompt">&gt;</span><span class="nk-logo-cursor" aria-hidden="true"></span></a>
+<nav aria-label="Main" style="display: flex; align-items: center; gap: 4px 18px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap">
+<a href="index.html#use-cases" style="text-decoration: none; padding: 13px 0; color: #3D4147">Use cases</a>
+<a href="built-on.html" style="text-decoration: none; padding: 13px 0; color: #3D4147"><span class="nk-long">What agents are built on</span><span class="nk-short">Built on</span></a>
+<a href="console.html" aria-current="page" style="text-decoration: underline; text-underline-offset: 6px; padding: 13px 0; color: #0A0A0B">Console</a>
+</nav>
+</div>
+</header>
+
+<main id="main">
+
+<section style="padding: 72px 28px 56px; border-bottom: 1px solid #E2E4E7; display: flex; flex-direction: column; align-items: flex-start; gap: 22px">
+<span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; color: #5B6068">Console</span>
+<h1 style="margin: 0; font-weight: 500; font-size: clamp(34px, 4vw, 50px); line-height: 1.05; letter-spacing: -0.04em; max-width: 720px">Where the agents are run.</h1>
+<p style="margin: 0; color: #5B6068; max-width: 640px">Anyone can read this page. Running an agent needs a sign-in, because a run calls the Claude API and a ServiceNow instance, and neither should be open to the internet.</p>
+</section>
+
+<section style="padding: 44px 28px; border-bottom: 1px solid #E2E4E7">
+<div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 32px">
+
+<div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-weight: 500; font-size: 23px; letter-spacing: -0.03em">Sign in</h2>
+<div id="who" style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; color: #5B6068">Checking…</div>
+
+<form id="signin" style="display: none; flex-direction: column; gap: 12px; max-width: 360px">
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: #3D4147">User
+<input id="username" name="username" autocomplete="username" required style="font: inherit; padding: 11px 13px; border: 1px solid #E2E4E7; background: #FFFFFF; color: #0A0A0B">
+</label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-size: 15px; color: #3D4147">Password
+<input id="password" name="password" type="password" autocomplete="current-password" required style="font: inherit; padding: 11px 13px; border: 1px solid #E2E4E7; background: #FFFFFF; color: #0A0A0B">
+</label>
+<button type="submit" class="nk-btn" style="font: inherit; font-weight: 600; background: #0A0A0B; color: #FFFFFF; border: 0; padding: 13px 20px; cursor: pointer; align-self: flex-start">Sign in</button>
+</form>
+
+<button id="signout" type="button" class="nk-btn" style="display: none; font: inherit; font-weight: 600; background: #0A0A0B; color: #FFFFFF; border: 0; padding: 13px 20px; cursor: pointer; align-self: flex-start">Sign out</button>
+<div id="authmsg" role="status" style="font-size: 15px; color: #B4513F; min-height: 22px"></div>
+</div>
+
+<div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-weight: 500; font-size: 23px; letter-spacing: -0.03em">Latency measurement</h2>
+<p style="margin: 0; color: #5B6068; font-size: 16px">One real Claude call, to find out how long a representative stage takes against this plan's function duration cap. It spends a fraction of a penny.</p>
+<button id="spike" type="button" class="nk-btn" disabled style="font: inherit; font-weight: 600; background: #0A0A0B; color: #FFFFFF; border: 0; padding: 13px 20px; cursor: pointer; align-self: flex-start; opacity: .4">Run measurement</button>
+</div>
+
+</div>
+</section>
+
+<section style="padding: 44px 28px; border-bottom: 1px solid #E2E4E7; display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-weight: 500; font-size: 23px; letter-spacing: -0.03em">Instance inspection</h2>
+<p style="margin: 0; color: #5B6068; font-size: 16px; max-width: 640px">Reads the ServiceNow instance and compares what is there against what the blueprint says should be there. Costs nothing, writes nothing, and reports which tables the vulnerability flow still has to create.</p>
+<button id="inspect" type="button" class="nk-btn" disabled style="font: inherit; font-weight: 600; background: #0A0A0B; color: #FFFFFF; border: 0; padding: 13px 20px; cursor: pointer; align-self: flex-start; opacity: .4">Inspect instance</button>
+</section>
+
+<section style="padding: 24px 28px 44px; border-bottom: 1px solid #E2E4E7">
+<pre id="out" aria-live="polite" style="margin: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; line-height: 1.55; background: #131416; color: #F2F3F5; padding: 18px; overflow: auto; max-height: 460px; white-space: pre-wrap; word-break: break-word">Output appears here.</pre>
+</section>
+
+<section style="padding: 44px 28px 72px">
+<p style="margin: 0; color: #5B6068; font-size: 16px; max-width: 640px">Nothing else is wired up yet. The vulnerability management flow is specified in the project documents and is built outward from here, starting with a read-only ServiceNow client.</p>
+</section>
+
+</main>
+
+<footer style="padding: 28px; border-top: 1px solid #E2E4E7; font-size: 15px; color: #5B6068">
+<a href="index.html" style="color: #3D4147">Back to the site</a>
+</footer>
+
+</div>
+
+<div class="nk-margin nk-margin-right" aria-hidden="true"><div class="nk-margin-inner"></div></div>
+
+</div>
+
+<script src="assets/js/site.js"></script>
+<script src="assets/js/console.js"></script>
+</body>
+</html>

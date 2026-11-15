@@ -1,0 +1,9 @@
+{
+  "name": "netwik",
+  "private": true,
+  "type": "module",
+  "description": "Netwik site plus the server-side functions behind the agent console. The static pages need no build step.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0"
+  }
+}
