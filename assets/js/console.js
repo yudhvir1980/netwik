@@ -14,9 +14,10 @@
   var readiness = document.getElementById('readiness');
   var match = document.getElementById('match');
   var fixButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-fixbtn'));
+  var writeHint = document.getElementById('writehint');
   var out = document.getElementById('out');
 
-  var state = { user: null, liveCalls: false, snow: false, snowHost: null };
+  var state = { user: null, liveCalls: false, snow: false, snowHost: null, snowWrite: false };
 
   function enable(button, on) {
     if (!button) return;
@@ -42,7 +43,20 @@
     enable(inspect, Boolean(state.user) && state.snow);
     enable(readiness, Boolean(state.user) && state.snow);
     enable(match, Boolean(state.user) && state.snow);
-    fixButtons.forEach(function (b) { enable(b, Boolean(state.user) && state.snow); });
+    /* Preview is always safe. Apply is only offered when the server will
+       actually accept a write, so nobody presses it and gets a refusal. */
+    fixButtons.forEach(function (b) {
+      var isApply = b.getAttribute('data-mode') === 'apply';
+      enable(b, Boolean(state.user) && state.snow && (!isApply || state.snowWrite));
+      b.title = (isApply && !state.snowWrite)
+        ? 'Writing is switched off. Set SERVICENOW_WRITE_ENABLED to true in Vercel and redeploy.'
+        : '';
+    });
+    if (writeHint) {
+      writeHint.textContent = state.user && state.snow && !state.snowWrite
+        ? 'Apply is unavailable: writing is switched off. Set SERVICENOW_WRITE_ENABLED to true in Vercel and redeploy, because functions read environment variables at deploy time.'
+        : '';
+    }
   }
 
   function readJson(response) {
@@ -66,6 +80,7 @@
       state.liveCalls = Boolean(data.liveCalls);
       state.snow = Boolean(data.serviceNowConfigured);
       state.snowHost = data.serviceNowHost || null;
+      state.snowWrite = Boolean(data.serviceNowWriteEnabled);
       render();
     }).catch(function () {
       who.textContent = 'Could not reach the server.';
