@@ -10,7 +10,7 @@
 import { requireSession, unauthorised } from './_lib/auth.js';
 import { sendJson, methodOf } from './_lib/http.js';
 import {
-  probeTable, probeField, mapLimited, instanceHost, isConfigured,
+  probeTable, probeField, mapLimited, instanceHost, configProblem,
   ServiceNowError, ConfigError
 } from './_lib/servicenow.js';
 
@@ -75,11 +75,11 @@ export default async function handler(req, res) {
   const session = requireSession(req);
   if (!session) { unauthorised(res); return; }
 
-  if (!isConfigured()) {
-    sendJson(res, 503, {
-      error: 'ServiceNow is not configured. Set SERVICENOW_INSTANCE, '
-        + 'SERVICENOW_USER and SERVICENOW_PASSWORD in the Vercel environment.'
-    });
+  /* Fail fast and say exactly what is wrong, rather than firing thirty probes
+     at a misconfigured host and reporting the same confusing note thirty times. */
+  const problem = configProblem();
+  if (problem) {
+    sendJson(res, 503, { error: problem });
     return;
   }
 

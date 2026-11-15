@@ -8,28 +8,69 @@
    a caller and never sent to a browser. Basic authentication over HTTPS, which
    is what A8 settled as the simplest thing that works on a developer instance.
 
-   Two failure modes matter more than the rest and are handled explicitly:
-   a sleeping developer instance, which answers with an HTML holding page rather
-   than JSON, and a slow instance, which would otherwise hang until the function
-   duration cap kills it with no useful message. */
+   SERVICENOW_INSTANCE must be a bare hostname. It is validated rather than
+   tidied up, because what people paste there is a full login URL carrying a
+   username and password in the query string, and accepting that would leak the
+   credential into every error message and response.
+
+   Three failure modes are handled explicitly: a misconfigured host, a sleeping
+   developer instance that answers with an HTML page instead of JSON, and a slow
+   instance that would otherwise hang until the function duration cap kills it
+   with no useful message. */
 
 const DEFAULT_TIMEOUT_MS = 8000;
 
-function config() {
-  const host = (process.env.SERVICENOW_INSTANCE || '')
-    .trim()
-    .replace(/^https?:\/\//i, '')
-    .replace(/\/+$/, '');
+/* A bare hostname and nothing else. No scheme, no path, no query, no userinfo,
+   no port. Anything else is rejected rather than cleaned up, because the thing
+   people paste here is a full login URL with a username and password in the
+   query string, and quietly accepting it leaks the credential into every error
+   message and every response. */
+const HOST_PATTERN = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i;
+
+/* Describes what is wrong with the configuration, or null if it is sound.
+   Never includes the value itself, which may be a credential. */
+export function configProblem() {
+  const raw = (process.env.SERVICENOW_INSTANCE || '').trim();
   const user = process.env.SERVICENOW_USER || '';
   const password = process.env.SERVICENOW_PASSWORD || '';
-  if (!host || !user || !password) {
-    const missing = [];
-    if (!host) missing.push('SERVICENOW_INSTANCE');
-    if (!user) missing.push('SERVICENOW_USER');
-    if (!password) missing.push('SERVICENOW_PASSWORD');
-    throw new ConfigError('Not configured: ' + missing.join(', '));
+
+  const missing = [];
+  if (!raw) missing.push('SERVICENOW_INSTANCE');
+  if (!user) missing.push('SERVICENOW_USER');
+  if (!password) missing.push('SERVICENOW_PASSWORD');
+  if (missing.length) return 'Not configured: ' + missing.join(', ') + '.';
+
+  const host = raw.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+
+  if (/[?#]/.test(host) || host.indexOf('/') !== -1) {
+    return 'SERVICENOW_INSTANCE must be the bare host, such as '
+      + 'dev12345.service-now.com. It currently contains a path or a query '
+      + 'string, which usually means a full login URL was pasted in. If that '
+      + 'URL carried a user_name and user_password, treat that password as '
+      + 'compromised and change it.';
   }
-  return { host: host, user: user, password: password };
+  if (host.indexOf('@') !== -1) {
+    return 'SERVICENOW_INSTANCE contains credentials. Use the bare host only, '
+      + 'and put the user and password in SERVICENOW_USER and '
+      + 'SERVICENOW_PASSWORD. Treat the embedded password as compromised.';
+  }
+  if (!HOST_PATTERN.test(host)) {
+    return 'SERVICENOW_INSTANCE is not a valid hostname. Expected something '
+      + 'like dev12345.service-now.com.';
+  }
+  return null;
+}
+
+function config() {
+  const problem = configProblem();
+  if (problem) throw new ConfigError(problem);
+  const host = (process.env.SERVICENOW_INSTANCE || '').trim()
+    .replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+  return {
+    host: host,
+    user: process.env.SERVICENOW_USER,
+    password: process.env.SERVICENOW_PASSWORD
+  };
 }
 
 export class ConfigError extends Error {}
@@ -45,22 +86,15 @@ function authHeader(cfg) {
   return 'Basic ' + Buffer.from(cfg.user + ':' + cfg.password).toString('base64');
 }
 
-/* The instance host, safe to show: no credential in it. */
+/* The validated bare hostname, or null. Safe to show: the validation above is
+   what makes that claim true, rather than hope. */
 export function instanceHost() {
-  try {
-    return config().host;
-  } catch (error) {
-    return null;
-  }
+  if (configProblem()) return null;
+  return config().host;
 }
 
 export function isConfigured() {
-  try {
-    config();
-    return true;
-  } catch (error) {
-    return false;
-  }
+  return configProblem() === null;
 }
 
 async function request(path, params, options) {
@@ -105,8 +139,11 @@ async function request(path, params, options) {
   if (contentType.indexOf('json') === -1) {
     throw new ServiceNowError(
       'The instance answered with ' + (contentType || 'no content type')
-      + ' rather than JSON. That is what a hibernating developer instance does; '
-      + 'wake it from the developer portal and try again.',
+      + ' rather than JSON, which means a web page came back instead of the '
+      + 'Table API. The usual causes, in order: the developer instance is '
+      + 'hibernating and needs waking from the developer portal; the '
+      + 'credentials were refused and a login page was returned; or '
+      + 'SERVICENOW_INSTANCE is not the bare host.',
       { status: response.status, cause: 'not-json' }
     );
   }
