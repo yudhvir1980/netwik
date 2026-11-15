@@ -32,7 +32,8 @@ const CLASSES = [
 const FIELDS = [
   'sys_id', 'name', VERSION_FIELD, 'internet_facing', 'u_site_code',
   'u_device_role', 'install_status', 'operational_status', 'support_group',
-  'model_id', 'location.u_site_tier', 'location.u_gxp', 'location.name'
+  'model_id', 'manufacturer.name',
+  'location.u_site_tier', 'location.u_gxp', 'location.name'
 ];
 
 /* The worked example, used when the caller sends no advisory of its own. It is
@@ -72,6 +73,7 @@ export default async function handler(req, res) {
   const body = await readJsonBody(req);
   if (body === null) { sendJson(res, 400, { error: 'Expected a JSON body.' }); return; }
   const advisory = (body && body.advisory) || SAMPLE_ADVISORY;
+  const vendor = advisory.vendor ? String(advisory.vendor).toLowerCase().split(' ')[0] : null;
 
   if (!Array.isArray(advisory.affected) || !advisory.affected.length) {
     sendJson(res, 400, {
@@ -103,20 +105,31 @@ export default async function handler(req, res) {
 
     const funnel = {
       inScopeDevices: 0,
+      otherVendor: 0,
+      examinedForThisVendor: 0,
       withReadableVersion: 0,
       affected: 0,
       unknownVersion: 0,
-      carryingTheFix: 0,
-      neverInScope: 0,
+      notVulnerable: 0,
+      /* Split out, because "carrying the fix" on its own reads as though a
+         remediation happened. Mostly these devices were never in scope. */
+      atOrAboveFixedRelease: 0,
+      outsideAdvisoryScope: 0,
       retiredAndIgnored: 0
     };
+
+    /* Sanity check on the field risk banding will lean on. If nearly every
+       device claims to be internet-facing, the field is not a usable signal
+       and stage 4 must not pretend otherwise. */
+    const exposure = { internetFacing: 0, notInternetFacing: 0 };
+    let missingSupportGroup = 0;
 
     const affectedDevices = [];
     const byClass = [];
     const bySite = {};
 
     perClass.forEach(function (group) {
-      const counts = { affected: 0, fixed: 0, notAffected: 0, unknown: 0, retired: 0 };
+      const counts = { affected: 0, fixed: 0, notAffected: 0, unknown: 0, retired: 0, otherVendor: 0 };
 
       group.rows.forEach(function (row) {
         /* Retired kit is not an exposure. Excluding it is the first honest
@@ -129,17 +142,34 @@ export default async function handler(req, res) {
         }
 
         funnel.inScopeDevices++;
+
+        if (truthy(field(row, 'internet_facing'))) exposure.internetFacing++;
+        else exposure.notInternetFacing++;
+
+        /* An advisory belongs to one vendor. Without this check a Cisco
+           advisory quoting 10.x ranges would match PAN-OS 10.2.11, which is a
+           different product that merely shares a number. */
+        const maker = String(field(row, 'manufacturer.name') || '');
+        if (vendor && maker && maker.toLowerCase().indexOf(vendor) === -1) {
+          counts.otherVendor++;
+          funnel.otherVendor++;
+          return;
+        }
+
+        funnel.examinedForThisVendor++;
         const version = field(row, VERSION_FIELD);
         const state = classify(version, advisory.affected, advisory.fixed);
 
         if (state !== 'unknown') funnel.withReadableVersion++;
 
         if (state === 'affected') { counts.affected++; funnel.affected++; }
-        else if (state === 'fixed') { counts.fixed++; funnel.carryingTheFix++; }
-        else if (state === 'unknown') { counts.unknown++; funnel.unknownVersion++; }
-        else { counts.notAffected++; funnel.neverInScope++; }
+        else if (state === 'fixed') {
+          counts.fixed++; funnel.atOrAboveFixedRelease++; funnel.notVulnerable++;
+        } else if (state === 'unknown') { counts.unknown++; funnel.unknownVersion++; }
+        else { counts.notAffected++; funnel.outsideAdvisoryScope++; funnel.notVulnerable++; }
 
         if (!needsAttention(state)) return;
+        if (!field(row, 'support_group')) missingSupportGroup++;
 
         const site = field(row, 'u_site_code') || field(row, 'location.name') || 'unknown';
         const gxp = truthy(field(row, 'location.u_gxp'));
@@ -170,9 +200,10 @@ export default async function handler(req, res) {
         class: group.entry.label,
         table: group.entry.table,
         examined: group.rows.length,
+        otherVendor: counts.otherVendor,
         affected: counts.affected,
-        carryingTheFix: counts.fixed,
-        neverInScope: counts.notAffected,
+        atOrAboveFixedRelease: counts.fixed,
+        outsideAdvisoryScope: counts.notAffected,
         unknownVersion: counts.unknown,
         retired: counts.retired
       });
@@ -195,10 +226,25 @@ export default async function handler(req, res) {
         title: advisory.title,
         exploited: Boolean(advisory.exploited),
         cvss: advisory.cvss || null,
+        vendor: advisory.vendor || null,
         affected: advisory.affected,
         fixed: advisory.fixed || []
       },
       funnel: funnel,
+      exposureSignal: {
+        internetFacing: exposure.internetFacing,
+        notInternetFacing: exposure.notInternetFacing,
+        usable: exposure.notInternetFacing > 0,
+        note: exposure.notInternetFacing === 0
+          ? 'Every in-scope device claims to be internet-facing, which cannot '
+            + 'be true of access and industrial switches inside a plant. Treat '
+            + 'internet_facing as unset rather than as a risk signal until the '
+            + 'data is corrected.'
+          : null
+      },
+      dataGaps: {
+        affectedDevicesWithNoSupportGroup: missingSupportGroup
+      },
       byClass: byClass,
       bySite: sites,
       needingAction: {
