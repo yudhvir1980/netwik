@@ -12,6 +12,7 @@
   var spike = document.getElementById('spike');
   var inspect = document.getElementById('inspect');
   var readiness = document.getElementById('readiness');
+  var match = document.getElementById('match');
   var out = document.getElementById('out');
 
   var state = { user: null, liveCalls: false, snow: false, snowHost: null };
@@ -39,6 +40,7 @@
     enable(spike, Boolean(state.user) && state.liveCalls);
     enable(inspect, Boolean(state.user) && state.snow);
     enable(readiness, Boolean(state.user) && state.snow);
+    enable(match, Boolean(state.user) && state.snow);
   }
 
   function readJson(response) {
@@ -132,6 +134,11 @@
   readiness.addEventListener('click', function () {
     runAction(readiness, '/api/snow-readiness',
       'Checking whether the estate carries versions and end-of-support dates.');
+  });
+
+  match.addEventListener('click', function () {
+    runAction(match, '/api/match-advisory',
+      'Matching the worked advisory against the estate. No model call, no spend.');
   });
 
   refresh();
