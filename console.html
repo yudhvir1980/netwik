@@ -108,6 +108,16 @@
 </section>
 
 <section style="padding: 44px 28px; border-bottom: 1px solid #E2E4E7; display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-weight: 500; font-size: 23px; letter-spacing: -0.03em">Load the remaining sites</h2>
+<p style="margin: 0; color: #5B6068; font-size: 16px; max-width: 640px">The instance holds five of the 31 sites. This builds the other 26 by copying a loaded site of the same kind, device for device, about 3,000 records in all. Preview reads only. Load writes to the instance in small batches, needs <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 14px">SERVICENOW_WRITE_ENABLED</code> set to true, and can be stopped and started again: a device that already exists is skipped. It does not load WAN lines, relationships, business services or ticket history.</p>
+<div id="loadhint" role="status" style="color: #B4513F; font-size: 15px"></div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<button id="load-preview" type="button" class="nk-loadbtn" data-mode="preview" disabled style="font: inherit; font-size: 15px; background: #FFFFFF; color: #0A0A0B; border: 1px solid #0A0A0B; padding: 9px 15px; cursor: pointer; opacity: .4">Preview</button>
+<button id="load-apply" type="button" class="nk-loadbtn" data-mode="apply" disabled style="font: inherit; font-size: 15px; font-weight: 600; background: #0A0A0B; color: #FFFFFF; border: 1px solid #0A0A0B; padding: 9px 15px; cursor: pointer; opacity: .4">Load the sites</button>
+</div>
+</section>
+
+<section style="padding: 44px 28px; border-bottom: 1px solid #E2E4E7; display: flex; flex-direction: column; gap: 16px">
 <h2 style="margin: 0; font-weight: 500; font-size: 23px; letter-spacing: -0.03em">Create the flow tables <span style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; color: #5B6068; letter-spacing: 0">stage 00</span></h2>
 <p style="margin: 0; color: #5B6068; font-size: 16px; max-width: 640px">Seven tables and seventy-four columns for the vulnerability flow, including the run record that doubles as the audit trail. Create-only and idempotent: anything already there is left untouched. Needs <code style="font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 14px">SERVICENOW_SCHEMA_ENABLED</code>, which is a separate switch from the one that allows record updates.</p>
 <div id="schemahint" role="status" style="color: #B4513F; font-size: 15px"></div>

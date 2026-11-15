@@ -18,6 +18,8 @@
   var schemaHint = document.getElementById('schemahint');
   var schemaButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-schemabtn'));
   var runButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-runbtn'));
+  var loadButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-loadbtn'));
+  var loadHint = document.getElementById('loadhint');
   var out = document.getElementById('out');
 
   var state = { user: null, liveCalls: false, snow: false, snowHost: null, snowWrite: false, snowSchema: false };
@@ -56,6 +58,15 @@
         : '';
     });
     runButtons.forEach(function (b) { enable(b, Boolean(state.user) && state.snow); });
+    loadButtons.forEach(function (b) {
+      var isApply = b.getAttribute('data-mode') === 'apply';
+      enable(b, Boolean(state.user) && state.snow && (!isApply || state.snowWrite));
+    });
+    if (loadHint) {
+      loadHint.textContent = state.user && state.snow && !state.snowWrite
+        ? 'Load is unavailable: writing is switched off. Set SERVICENOW_WRITE_ENABLED to true in Vercel and redeploy, then switch it back off when the load is done.'
+        : '';
+    }
     schemaButtons.forEach(function (b) {
       var isApply = b.getAttribute('data-mode') === 'apply';
       enable(b, Boolean(state.user) && state.snow && (!isApply || state.snowSchema));
@@ -229,6 +240,116 @@
       render();
     });
   }
+
+  /* Loading the remaining sites. One call lists the sites; then each site is
+     called until it reports done, because one invocation creates one batch.
+     Preview makes one read-only call per site. */
+  function runLoad(mode) {
+    loadButtons.forEach(function (b) { enable(b, false); });
+    var started = Date.now();
+    var lines = [];
+    var totals = { created: 0, failed: 0, planned: 0, already: 0, calls: 0 };
+    var firstSample = null;
+    var stopped = null;
+
+    function show(now) {
+      out.textContent = (mode === 'apply' ? 'Loading' : 'Previewing') + ' the remaining sites. '
+        + Math.round((Date.now() - started) / 1000) + 's, ' + totals.calls + ' calls.'
+        + (mode === 'apply' ? ' Created ' + totals.created + ', failed ' + totals.failed + '.' : '')
+        + (now ? '\n\nNow: ' + now : '') + '\n\n' + lines.join('\n');
+    }
+
+    function site(list, index) {
+      if (index >= list.length || stopped) return null;
+      var s = list[index];
+      var seen = { created: 0, failed: 0, rounds: 0, planned: 0, already: null, last: null };
+
+      function round() {
+        seen.rounds++;
+        totals.calls++;
+        show(s.code + ' ' + s.name + (seen.rounds > 1 ? ', batch ' + seen.rounds : ''));
+        return post('/api/snow-load-sites', { mode: mode, site: s.code, batch: 40 }).then(function (result) {
+          var data = result.data || {};
+          var r = data.result;
+          if (result.status !== 200 || !r) {
+            stopped = 'Stopped at ' + s.code + '. The server answered ' + result.status + ': '
+              + (data.error || 'no reason given');
+            return null;
+          }
+          seen.last = r;
+          seen.planned = r.planned;
+          if (seen.already === null) seen.already = r.alreadyThere;
+          seen.created += r.created || 0;
+          seen.failed += r.failed || 0;
+          totals.created += r.created || 0;
+          totals.failed += r.failed || 0;
+          if (!firstSample && r.sample) firstSample = { site: s.code, record: r.sample };
+          /* Keep going while batches are landing. A batch that creates
+             nothing means something is wrong, so stop on it. */
+          if (mode === 'apply' && !r.done && r.created > 0 && seen.rounds < 40) return round();
+          if (mode === 'apply' && !r.done) {
+            stopped = 'Stopped at ' + s.code + ': a batch created nothing. '
+              + (r.errors && r.errors.length ? r.errors[0] : '');
+          }
+          return null;
+        });
+      }
+
+      return round().then(function () {
+        var r = seen.last;
+        if (r) {
+          totals.planned += seen.planned;
+          totals.already += seen.already || 0;
+          var roles = Object.keys(r.plannedByRole || {}).map(function (k) { return r.plannedByRole[k] + ' ' + k; }).join(', ');
+          lines.push(s.code + '  ' + s.tier + '  ' + s.name + ': ' + seen.planned + ' devices (' + roles + '), copied from ' + r.copiedFrom
+            + '. Already there ' + (seen.already || 0)
+            + (mode === 'apply' ? ', created ' + seen.created + ', failed ' + seen.failed : '')
+            + '. Location: ' + (r.location.found ? 'found "' + r.location.name + '"' : (r.location.created ? 'created' : 'will be created'))
+            + (r.warnings && r.warnings.length ? '\n      ! ' + r.warnings.join('\n      ! ') : '')
+            + (r.errors && r.errors.length ? '\n      x ' + r.errors.join('\n      x ') : ''));
+        }
+        return site(list, index + 1);
+      });
+    }
+
+    totals.calls++;
+    show('reading what is loaded today');
+    post('/api/snow-load-sites', { mode: mode }).then(function (result) {
+      var data = result.data || {};
+      if (result.status !== 200 || !data.sites) {
+        stopped = 'The server answered ' + result.status + ': ' + (data.error || 'no reason given');
+        return null;
+      }
+      lines.push('Loaded today: ' + (data.loadedToday || []).join(', ')
+        + '. Sales offices are copied from ' + (data.salesOfficeTemplate || 'nothing') + '.');
+      (data.problems || []).forEach(function (p) { lines.push('PROBLEM: ' + p); });
+      lines.push('');
+      if (mode === 'apply' && data.problems && data.problems.length) {
+        stopped = 'Not loading until the problems above are sorted out.';
+        return null;
+      }
+      return site(data.sites, 0);
+    }).then(function () {
+      var seconds = ((Date.now() - started) / 1000).toFixed(0);
+      var head = mode === 'apply'
+        ? (stopped ? 'STOPPED EARLY. ' : 'Load finished. ') + 'Created ' + totals.created + ', failed ' + totals.failed
+          + ', in ' + seconds + 's. Press Load again to carry on: what exists is skipped.'
+        : 'Preview in ' + seconds + 's. Nothing was written. ' + totals.planned + ' devices planned, '
+          + totals.already + ' already there.';
+      out.textContent = head + (stopped ? '\n\n' + stopped : '') + '\n\n' + lines.join('\n')
+        + (firstSample ? '\n\nA sample of what would be created, for ' + firstSample.site + ':\n'
+          + JSON.stringify(firstSample.record, null, 2) : '');
+      render();
+    }).catch(function (error) {
+      out.textContent = 'The request failed after ' + ((Date.now() - started) / 1000).toFixed(1)
+        + 's.\n\n' + String(error) + '\n\n' + lines.join('\n');
+      render();
+    });
+  }
+
+  loadButtons.forEach(function (button) {
+    button.addEventListener('click', function () { runLoad(button.getAttribute('data-mode')); });
+  });
 
   fixButtons.forEach(function (button) {
     button.addEventListener('click', function () {
