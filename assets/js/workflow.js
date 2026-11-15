@@ -1,16 +1,19 @@
-/* workflow.html: a replay of the zero-day vulnerability flow, stage by stage.
+/* workflow.html: an interactive run of the zero-day vulnerability flow.
  *
- * One playhead, measured in seconds of replay time, driven by the single tick
- * loop every page on this site shares. Everything drawn is a pure function of
- * that playhead, so seeking to a stage and playing into it produce the same
- * picture. Clicking a stage moves the playhead; nothing keeps hidden state.
+ * The visitor picks a vendor and a kind of flaw and publishes the alert. The
+ * fourteen steps then run once, one after another, and stop wherever a person
+ * has to decide; the visitor makes that decision with a button. When the run
+ * is complete nothing moves any more, and every step can be opened to read
+ * what the agent did, its output, and the human action.
  *
- * The timeline is the table of contents: one segment per stage, as wide as
- * the stage is long, coloured by who acts in it and hatched where the stage
- * is designed but not built.
+ * State lives in one `run` object: which scenario, which step, how far
+ * through it, and the decisions made so far. The one tick loop every page
+ * shares advances it; nothing else does, apart from the buttons. Under
+ * reduced motion there is no loop, so each press runs straight to the next
+ * decision, or to the end.
  *
- * Scenes and the stage text are rebuilt only when the stage changes. Within a
- * stage the scene gets an update(p) call each tick, p running 0 to 1.
+ * The detail panel is rebuilt only when a different step is shown. It then
+ * gets update(p, mode) calls, mode being 'live', 'waiting' or 'final'.
  *
  * Nodes are built with el(), which sets textContent, so no value is ever
  * interpolated into markup.
@@ -22,11 +25,15 @@
   var N = window.Netwik;
   if (!D || !N) return;
 
-  var STEP = 0.06;          /* seconds of replay per tick, matching interval 60 */
+  var TICK = 0.06;          /* seconds per tick, matching interval 60 */
+  var STEP_SECS = 4.2;      /* how long a step takes to run */
+  var GRID_SECS = 6;        /* the device check has more to show */
+  var HOLD_TICKS = 16;      /* a pause on a decision's outcome before moving on */
   var still = N.still;
+  var LINE = '#E2E4E7';
 
-  /* fg is text on white, solid is a fill, mid is the same fill not yet
-     reached on the timeline, tint is a quiet background. */
+  /* fg is text on white, solid is a fill, mid is that fill not yet reached,
+     tint is a quiet background. */
   var TONES = {
     plain: { fg: '#3D4147', solid: '#8B9097', mid: '#D5D8DC', tint: '#EEF0F2' },
     good: { fg: '#0B7A58', solid: '#12B886', mid: '#A9E1CC', tint: '#DFF3EB' },
@@ -46,263 +53,167 @@
   function sty(node, css) { node.setAttribute('style', css); return node; }
   function id(name) { return document.getElementById(name); }
   function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+  /* Hides a node without losing the display value its inline style gave it. */
+  function show(node, on) {
+    if (node.wfDisplay === undefined) node.wfDisplay = node.style.display;
+    node.style.display = on ? node.wfDisplay : 'none';
+  }
 
   function set(elementId, text) {
     var node = id(elementId);
     if (node) node.textContent = text;
   }
 
-  /* Eases a number so it settles rather than stopping dead. */
-  function ease(p) { return 1 - Math.pow(1 - clamp(p, 0, 1), 3); }
-
-  /* A stagger: row i of n starts at i/n and finishes a third of the way later. */
-  function step(p, i, n) {
-    var span = 1 / Math.max(1, n);
-    return clamp((p - i * span * 0.75) / (span * 1.4), 0, 1);
-  }
-
   function num(value) {
     return String(Math.round(value)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
 
-  function mmss(seconds) {
-    var s = Math.floor(seconds);
-    return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+  function label(text) {
+    return sty(el('div', null, text), 'font-size: 13px; font-weight: 600; color: #5B6068; margin: 26px 0 10px');
   }
 
-  function stageLabel(n) { return n === 2.5 ? '2b' : String(n); }
+  /* ---- state ------------------------------------------------------------ */
 
-  /* ---- the timeline ----------------------------------------------------- */
+  var pick = { vendor: D.vendors[0].key, flaw: D.flaws[0].key };
+  var preview = D.build(pick.vendor, pick.flaw);
 
-  var marks = [];
-  var clock = 0;
-  D.stages.forEach(function (s) {
-    marks.push({ stage: s, start: clock, end: clock + s.secs });
-    clock += s.secs;
-  });
-  var TOTAL = clock;
+  /* null until the alert is published. */
+  var run = null;
+  var shown = { run: null, view: -2 };
+  var update = function () {};
 
-  var lines = [];
-  marks.forEach(function (m) {
-    var n = m.stage.log.length;
-    m.stage.log.forEach(function (text, k) {
-      lines.push({ time: m.start + m.stage.secs * ((k + 0.6) / (n + 0.4)), text: text });
-    });
-  });
-  lines.sort(function (a, b) { return a.time - b.time; });
+  function busy() { return !!run && run.phase !== 'done'; }
+  function steps() { return (run ? run.scenario : preview).steps; }
 
-  function progressOf(stageNumber, head) {
-    for (var i = 0; i < marks.length; i++) {
-      if (marks[i].stage.n === stageNumber) {
-        return clamp((head - marks[i].start) / marks[i].stage.secs, 0, 1);
-      }
-    }
-    return 0;
-  }
+  /* ---- blocks: the things a step can show ------------------------------- */
 
-  var segs = [];
-
-  function buildRail(onSeek) {
-    var host = id('wf-rail');
-    if (!host) return;
-    marks.forEach(function (m, i) {
-      var s = m.stage;
-      var aut = D.autonomy[s.autonomy] || D.autonomy.agent;
-      var t = tone(aut.tone);
-      var name = 'Stage ' + stageLabel(s.n) + ': ' + s.name;
-
-      var seg = el('button', 'nk-wf-seg');
-      seg.type = 'button';
-      seg.title = name;
-      seg.setAttribute('aria-label', name + '. ' + aut.label + '. '
-        + (s.status === 'running' ? 'Built and running today.' : 'Designed, not built yet.'));
-      seg.setAttribute('data-status', s.status);
-      sty(seg, 'flex: ' + s.secs + ' 1 0');
-
-      var track = sty(el('span', 'nk-wf-track'), 'background: ' + t.mid);
-      var fill = sty(el('span', 'nk-wf-fill'), 'background: ' + t.solid);
-      track.appendChild(fill);
-      seg.appendChild(track);
-      seg.appendChild(el('span', 'nk-wf-num', stageLabel(s.n)));
-
-      seg.addEventListener('click', function () { onSeek(i); });
-      host.appendChild(seg);
-      segs.push({ seg: seg, fill: fill });
-    });
-  }
-
-  function paintRail(idx, p) {
-    segs.forEach(function (r, i) {
-      r.fill.style.width = (i < idx ? 100 : (i === idx ? p * 100 : 0)) + '%';
-    });
-  }
-
-  function markRail(idx) {
-    segs.forEach(function (r, i) {
-      if (i === idx) r.seg.setAttribute('aria-current', 'step');
-      else r.seg.removeAttribute('aria-current');
-    });
-  }
-
-  /* ---- scenes ----------------------------------------------------------- */
-
-  var LINE = '#E2E4E7';
-
-  /* A list of things, each with a note and an outcome. The workhorse. */
-  function rowList(host, rows) {
-    var list = sty(el('div'), 'display: flex; flex-direction: column; border-top: 1px solid ' + LINE);
-    var built = [];
-
-    rows.forEach(function (r) {
+  function blockList(host, block) {
+    if (block.title) host.appendChild(label(block.title));
+    var list = sty(el('div'), 'border-top: 1px solid ' + LINE);
+    block.rows.forEach(function (r) {
       var t = tone(r.tone);
-      var wrap = sty(el('div', 'nk-wf-item'),
-        'padding: 13px 0; border-bottom: 1px solid ' + LINE + '; display: flex; align-items: flex-start; gap: 12px');
-
+      var wrap = sty(el('div'),
+        'padding: 12px 0; border-bottom: 1px solid ' + LINE + '; display: flex; align-items: flex-start; gap: 12px');
       wrap.appendChild(sty(el('span'),
         'flex: none; width: 8px; height: 8px; margin-top: 8px; background: ' + t.solid));
-
       var left = sty(el('div'), 'flex: 1 1 auto; min-width: 0');
       left.appendChild(sty(el('div', null, r.label), 'font-size: 16px; font-weight: 500; color: #0A0A0B'));
       if (r.sub) {
-        left.appendChild(sty(el('div', null, r.sub),
-          'font-size: 14px; line-height: 1.4; color: #5B6068; margin-top: 2px'));
+        left.appendChild(sty(el('div', null, r.sub), 'font-size: 15px; line-height: 1.4; color: #5B6068; margin-top: 2px'));
       }
       wrap.appendChild(left);
-
-      var value = sty(el('span', null, r.value),
-        'flex: none; margin-top: 2px; font-family: var(--mono); font-size: 12px; padding: 3px 8px; white-space: nowrap; color: '
-        + t.fg + '; background: ' + t.tint);
-      wrap.appendChild(value);
-
+      wrap.appendChild(sty(el('span', null, r.value),
+        'flex: none; margin-top: 2px; font-size: 13px; font-weight: 500; padding: 3px 9px; white-space: nowrap; color: '
+        + t.fg + '; background: ' + t.tint));
       list.appendChild(wrap);
-      built.push({ wrap: wrap, value: value });
     });
-
     host.appendChild(list);
-
-    return function (p) {
-      built.forEach(function (b, i) {
-        var q = step(p, i, built.length);
-        b.wrap.style.opacity = String(0.3 + 0.7 * clamp(q * 3, 0, 1));
-        b.value.style.visibility = q > 0.55 ? 'visible' : 'hidden';
-      });
-    };
   }
 
-  /* A row of bordered cells, each a number counting up over a caption. */
-  function cellRow(host, items, size) {
-    var wrap = sty(el('div'), 'display: flex; flex-wrap: wrap; gap: 10px');
-    var cells = [];
-    items.forEach(function (it) {
+  function blockNumbers(host, block) {
+    var wrap = sty(el('div'), 'display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px');
+    block.items.forEach(function (it) {
       var cell = sty(el('div'),
         'flex: 1 1 120px; box-sizing: border-box; min-width: 0; border: 1px solid ' + LINE + '; background: #FFFFFF; padding: 14px 16px');
-      var v = sty(el('div', null, '0'),
-        'font-size: ' + size + '; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: #0A0A0B');
-      cell.appendChild(v);
+      cell.appendChild(sty(el('div', null, num(it.value)),
+        'font-size: 32px; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: '
+        + (it.tone ? tone(it.tone).fg : '#0A0A0B')));
       cell.appendChild(sty(el('div', null, it.label),
         'font-size: 14px; font-weight: 500; line-height: 1.3; color: #0A0A0B; margin-top: 10px'));
-      if (it.sub) {
-        cell.appendChild(sty(el('div', null, it.sub), 'font-size: 13px; color: #5B6068; margin-top: 1px'));
-      }
+      if (it.sub) cell.appendChild(sty(el('div', null, it.sub), 'font-size: 13px; color: #5B6068; margin-top: 1px'));
       wrap.appendChild(cell);
-      cells.push({ v: v, target: Number(String(it.value).replace(/[^0-9.]/g, '')) || 0 });
     });
     host.appendChild(wrap);
-    return cells;
   }
 
-  function sceneIntake(host, viz) {
+  function blockNote(host, block) {
+    host.appendChild(sty(el('p', null, block.text),
+      'margin: 18px 0 0; padding-left: 14px; border-left: 2px solid #0A0A0B; font-size: 16px; line-height: 1.5; color: #0A0A0B'));
+  }
+
+  /* The facts and sections of one document, or of one tab of it. */
+  function docBody(host, part) {
+    if (part.facts) {
+      var dl = sty(el('dl'), 'margin: 0; font-size: 15px; line-height: 1.45');
+      part.facts.forEach(function (f, i) {
+        var row = sty(el('div'),
+          'display: flex; flex-wrap: wrap; gap: 2px 16px; padding: 9px 0' + (i ? '; border-top: 1px solid ' + LINE : ''));
+        row.appendChild(sty(el('dt', null, f[0]), 'flex: none; width: 132px; color: #5B6068'));
+        row.appendChild(sty(el('dd', null, f[1]), 'margin: 0; flex: 1 1 200px; min-width: 0; font-weight: 500; overflow-wrap: anywhere'));
+        dl.appendChild(row);
+      });
+      host.appendChild(dl);
+    }
+    (part.sections || []).forEach(function (s, i) {
+      var top = (i || part.facts) ? 'margin-top: 14px; padding-top: 14px; border-top: 1px solid ' + LINE : '';
+      var sec = sty(el('div'), s.h || !i ? top : 'margin-top: 10px');
+      if (s.h) sec.appendChild(sty(el('div', null, s.h), 'font-size: 14px; font-weight: 600; margin-bottom: 4px'));
+      if (s.p) sec.appendChild(sty(el('p', null, s.p), 'margin: 0; font-size: 15px; line-height: 1.55; color: #3D4147'));
+      if (s.items) {
+        var ol = sty(el('ol'), 'margin: 0; padding-left: 20px; font-size: 15px; line-height: 1.55; color: #3D4147');
+        s.items.forEach(function (text) { ol.appendChild(el('li', null, text)); });
+        sec.appendChild(ol);
+      }
+      host.appendChild(sec);
+    });
+  }
+
+  function blockDoc(host, block) {
+    host.appendChild(label('Output'));
     var card = sty(el('div'), 'border: 1px solid ' + LINE + '; background: #FFFFFF');
-    var head = sty(el('div', null, 'Vendor advisory, inbound'),
-      'padding: 12px 18px; border-bottom: 1px solid ' + LINE + '; font-size: 14px; color: #5B6068');
+    var head = sty(el('div'),
+      'display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 11px 18px; border-bottom: 1px solid '
+      + LINE + '; font-size: 14px');
+    head.appendChild(sty(el('span', null, block.title), 'font-weight: 600'));
+    head.appendChild(sty(el('span', null, 'Illustrative'), 'color: #5B6068'));
     card.appendChild(head);
 
-    var body = sty(el('div'), 'padding: 4px 18px');
-    var built = [];
-    viz.fields.forEach(function (f, i) {
-      var row = sty(el('div', 'nk-wf-item'),
-        'display: flex; flex-wrap: wrap; gap: 2px 18px; padding: 12px 0'
-        + (i ? '; border-top: 1px solid ' + LINE : ''));
-      row.appendChild(sty(el('span', null, f[0]), 'flex: none; width: 84px; font-size: 14px; color: #5B6068'));
-      var val = sty(el('span', null, ''),
-        'flex: 1 1 200px; min-width: 0; min-height: 1.5em; font-size: 16px; font-weight: 500; color: #0A0A0B; overflow-wrap: anywhere');
-      row.appendChild(val);
-      body.appendChild(row);
-      built.push({ row: row, val: val, text: f[1] });
-    });
+    var body = sty(el('div'), 'padding: 8px 18px 16px');
+    if (block.tabs) {
+      var bar = sty(el('div'), 'display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 18px 0');
+      var buttons = [];
+      var open = function (k) {
+        buttons.forEach(function (b, j) { b.setAttribute('aria-pressed', j === k ? 'true' : 'false'); });
+        body.textContent = '';
+        docBody(body, block.tabs[k]);
+      };
+      block.tabs.forEach(function (tab, k) {
+        var b = el('button', 'nk-wf-tab', tab.label);
+        b.type = 'button';
+        b.addEventListener('click', function () { open(k); });
+        bar.appendChild(b);
+        buttons.push(b);
+      });
+      card.appendChild(bar);
+      open(0);
+    } else {
+      docBody(body, block);
+    }
     card.appendChild(body);
     host.appendChild(card);
-
-    var stamp = sty(el('p', 'nk-wf-item',
-      'Checked against every advisory already recorded. No prior record found, so one is created rather than a second investigation into the same flaw.'),
-      'margin: 16px 0 0; padding-left: 14px; border-left: 2px solid #12B886; font-size: 14px; line-height: 1.5; color: #3D4147');
-    host.appendChild(stamp);
-
-    return function (p) {
-      built.forEach(function (b, i) {
-        var q = step(p * 0.8, i, built.length);
-        b.row.style.opacity = String(0.3 + 0.7 * clamp(q * 4, 0, 1));
-        b.val.textContent = b.text.slice(0, Math.round(b.text.length * clamp(q * 1.3, 0, 1)));
-      });
-      stamp.style.opacity = String(clamp((p - 0.75) * 6, 0, 1));
-    };
   }
 
-  /* A population draining through named reductions. The number is the
-     picture, so there is no bar to draw out of proportion. */
-  function sceneFunnel(host, viz) {
-    var list = sty(el('div'), 'border-top: 1px solid ' + LINE);
-    var built = [];
-    viz.rows.forEach(function (r) {
-      var row = sty(el('div', 'nk-wf-item'),
-        'display: flex; align-items: baseline; gap: 18px; padding: 10px 0; border-bottom: 1px solid ' + LINE);
-      var v = sty(el('span', null, '0'),
-        'flex: none; width: 68px; text-align: right; font-size: 30px; line-height: 1.1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: '
-        + tone(r.tone).fg);
-      row.appendChild(v);
-      row.appendChild(sty(el('span', null, r.label), 'font-size: 16px; color: #0A0A0B'));
-      list.appendChild(row);
-      built.push({ row: row, v: v, target: r.value });
-    });
-    host.appendChild(list);
-
-    var siteCells = [];
-    if (viz.sites) {
-      host.appendChild(sty(el('div'), 'height: 20px'));
-      siteCells = cellRow(host, viz.sites, '30px');
-    }
-
-    return function (p) {
-      built.forEach(function (b, i) {
-        var q = step(p * 0.7, i, built.length);
-        b.row.style.opacity = String(0.3 + 0.7 * clamp(q * 3, 0, 1));
-        b.v.textContent = num(b.target * ease(q));
-      });
-      siteCells.forEach(function (c, i) {
-        c.v.textContent = num(c.target * ease((p - 0.55 - i * 0.07) * 5));
-      });
-    };
-  }
-
-  /* 755 squares, one per device, each taking its colour as the sweep reaches
-     it. The point of the picture is the ratio: twelve lit cells in a wall. */
-  function sceneGrid(host, viz) {
+  /* 755 squares, one per device. The point of the picture is the ratio.
+     Returns a painter taking how far the check has got, 0 to 1. */
+  function blockGrid(host, block) {
     var COLOURS = { unseen: '#ECEEF0', front: '#0A0A0B', hot: '#E5484D', dim: '#A9AEB6', clear: '#BFE6D6' };
-    var hot = {}, dim = {};
+    var kind = [];
     var i;
-    for (i = 0; i < viz.hot; i++) hot[(i * 61 + 29) % viz.total] = true;
-    for (i = 0; i < viz.dim; i++) {
-      var k = (i * 149 + 11) % viz.total;
-      if (!hot[k]) dim[k] = true;
+    for (i = 0; i < block.total; i++) kind.push('clear');
+    for (i = 0; i < block.hot; i++) kind[(i * 61 + 29) % block.total] = 'hot';
+    var left = block.dim;
+    /* 149 shares no factor with 755, so this visits every square once. */
+    for (i = 0; i < block.total && left > 0; i++) {
+      var k = (i * 149 + 11) % block.total;
+      if (kind[k] === 'clear') { kind[k] = 'dim'; left--; }
     }
 
-    host.appendChild(sty(el('div', null, num(viz.total) + ' devices, one square each'),
-      'font-size: 14px; color: #5B6068; margin-bottom: 12px'));
-
+    host.appendChild(sty(el('div', null, num(block.total) + ' devices, one square each'),
+      'font-size: 14px; color: #5B6068; margin: 26px 0 10px'));
     var grid = el('div', 'nk-wf-grid');
     var cells = [];
     var painted = [];
-    for (i = 0; i < viz.total; i++) {
+    for (i = 0; i < block.total; i++) {
       var cell = el('span');
       grid.appendChild(cell);
       cells.push(cell);
@@ -310,306 +221,415 @@
     }
     host.appendChild(grid);
 
-    var legend = sty(el('div'), 'margin-top: 18px; display: flex; flex-direction: column; gap: 8px');
-    var legendRows = [];
-    viz.legend.forEach(function (entry) {
-      var row = sty(el('div', 'nk-wf-item'),
-        'display: flex; align-items: baseline; gap: 10px; font-size: 14px; color: #3D4147');
-      row.appendChild(sty(el('span'),
-        'flex: none; width: 9px; height: 9px; background: ' + (COLOURS[entry[0]] || COLOURS.clear)));
+    var legend = sty(el('div'), 'margin-top: 14px; display: flex; flex-direction: column; gap: 6px');
+    block.legend.forEach(function (entry) {
+      var row = sty(el('div'), 'display: flex; align-items: baseline; gap: 10px; font-size: 15px; color: #3D4147');
+      row.appendChild(sty(el('span'), 'flex: none; width: 9px; height: 9px; background: ' + COLOURS[entry[0]]));
       row.appendChild(el('span', null, entry[1]));
       legend.appendChild(row);
-      legendRows.push(row);
     });
     host.appendChild(legend);
 
-    return function (p) {
-      var front = clamp(p * 1.15, 0, 1) * viz.total;
+    return function (q) {
+      var front = clamp(q, 0, 1) * block.total;
       for (var j = 0; j < cells.length; j++) {
         var colour;
-        if (j > front) colour = COLOURS.unseen;
-        else if (j > front - 14 && front < viz.total) colour = COLOURS.front;
-        else if (hot[j]) colour = COLOURS.hot;
-        else if (dim[j]) colour = COLOURS.dim;
-        else colour = COLOURS.clear;
-        /* Only the cells the sweep is crossing change, so the comparison is
-           against what was last written rather than the computed style. */
+        if (j >= front) colour = COLOURS.unseen;
+        else if (j > front - 14 && q < 1) colour = COLOURS.front;
+        else colour = COLOURS[kind[j]];
         if (painted[j] !== colour) {
           cells[j].style.background = colour;
           painted[j] = colour;
         }
       }
-      legendRows.forEach(function (row, n) {
-        row.style.opacity = String(clamp((p - 0.6 - n * 0.08) * 6, 0, 1));
-      });
     };
   }
 
-  /* A stage that stops and waits for a person. The waiting is the content. */
-  function sceneGate(host, viz) {
-    var banner = sty(el('div'), '');
-    var pip = sty(el('span', 'nk-live'), 'width: 9px; height: 9px; flex: none');
-    var bannerText = sty(el('span', null, ''), 'font-size: 15px; font-weight: 500');
-    banner.appendChild(pip);
-    banner.appendChild(bannerText);
-    banner.appendChild(sty(el('span', null, viz.who), 'font-size: 14px; color: #3D4147; margin-left: auto'));
-    host.appendChild(banner);
+  /* ---- the detail panel ------------------------------------------------- */
 
-    host.appendChild(sty(el('p', null, viz.question),
-      'margin: 22px 0 0; font-size: clamp(20px, 2.2vw, 26px); font-weight: 500; line-height: 1.25; letter-spacing: -.025em; color: #0A0A0B'));
-
-    var opts = sty(el('div'), 'margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px');
-    var optCells = [];
-    viz.options.forEach(function (o) {
-      var cell = sty(el('div', 'nk-wf-item'),
-        'flex: 1 1 180px; min-width: 0; border: 1px solid ' + LINE + '; background: #FFFFFF; padding: 14px 16px');
-      cell.appendChild(sty(el('div', null, o.label), 'font-size: 16px; font-weight: 500; color: ' + tone(o.tone).fg));
-      cell.appendChild(sty(el('div', null, o.note), 'font-size: 14px; line-height: 1.4; color: #5B6068; margin-top: 3px'));
-      opts.appendChild(cell);
-      optCells.push(cell);
-    });
-    host.appendChild(opts);
-
-    var answer = sty(el('div', 'nk-wf-item'),
-      'margin-top: 20px; border-left: 2px solid #12B886; padding: 2px 0 2px 14px');
-    answer.appendChild(sty(el('div', null, 'The answer, recorded with who gave it'), 'font-size: 13px; color: #0B7A58'));
-    var answerText = sty(el('div', null, ''),
-      'font-size: 16px; line-height: 1.45; color: #0A0A0B; margin-top: 4px; min-height: 2.9em');
-    answer.appendChild(answerText);
-    host.appendChild(answer);
-
-    var BASE = 'padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; border: 1px solid ';
-    var wasAnswered = null;
-
-    return function (p) {
-      var answered = p > 0.55;
-      if (answered !== wasAnswered) {
-        wasAnswered = answered;
-        sty(banner, BASE + (answered ? '#12B886; background: #EAF7F1' : '#F5A524; background: #FFF6E3'));
-        pip.style.background = answered ? '#12B886' : '#F5A524';
-        pip.className = answered ? '' : 'nk-live';
-        bannerText.textContent = answered ? 'Answered, the flow continues' : 'Stopped, waiting on a person';
-        bannerText.style.color = answered ? '#0B7A58' : '#8A5300';
-      }
-      optCells.forEach(function (cell, i) {
-        cell.style.opacity = String(0.3 + 0.7 * clamp((p - 0.15 - i * 0.1) * 6, 0, 1));
-      });
-      var typed = clamp((p - 0.6) / 0.3, 0, 1);
-      answer.style.opacity = String(clamp(typed * 4, 0, 1));
-      answerText.textContent = viz.answer.slice(0, Math.round(viz.answer.length * typed));
-    };
+  function buildIdle(host) {
+    var box = sty(el('div'), 'max-width: 520px; padding: 24px 0');
+    box.appendChild(sty(el('h2', null, 'Nothing has run yet'),
+      'margin: 0; font-weight: 500; font-size: clamp(26px, 2.8vw, 34px); line-height: 1.1; letter-spacing: -.035em'));
+    box.appendChild(sty(el('p', null,
+      'Choose a vendor and a flaw at the top of the page, then publish the alert. The fourteen steps listed here run one after another. Where a person has to decide, the run stops and waits for you.'),
+      'margin: 14px 0 22px; font-size: 17px; line-height: 1.5; color: #5B6068'));
+    var again = el('button', 'nk-wf-play', 'Publish the alert');
+    again.type = 'button';
+    again.addEventListener('click', start);
+    box.appendChild(again);
+    host.appendChild(box);
+    return function () {};
   }
 
-  function sceneBoard(host, viz) {
-    var cells = cellRow(host, viz.headline, 'clamp(26px, 3vw, 36px)');
-    host.appendChild(sty(el('div'), 'height: 20px'));
-    var update = rowList(host, viz.rows);
-
-    return function (p) {
-      cells.forEach(function (c, i) {
-        c.v.textContent = num(c.target * ease((p - i * 0.06) * 2.4));
-      });
-      update(clamp((p - 0.25) / 0.75, 0, 1));
-    };
-  }
-
-  function buildScene(stage) {
-    var host = id('wf-scene');
+  function buildDetail(i) {
+    var host = id('wf-detail');
     if (!host) return function () {};
     host.textContent = '';
-    var viz = stage.viz;
-    if (viz.kind === 'intake') return sceneIntake(host, viz);
-    if (viz.kind === 'funnel') return sceneFunnel(host, viz);
-    if (viz.kind === 'grid') return sceneGrid(host, viz);
-    if (viz.kind === 'gate') return sceneGate(host, viz);
-    if (viz.kind === 'board') return sceneBoard(host, viz);
-    return rowList(host, viz.rows);
-  }
+    if (!run) return buildIdle(host);
 
-  /* ---- the log ---------------------------------------------------------- */
-
-  var logShown = 0;
-
-  function paintLog(head) {
-    var host = id('wf-log');
-    if (!host) return;
-
-    var want = 0;
-    while (want < lines.length && lines[want].time <= head) want++;
-
-    if (want < logShown) {
-      host.textContent = '';
-      logShown = 0;
-    }
-    if (want === logShown) return;
-    while (logShown < want) {
-      var row = sty(el('div', 'nk-wf-logline'), 'display: flex; gap: 10px');
-      row.appendChild(sty(el('span', null, '>'), 'flex: none; color: #0B7A58'));
-      row.appendChild(el('span', null, lines[logShown].text));
-      host.appendChild(row);
-      logShown++;
-    }
-    host.scrollTop = host.scrollHeight;
-  }
-
-  /* ---- the stage text and the counters ---------------------------------- */
-
-  function hours(h) { return h + (h === 1 ? ' hour' : ' hours'); }
-
-  /* Depends on the stage alone, so it is written once per stage, not per tick. */
-  function paintStage(idx) {
-    var s = marks[idx].stage;
+    var s = run.scenario.steps[i];
     var aut = D.autonomy[s.autonomy] || D.autonomy.agent;
     var t = tone(aut.tone);
     var built = s.status === 'running';
 
-    set('wf-stage-num', 'Stage ' + (s.n === 2.5 ? '2, continued' : s.n));
-    set('wf-stage-name', s.name);
-    set('wf-stage-head', s.head);
-    set('wf-stage-body', s.body);
-    set('wf-stage-agent', s.agent + ' agent');
-    set('wf-stage-effort', hours(s.manual) + ' by hand, ' + hours(s.assisted) + ' with the agents');
+    var top = sty(el('div'), 'display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px');
+    top.appendChild(sty(el('span', null, 'Step ' + s.n), 'font-family: var(--mono); font-size: 13px; color: #5B6068'));
+    top.appendChild(sty(el('span', null, aut.label),
+      'font-size: 13px; font-weight: 500; padding: 3px 9px; color: ' + t.fg + '; background: ' + t.tint));
+    top.appendChild(sty(el('span', null, built ? 'Built and running today' : 'Designed, not built yet'),
+      'margin-left: auto; font-size: 14px; font-weight: 500; color: ' + (built ? '#0B7A58' : '#5B6068')));
+    host.appendChild(top);
 
-    var autEl = id('wf-stage-autonomy');
-    if (autEl) {
-      autEl.textContent = aut.label;
-      autEl.style.color = t.fg;
-      autEl.style.background = t.tint;
+    host.appendChild(sty(el('h2', null, s.name),
+      'margin: 14px 0 0; font-weight: 500; font-size: clamp(26px, 2.8vw, 34px); line-height: 1.1; letter-spacing: -.035em'));
+    host.appendChild(sty(el('p', null, s.what),
+      'margin: 12px 0 0; font-size: 17px; line-height: 1.55; color: #3D4147; max-width: 660px'));
+
+    /* What the agent did, one line at a time while the step runs. */
+    host.appendChild(label('What the ' + s.agent + ' agent did'));
+    var acts = sty(el('div'), 'display: flex; flex-direction: column; gap: 6px');
+    var actRows = s.activity.map(function (text) {
+      var row = sty(el('div', 'nk-wf-in'), 'display: flex; align-items: baseline; gap: 10px; font-size: 16px; line-height: 1.45');
+      row.appendChild(sty(el('span', null, '✓'), 'flex: none; color: #0B7A58; font-weight: 600'));
+      row.appendChild(el('span', null, text));
+      acts.appendChild(row);
+      return row;
+    });
+    var working = sty(el('div'), 'display: flex; align-items: center; gap: 10px; font-size: 15px; color: #5B6068; margin-top: 2px');
+    working.appendChild(sty(el('span', 'nk-live'), 'flex: none; width: 8px; height: 8px; background: #12B886'));
+    working.appendChild(el('span', null, 'Working'));
+    acts.appendChild(working);
+    host.appendChild(acts);
+
+    /* The human action: a question with buttons, then the answer. */
+    var ask = null, answer = null, answerText = null;
+    if (s.decision) {
+      var d = s.decision;
+      ask = sty(el('div', 'nk-wf-in'), 'margin-top: 26px; border: 1px solid #F5A524; background: #FFF6E3; padding: 18px 20px 20px');
+      var askTop = sty(el('div'), 'display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 14px');
+      askTop.appendChild(sty(el('span', 'nk-live'), 'flex: none; width: 9px; height: 9px; background: #F5A524'));
+      askTop.appendChild(sty(el('span', null, 'The run has stopped. A person has to decide'), 'font-weight: 600; color: #8A5300'));
+      askTop.appendChild(sty(el('span', null, d.who), 'margin-left: auto; color: #3D4147'));
+      ask.appendChild(askTop);
+      ask.appendChild(sty(el('p', null, d.ask),
+        'margin: 12px 0 0; font-size: clamp(20px, 2.1vw, 24px); font-weight: 500; line-height: 1.25; letter-spacing: -.02em'));
+      var choices = sty(el('div'), 'margin-top: 16px; display: flex; flex-wrap: wrap; gap: 10px');
+      d.options.forEach(function (o, k) {
+        var b = el('button', 'nk-wf-choice');
+        b.type = 'button';
+        b.appendChild(sty(el('span', null, o.label), 'display: block; font-size: 16px; font-weight: 600'));
+        b.appendChild(sty(el('span', null, o.note), 'display: block; font-size: 14px; line-height: 1.35; margin-top: 2px; opacity: .8'));
+        b.addEventListener('click', function () { decide(i, k); });
+        choices.appendChild(b);
+      });
+      ask.appendChild(choices);
+      ask.appendChild(sty(el('p', null, 'In this demo you answer as the ' + d.who.charAt(0).toLowerCase() + d.who.slice(1) + '.'),
+        'margin: 12px 0 0; font-size: 14px; color: #5B6068'));
+      host.appendChild(ask);
+
+      answer = sty(el('div', 'nk-wf-in'), 'margin-top: 26px; border: 1px solid #12B886; background: #EAF7F1; padding: 16px 20px');
+      answer.appendChild(sty(el('div', null, 'Human action: ' + d.who), 'font-size: 14px; font-weight: 600; color: #0B7A58'));
+      answer.appendChild(sty(el('div', null, d.ask), 'font-size: 15px; color: #3D4147; margin-top: 6px'));
+      answerText = sty(el('div', null, ''), 'font-size: 17px; font-weight: 500; line-height: 1.45; margin-top: 6px');
+      answer.appendChild(answerText);
+      host.appendChild(answer);
     }
-    var statusEl = id('wf-stage-status');
-    if (statusEl) {
-      statusEl.textContent = built ? 'Built and running today' : 'Designed, not built yet';
-      statusEl.style.color = built ? '#0B7A58' : '#3D4147';
-    }
 
-    var prev = id('wf-prev');
-    if (prev) prev.disabled = idx === 0;
-    var next = id('wf-next');
-    if (next) next.disabled = idx === marks.length - 1;
-    markRail(idx);
+    /* The output. */
+    var out = el('div', 'nk-wf-in');
+    var grids = [];
+    s.blocks.forEach(function (block) {
+      if (block.kind === 'doc') blockDoc(out, block);
+      else if (block.kind === 'list') blockList(out, block);
+      else if (block.kind === 'numbers') blockNumbers(out, block);
+      else if (block.kind === 'note') blockNote(out, block);
+      else if (block.kind === 'grid') grids.push(blockGrid(out, block));
+    });
+    host.appendChild(out);
+
+    var hasGrid = grids.length > 0;
+
+    return function (p, mode) {
+      var live = mode === 'live';
+      var n = actRows.length;
+      actRows.forEach(function (row, k) {
+        show(row, !live || p >= (k + 1) / (n + 1) * 0.62);
+      });
+      show(working, live && p < 0.66);
+      /* A grid step shows its picture from the start, filling as it checks. */
+      show(out, !live || hasGrid || p >= 0.66);
+      grids.forEach(function (paint) { paint(live ? p / 0.6 : 1); });
+
+      if (ask) {
+        var made = run.decisions[i];
+        var decided = made !== undefined;
+        show(ask, mode === 'waiting' && !decided);
+        show(answer, decided);
+        if (decided) answerText.textContent = s.decision.options[made].outcome;
+      }
+    };
   }
 
-  function paintCounters(head) {
-    var assessed = 755 * progressOf(2, head);
-    /* Twelve are found by matching; qualification takes three of them back
-       out, because a person confirmed the feature was switched off. */
-    var confirmed = 12 * progressOf(2, head);
-    if (progressOf(3, head) > 0) confirmed = 12 - 3 * progressOf(3, head);
-    var fixed = 9 * progressOf(11, head);
-    var decisions = 0;
-    [3, 5, 8, 9, 13].forEach(function (n) { decisions += progressOf(n, head); });
+  /* ---- the step list ---------------------------------------------------- */
 
-    set('wf-stat-assessed', num(assessed));
-    set('wf-stat-vulnerable', num(confirmed));
-    set('wf-stat-fixed', num(fixed));
-    set('wf-stat-decisions', num(decisions));
-    set('wf-clock', mmss(head));
-  }
+  var rows = [];
 
-  /* ---- the loop --------------------------------------------------------- */
-
-  var head = 0;
-  var playing = false;
-  var started = false;      /* true once the visitor or the page has pressed play */
-  var shownIdx = -1;
-  var update = function () {};
-
-  function indexAt(at) {
-    for (var i = marks.length - 1; i >= 0; i--) {
-      if (at >= marks[i].start) return i;
-    }
-    return 0;
-  }
-
-  function paint() {
-    var idx = indexAt(head);
-    var mark = marks[idx];
-    var p = clamp((head - mark.start) / mark.stage.secs, 0, 1);
-
-    if (idx !== shownIdx) {
-      shownIdx = idx;
-      update = buildScene(mark.stage);
-      paintStage(idx);
-    }
-    update(p);
-    paintRail(idx, p);
-    paintCounters(head);
-    paintLog(head);
-  }
-
-  function setPlaying(on) {
-    playing = on;
-    if (on) started = true;
-    var btn = id('wf-play');
-    if (btn) btn.textContent = on ? 'Pause' : (head >= TOTAL ? 'Replay' : 'Play');
-  }
-
-  /* Under reduced motion there is no loop to play into a stage, so a seek
-     lands on that stage already finished rather than on an empty scene. */
-  function seek(i) {
-    i = clamp(i, 0, marks.length - 1);
-    head = still ? marks[i].end - 0.001 : marks[i].start;
-    shownIdx = -1;
-    paint();
-    if (!still) setPlaying(true);
-  }
-
-  buildRail(seek);
-
-  var playBtn = id('wf-play');
-  if (playBtn) {
-    playBtn.addEventListener('click', function () {
-      if (head >= TOTAL) { seek(0); return; }
-      setPlaying(!playing);
+  function buildSteps() {
+    var host = id('wf-steps');
+    if (!host) return;
+    host.textContent = '';
+    rows = [];
+    steps().forEach(function (s, i) {
+      var aut = D.autonomy[s.autonomy] || D.autonomy.agent;
+      var row = el('button', 'nk-wf-step');
+      row.type = 'button';
+      var mark = el('span', 'nk-wf-mark');
+      row.appendChild(mark);
+      row.appendChild(el('span', 'nk-wf-stepnum', s.n));
+      row.appendChild(el('span', 'nk-wf-stepname', s.name));
+      var state = el('span', 'nk-wf-stepstate', '');
+      row.appendChild(state);
+      row.addEventListener('click', function () {
+        if (!run || run.phase !== 'done') return;
+        run.view = i;
+        paint();
+      });
+      host.appendChild(row);
+      rows.push({ row: row, mark: mark, state: state, tone: tone(aut.tone), name: s.name, n: s.n });
     });
   }
-  var prevBtn = id('wf-prev');
-  if (prevBtn) prevBtn.addEventListener('click', function () { seek(indexAt(head) - 1); });
-  var nextBtn = id('wf-next');
-  if (nextBtn) nextBtn.addEventListener('click', function () { seek(indexAt(head) + 1); });
 
-  /* The hero comparison is the totals of the same data, drawn to scale. */
-  set('wf-total', mmss(Math.round(TOTAL)));
-  set('wf-manual-total', String(Math.round(D.totals.manual)));
-  set('wf-assisted-total', String(Math.round(D.totals.assisted)));
-  var assistedBar = id('wf-assisted-bar');
-  if (assistedBar && D.totals.manual > 0) {
-    assistedBar.style.width = (D.totals.assisted / D.totals.manual * 100) + '%';
-  }
-
-  if (still) {
-    /* Reduced motion: no loop, so the last stage is shown finished and the
-       play control is removed rather than left there doing nothing. */
-    head = TOTAL;
-    if (playBtn) playBtn.style.display = 'none';
-  } else {
-    /* The replay starts when it scrolls into view, not behind the visitor's
-       back while they are still reading the introduction. */
-    var player = id('replay');
-    if (player && 'IntersectionObserver' in window) {
-      var watcher = new IntersectionObserver(function (entries) {
-        for (var i = 0; i < entries.length; i++) {
-          if (!entries[i].isIntersecting) continue;
-          watcher.disconnect();
-          if (!started) setPlaying(true);
-          return;
-        }
-      }, { threshold: 0.3 });
-      watcher.observe(player);
-    } else {
-      setPlaying(true);
-    }
-  }
-
-  N.run({
-    interval: 60,
-    blocks: 6,
-    onTick: function () {
-      if (playing) {
-        head += STEP;
-        if (head >= TOTAL) { head = TOTAL; setPlaying(false); }
+  function paintSteps() {
+    var host = id('wf-steps');
+    rows.forEach(function (r, i) {
+      var st = 'todo';
+      if (run) {
+        if (run.phase === 'done' || i < run.idx) st = 'done';
+        else if (i === run.idx) st = run.phase === 'waiting' ? 'waiting' : 'running';
       }
-      paint();
+      var words = { todo: '', running: 'Running', waiting: 'Needs a person', done: 'Done' }[st];
+      if (r.state.textContent !== words) r.state.textContent = words;
+      r.state.style.color = st === 'waiting' ? '#8A5300' : (st === 'running' ? '#0A0A0B' : '#5B6068');
+      r.row.setAttribute('data-state', st);
+      r.row.disabled = !(run && run.phase === 'done');
+      r.row.setAttribute('aria-label', 'Step ' + r.n + ', ' + r.name + (words ? '. ' + words : ''));
+      r.mark.style.background = st === 'todo' ? r.tone.mid : r.tone.solid;
+      r.mark.className = 'nk-wf-mark' + (st === 'running' || st === 'waiting' ? ' nk-live' : '');
+
+      var current = !!run && i === run.view;
+      if (current) r.row.setAttribute('aria-current', 'step');
+      else r.row.removeAttribute('aria-current');
+      /* On a phone the list is one scrolling row, so keep the step in sight. */
+      if (current && host && host.scrollWidth > host.clientWidth) {
+        host.scrollLeft = r.row.offsetLeft - host.offsetLeft - host.clientWidth / 2 + r.row.offsetWidth / 2;
+      }
+    });
+  }
+
+  /* ---- the run bar and the counters ------------------------------------- */
+
+  function paintBar() {
+    var title = id('wf-run-title');
+    var sc = run ? run.scenario : preview;
+    if (title) title.textContent = sc.vendor.name + ': ' + sc.flaw.label.toLowerCase();
+
+    var state = id('wf-run-state');
+    var bar = id('wf-progress');
+    var total = steps().length;
+    var text = 'Not started', colour = '#5B6068', done = 0, fill = '#12B886';
+    if (run) {
+      var s = run.scenario.steps[run.idx];
+      if (run.phase === 'done') {
+        text = 'Run complete. Choose any step to see what it did.';
+        colour = '#0B7A58';
+        done = total;
+      } else if (run.phase === 'waiting') {
+        text = 'Stopped at step ' + s.n + '. Waiting for: ' + s.decision.who;
+        colour = '#8A5300';
+        fill = '#F5A524';
+        done = run.idx + 1;
+      } else {
+        text = 'Running step ' + s.n + ': ' + s.name;
+        colour = '#0A0A0B';
+        done = run.idx + clamp(run.p, 0, 1);
+      }
     }
-  });
+    if (state) { state.textContent = text; state.style.color = colour; }
+    if (bar) { bar.style.width = (done / total * 100) + '%'; bar.style.background = fill; }
+
+    var reset = id('wf-reset');
+    if (reset) show(reset, !!run);
+    var trigger = id('wf-trigger');
+    if (trigger) {
+      trigger.disabled = busy();
+      trigger.textContent = busy() ? 'Run in progress' : (run ? 'Publish a new alert' : 'Publish the alert');
+    }
+  }
+
+  function paintCounters() {
+    var c = { checked: 0, risk: 0, fixed: 0 };
+    var decisions = 0;
+    if (run) {
+      run.scenario.steps.forEach(function (s, i) {
+        var finished = run.phase === 'done' || i < run.idx || (i === run.idx && run.hold > 0);
+        if (run.decisions[i] !== undefined) decisions++;
+        if (!finished || !s.after) return;
+        for (var key in s.after) {
+          if (Object.prototype.hasOwnProperty.call(s.after, key)) c[key] = s.after[key];
+        }
+      });
+    }
+    set('wf-stat-checked', num(c.checked));
+    set('wf-stat-risk', num(c.risk));
+    set('wf-stat-fixed', num(c.fixed));
+    set('wf-stat-decisions', num(decisions));
+  }
+
+  /* ---- the scenario picker ---------------------------------------------- */
+
+  var chipSets = [];
+
+  function buildPicker(hostId, options, field) {
+    var host = id(hostId);
+    if (!host) return;
+    var chips = options.map(function (o) {
+      var chip = el('button', 'nk-chip', o.label);
+      chip.type = 'button';
+      chip.addEventListener('click', function () {
+        if (busy()) return;
+        pick[field] = o.key;
+        paintPicker();
+      });
+      host.appendChild(chip);
+      return { chip: chip, key: o.key };
+    });
+    chipSets.push({ chips: chips, field: field });
+  }
+
+  function paintPicker() {
+    preview = D.build(pick.vendor, pick.flaw);
+    chipSets.forEach(function (set_) {
+      set_.chips.forEach(function (c) {
+        c.chip.setAttribute('aria-pressed', c.key === pick[set_.field] ? 'true' : 'false');
+        c.chip.disabled = busy();
+      });
+    });
+    set('wf-flaw-plain', preview.flaw.plain);
+    set('wf-alert-title', preview.alert.title);
+    set('wf-alert-vendor', preview.alert.vendor);
+    set('wf-alert-severity', preview.alert.severity);
+    set('wf-alert-attacked', preview.alert.attacked);
+    set('wf-alert-ref', preview.alert.ref);
+    set('wf-real', preview.real
+      ? 'The device numbers in this scenario are real. They come from a match against a live instance.'
+      : 'The device numbers in this scenario are made up, to show how the flow changes. Only Cisco with the login bypass uses real numbers.');
+    if (!run) { buildSteps(); paint(); }
+  }
+
+  /* ---- running ---------------------------------------------------------- */
+
+  function paint() {
+    var view = run ? run.view : -1;
+    if (shown.run !== run || shown.view !== view) {
+      shown = { run: run, view: view };
+      update = buildDetail(view);
+    }
+    if (run) {
+      var mode = 'final';
+      if (run.phase !== 'done' && view === run.idx) {
+        mode = run.phase === 'waiting' ? 'waiting' : (run.hold > 0 ? 'final' : 'live');
+      }
+      update(run.p, mode);
+    }
+    paintSteps();
+    paintBar();
+    paintCounters();
+  }
+
+  /* The current step has finished its work. Stop for a person, or move on. */
+  function finishStep() {
+    var s = run.scenario.steps[run.idx];
+    if (s.decision && run.decisions[run.idx] === undefined) {
+      run.phase = 'waiting';
+      run.p = 1;
+      return;
+    }
+    if (run.idx >= run.scenario.steps.length - 1) {
+      run.phase = 'done';
+      run.p = 1;
+      run.hold = 0;
+      return;
+    }
+    run.idx += 1;
+    run.view = run.idx;
+    run.p = 0;
+    run.hold = 0;
+  }
+
+  /* Without a tick loop, run straight to the next decision or to the end. */
+  function runThrough() {
+    while (run.phase === 'running') finishStep();
+  }
+
+  function decide(i, choice) {
+    if (!run || run.phase !== 'waiting' || i !== run.idx) return;
+    run.decisions[i] = choice;
+    run.phase = 'running';
+    run.hold = HOLD_TICKS;
+    if (still) runThrough();
+    paint();
+  }
+
+  function start() {
+    if (busy()) return;
+    run = {
+      scenario: D.build(pick.vendor, pick.flaw),
+      idx: 0, view: 0, p: 0, hold: 0,
+      phase: 'running',
+      decisions: {}
+    };
+    buildSteps();
+    if (still) runThrough();
+    paintPicker();
+    paint();
+    var section = id('run');
+    if (section && section.scrollIntoView) {
+      section.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+    }
+  }
+
+  function reset() {
+    run = null;
+    paintPicker();
+    var setup = id('setup');
+    if (setup && setup.scrollIntoView) {
+      setup.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'start' });
+    }
+  }
+
+  function tick() {
+    if (!run || run.phase !== 'running') return;
+    if (run.hold > 0) {
+      run.hold -= 1;
+      if (run.hold === 0) finishStep();
+    } else {
+      var hasGrid = run.scenario.steps[run.idx].blocks.some(function (b) { return b.kind === 'grid'; });
+      run.p += TICK / (hasGrid ? GRID_SECS : STEP_SECS);
+      if (run.p >= 1) finishStep();
+    }
+    paint();
+  }
+
+  buildPicker('wf-vendors', D.vendors, 'vendor');
+  buildPicker('wf-flaws', D.flaws, 'flaw');
+
+  var trigger = id('wf-trigger');
+  if (trigger) trigger.addEventListener('click', start);
+  var resetBtn = id('wf-reset');
+  if (resetBtn) resetBtn.addEventListener('click', reset);
+
+  paintPicker();
+
+  N.run({ interval: 60, blocks: 6, onTick: tick });
 })();

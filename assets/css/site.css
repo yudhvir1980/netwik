@@ -237,60 +237,68 @@ a:hover { color: #0B7A58; }
   .nk-flow-m5 { opacity: 1; }
 }
 
-/* ---- workflow.html: the zero-day replay ------------------------------- */
-/* The replay has one playhead and rebuilds a scene per stage. Everything
-   here is either a hover or state rule, a pseudo-element or a responsive
-   rule, because those are the things inline styles cannot do. */
+/* ---- workflow.html: the zero-day run ---------------------------------- */
+/* The visitor publishes an alert and the steps run once. Everything here is
+   either a hover or state rule, a keyframe or a responsive rule, because
+   those are the things inline styles cannot do. */
 
-.nk-wf-play { font: inherit; font-size: 15px; font-weight: 600; min-height: 44px; min-width: 104px; padding: 0 18px; border: 1px solid var(--ink); background: var(--ink); color: #FFFFFF; cursor: pointer; transition: background .2s ease; }
+.nk-wf-play { font: inherit; font-size: 16px; font-weight: 600; min-height: 50px; padding: 0 22px; border: 1px solid var(--ink); background: var(--ink); color: #FFFFFF; cursor: pointer; transition: background .2s ease; }
 .nk-wf-play:hover { background: #2B2D31; }
-.nk-wf-btn { font: inherit; font-size: 18px; line-height: 1; min-height: 44px; min-width: 44px; padding: 0; border: 1px solid var(--line); background: #FFFFFF; color: var(--ink); cursor: pointer; transition: background .2s ease, border-color .2s ease; }
+.nk-wf-play:disabled { background: #8B9097; border-color: #8B9097; cursor: default; }
+.nk-wf-btn { font: inherit; font-size: 14px; font-weight: 500; min-height: 40px; padding: 0 14px; border: 1px solid var(--line); background: #FFFFFF; color: var(--ink); cursor: pointer; transition: background .2s ease, border-color .2s ease; }
 .nk-wf-btn:hover { background: #F4F5F6; border-color: var(--ink); }
-.nk-wf-btn:disabled { background: #FFFFFF; border-color: var(--line); color: #C3C7CD; cursor: default; }
 
-/* The timeline. One segment per stage, as wide as the stage is long. The
-   track carries who acts (its colour) and whether the stage exists yet
-   (hatched means designed, not built). */
-.nk-wf-rail { display: flex; gap: 3px; }
-.nk-wf-seg { font: inherit; min-width: 0; padding: 16px 0 6px; border: 0; background: transparent; color: #7A8088; cursor: pointer; display: flex; flex-direction: column; gap: 8px; }
-.nk-wf-track { position: relative; display: block; height: 10px; overflow: hidden; transition: height .15s ease, margin .15s ease; }
-.nk-wf-fill { display: block; height: 100%; width: 0; }
-.nk-wf-hatch { position: relative; }
-.nk-wf-seg[data-status="designed"] .nk-wf-track::after, .nk-wf-hatch::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .7) 0, rgba(255, 255, 255, .7) 2px, transparent 2px, transparent 6px); }
-.nk-wf-seg:hover .nk-wf-track, .nk-wf-seg[aria-current="step"] .nk-wf-track { height: 18px; margin-top: -8px; }
-.nk-wf-num { font-family: var(--mono); font-size: 11px; line-height: 1; text-align: left; }
-.nk-wf-seg:hover, .nk-wf-seg[aria-current="step"] { color: var(--ink); }
-.nk-wf-seg[aria-current="step"] .nk-wf-num { font-weight: 700; }
+/* The scenario picker reuses the catalogue chips; they lock during a run. */
+.nk-wf-pick .nk-chip:disabled { cursor: default; opacity: .45; }
+.nk-wf-pick .nk-chip:disabled:hover { background: #FFFFFF; }
+.nk-wf-pick .nk-chip[aria-pressed="true"]:disabled { opacity: 1; background: var(--ink); }
 
-.nk-wf-body { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
-.nk-wf-text { padding: 36px 28px 32px; }
-.nk-wf-stage { padding: 36px 28px 32px; min-height: 500px; border-left: 1px solid var(--line); background: #FAFAFB; }
+.nk-wf-body { display: grid; grid-template-columns: 310px minmax(0, 1fr); }
+.nk-wf-side { border-right: 1px solid var(--line); }
+.nk-wf-detail { padding: 34px 28px 40px; min-height: 620px; }
+
+/* The step list. A step can be opened only once the run is complete. */
+.nk-wf-steps { display: flex; flex-direction: column; }
+.nk-wf-step { font: inherit; text-align: left; width: 100%; min-height: 48px; padding: 6px 16px 6px 26px; display: flex; align-items: center; gap: 10px; border: 0; border-left: 2px solid transparent; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; transition: background .2s ease; }
+.nk-wf-step:disabled { cursor: default; color: var(--ink); }
+.nk-wf-step[data-state="todo"] { color: #7A8088; }
+.nk-wf-step:not(:disabled):hover { background: #F4F5F6; }
+.nk-wf-step[aria-current="step"] { background: #F4F5F6; border-left-color: var(--ink); }
+.nk-wf-mark { flex: none; width: 8px; height: 8px; }
+.nk-wf-stepnum { flex: none; width: 18px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.nk-wf-stepname { flex: 1 1 auto; min-width: 0; font-size: 15px; font-weight: 500; line-height: 1.25; }
+.nk-wf-stepstate { flex: none; font-size: 12px; }
+
+.nk-wf-tab { font: inherit; font-size: 14px; font-weight: 500; min-height: 36px; padding: 0 12px; border: 1px solid var(--line); background: #FFFFFF; color: var(--ink); cursor: pointer; transition: background .2s ease; }
+.nk-wf-tab:hover { background: #F4F5F6; }
+.nk-wf-tab[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #FFFFFF; }
+
+.nk-wf-choice { font: inherit; text-align: left; flex: 1 1 220px; min-height: 44px; padding: 12px 16px; border: 1px solid var(--ink); background: var(--ink); color: #FFFFFF; cursor: pointer; transition: background .2s ease; }
+.nk-wf-choice:hover { background: #2B2D31; }
+
+.nk-wf-in { animation: nk-rise .35s ease-out both; }
 
 /* One square per device. 755 of them, so the ratio is the picture. */
 .nk-wf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9px, 1fr)); gap: 2px; }
 .nk-wf-grid span { aspect-ratio: 1 / 1; background: #ECEEF0; transition: background .3s ease; }
 
-.nk-wf-item { transition: opacity .3s ease; }
-
-.nk-wf-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.nk-wf-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border-top: 1px solid var(--line); }
 .nk-wf-stats > div { background: #FFFFFF; padding: 18px 28px; }
-
-.nk-wf-log { font-family: var(--mono); font-size: 12px; line-height: 1.7; color: var(--muted); height: 82px; overflow: hidden; }
-.nk-wf-logline { animation: nk-rise .35s ease-out both; }
 
 @media (max-width: 860px) {
   .nk-wf-body { grid-template-columns: minmax(0, 1fr); }
-  .nk-wf-text { padding: 28px 28px 24px; }
-  .nk-wf-stage { padding: 28px; min-height: 460px; border-left: 0; border-top: 1px solid var(--line); }
+  .nk-wf-side { border-right: 0; border-bottom: 1px solid var(--line); }
+  /* The list becomes one scrolling row of numbers; the name is in the panel. */
+  .nk-wf-steps { flex-direction: row; overflow-x: auto; }
+  .nk-wf-step { flex: none; width: auto; min-width: 54px; justify-content: center; padding: 6px 12px; border-left: 0; border-bottom: 2px solid transparent; border-right: 1px solid var(--line); }
+  .nk-wf-step[aria-current="step"] { border-bottom-color: var(--ink); }
+  .nk-wf-stepnum { width: auto; font-size: 13px; }
+  .nk-wf-stepname, .nk-wf-stepstate { display: none; }
+  .nk-wf-detail { padding: 28px 28px 36px; min-height: 480px; }
   .nk-wf-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 600px) {
-  .nk-wf-rail { gap: 2px; }
-  .nk-wf-num { font-size: 10px; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .nk-wf-logline { animation: none; }
-  .nk-wf-play, .nk-wf-btn, .nk-wf-track, .nk-wf-grid span, .nk-wf-item { transition: none; }
+  .nk-wf-in { animation: none; }
+  .nk-wf-play, .nk-wf-btn, .nk-wf-step, .nk-wf-tab, .nk-wf-choice, .nk-wf-grid span { transition: none; }
 }

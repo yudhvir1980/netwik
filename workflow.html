@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A zero-day, start to finish: Netwik</title>
-<meta name="description" content="A stage by stage replay of agents handling a zero-day network advisory: 755 devices assessed, twelve affected, nine remediated, one exception signed. Every point where a person is still required is marked.">
+<meta name="description" content="An interactive run of agents handling a network security alert. Pick a vendor and a flaw, publish the alert, and open each of the fourteen steps. Every point where a person has to decide is marked.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,110 +32,97 @@
 
 <main id="main">
 
-<section style="padding: 56px 28px 52px; border-bottom: 1px solid #E2E4E7; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 40px 64px">
+<section id="setup" style="padding: 56px 28px 56px; border-bottom: 1px solid #E2E4E7; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 40px 56px">
 
-<div style="flex: 1 1 500px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 22px">
+<div style="flex: 1 1 480px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
 <p class="nk-rise" style="margin: 0; font-family: var(--mono); font-size: 13px; color: #5B6068">Zero-day vulnerability management</p>
-<h1 class="nk-rise" style="margin: 0; font-weight: 500; font-size: clamp(34px, 4.3vw, 54px); line-height: 1.07; letter-spacing: -0.035em; animation-delay: .06s">A vendor publishes at 09:00. Which of your 755 devices are affected, and who has to decide what?</h1>
-<p class="nk-rise" style="margin: 0; font-size: 19px; line-height: 1.5; color: #5B6068; max-width: 560px; animation-delay: .12s">That question normally takes a fortnight of spreadsheets, calls and chasing. Below is the whole thing as fourteen stages, replayed in two minutes, with every point where a person is still required marked in amber.</p>
-<a href="#replay" class="nk-btn nk-rise" style="background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px; animation-delay: .18s">Watch the replay &nbsp;↓</a>
+<h1 class="nk-rise" style="margin: 0; font-weight: 500; font-size: clamp(34px, 4.2vw, 52px); line-height: 1.06; letter-spacing: -0.035em; animation-delay: .06s">A serious security flaw is announced. See how agents handle it.</h1>
+<p class="nk-rise" style="margin: 0; font-size: 19px; line-height: 1.5; color: #5B6068; max-width: 520px; animation-delay: .12s">Choose whose equipment is affected and what kind of flaw it is, then publish the alert. Fourteen steps run one after another, from the first warning to the final report. Whenever a person has to decide, the run stops and waits.</p>
 </div>
 
-<div class="nk-rise" style="flex: 1 1 320px; min-width: 0; animation-delay: .18s">
-<div style="padding-bottom: 12px; border-bottom: 1px solid #E2E4E7; font-size: 14px; color: #5B6068">Human effort for one advisory, my estimate</div>
-<div style="padding-top: 18px">
-<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px"><span style="font-weight: 500">By hand</span><span style="color: #5B6068"><span id="wf-manual-total" style="font-size: 34px; line-height: 1; letter-spacing: -.035em; color: #0A0A0B">102</span> hours</span></div>
-<div style="height: 10px; margin-top: 10px; background: #0A0A0B"></div>
+<div class="nk-rise nk-wf-pick" style="flex: 1 1 380px; min-width: 0; border: 1px solid #0A0A0B; animation-delay: .16s">
+<div style="padding: 14px 22px; border-bottom: 1px solid #E2E4E7; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 14px">
+<span style="font-weight: 600">Set up the alert</span>
+<span style="color: #5B6068">A simulation. Nothing is sent to a real system.</span>
 </div>
-<div style="padding-top: 20px">
-<div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px"><span style="font-weight: 500">With the agents</span><span style="color: #5B6068"><span id="wf-assisted-total" style="font-size: 34px; line-height: 1; letter-spacing: -.035em; color: #0B7A58">13</span> hours</span></div>
-<div style="height: 10px; margin-top: 10px; background: #EEF0F2"><div id="wf-assisted-bar" style="height: 100%; width: 12.8%; background: #12B886"></div></div>
+<div style="padding: 20px 22px 22px">
+<div id="wf-vendors-label" style="font-size: 14px; color: #5B6068">1. Whose equipment?</div>
+<div id="wf-vendors" role="group" aria-labelledby="wf-vendors-label" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px"></div>
+
+<div id="wf-flaws-label" style="margin-top: 20px; font-size: 14px; color: #5B6068">2. What kind of flaw?</div>
+<div id="wf-flaws" role="group" aria-labelledby="wf-flaws-label" style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px"></div>
+<p id="wf-flaw-plain" aria-live="polite" style="margin: 10px 0 0; font-size: 15px; line-height: 1.45; color: #3D4147; min-height: 2.9em"></p>
+
+<dl style="margin: 14px 0 0; font-size: 14px; line-height: 1.45">
+<div style="display: flex; gap: 14px; padding: 8px 0; border-top: 1px solid #E2E4E7"><dt style="flex: none; width: 128px; color: #5B6068">The alert</dt><dd style="margin: 0; min-width: 0"><span id="wf-alert-vendor"></span>: <span id="wf-alert-title"></span></dd></div>
+<div style="display: flex; gap: 14px; padding: 8px 0; border-top: 1px solid #E2E4E7"><dt style="flex: none; width: 128px; color: #5B6068">Severity</dt><dd id="wf-alert-severity" style="margin: 0"></dd></div>
+<div style="display: flex; gap: 14px; padding: 8px 0; border-top: 1px solid #E2E4E7"><dt style="flex: none; width: 128px; color: #5B6068">In use by attackers</dt><dd id="wf-alert-attacked" style="margin: 0"></dd></div>
+<div style="display: flex; gap: 14px; padding: 8px 0; border-top: 1px solid #E2E4E7; border-bottom: 1px solid #E2E4E7"><dt style="flex: none; width: 128px; color: #5B6068">Reference</dt><dd id="wf-alert-ref" style="margin: 0; font-family: var(--mono); font-size: 13px"></dd></div>
+</dl>
+
+<button type="button" id="wf-trigger" class="nk-wf-play" style="margin-top: 20px; width: 100%">Publish the alert</button>
+<p id="wf-real" style="margin: 12px 0 0; font-size: 13px; line-height: 1.5; color: #5B6068"></p>
 </div>
-<p style="margin: 18px 0 0; font-size: 14px; line-height: 1.5; color: #5B6068">The hours that remain are the judgements and the physical work. Nothing here removes the engineer who touches the device at 02:00. The hours are my estimate, not a measurement. The device numbers are real, from a live instance.</p>
 </div>
 
 </section>
 
-<section id="replay" aria-label="The replay" style="border-bottom: 1px solid #E2E4E7">
+<section id="run" aria-label="The run" style="border-bottom: 1px solid #E2E4E7">
 
-<div style="padding: 20px 28px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px">
-<span style="display: flex; gap: 8px">
-<button type="button" id="wf-play" class="nk-wf-play">Play</button>
-<button type="button" id="wf-prev" class="nk-wf-btn" aria-label="Previous stage">←</button>
-<button type="button" id="wf-next" class="nk-wf-btn" aria-label="Next stage">→</button>
-</span>
-<span style="font-family: var(--mono); font-size: 13px; color: #5B6068"><span id="wf-clock" style="color: #0A0A0B">0:00</span> / <span id="wf-total">2:02</span></span>
-<span style="margin-left: auto; font-size: 14px; color: #5B6068">Illustrative replay of advisory NETWIK-DEMO-0001</span>
+<div style="padding: 18px 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px">
+<span id="wf-run-title" style="font-weight: 600"></span>
+<span id="wf-run-state" role="status" style="flex: 1 1 260px; min-width: 0; font-size: 15px; color: #5B6068">Not started</span>
+<button type="button" id="wf-reset" class="nk-wf-btn">Start again</button>
 </div>
-
-<div style="padding: 14px 28px 20px; border-bottom: 1px solid #E2E4E7">
-<div id="wf-rail" class="nk-wf-rail" role="group" aria-label="The fourteen stages. Pick one to jump to it."></div>
-<div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 13px; color: #3D4147">
-<span style="display: flex; align-items: center; gap: 8px"><span style="width: 18px; height: 10px; background: #12B886"></span>Agent acts alone</span>
-<span style="display: flex; align-items: center; gap: 8px"><span style="width: 18px; height: 10px; background: #F5A524"></span>A person decides</span>
-<span style="display: flex; align-items: center; gap: 8px"><span style="width: 18px; height: 10px; background: #E5484D"></span>Agent stops the flow</span>
-<span style="display: flex; align-items: center; gap: 8px"><span class="nk-wf-hatch" style="width: 18px; height: 10px; background: #8B9097"></span>Hatched: designed, not built yet</span>
-</div>
-</div>
+<div style="height: 4px; background: #EEF0F2"><div id="wf-progress" style="height: 100%; width: 0; background: #12B886"></div></div>
 
 <div class="nk-wf-body">
 
-<div class="nk-wf-text">
-<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px">
-<span id="wf-stage-num" style="font-family: var(--mono); font-size: 13px; color: #5B6068">Stage 0</span>
-<span id="wf-stage-autonomy" style="font-size: 13px; font-weight: 500; padding: 3px 9px; color: #0B7A58; background: #DFF3EB">Agent alone</span>
+<div class="nk-wf-side">
+<div style="padding: 18px 16px 12px 28px; font-size: 13px; font-weight: 600; color: #5B6068; border-bottom: 1px solid #E2E4E7">The fourteen steps</div>
+<div id="wf-steps" class="nk-wf-steps"></div>
+<div style="padding: 16px 16px 20px 28px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #3D4147">
+<span style="display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; background: #12B886"></span>The agent acts alone</span>
+<span style="display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; background: #F5A524"></span>A person is involved</span>
+<span style="display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; background: #E5484D"></span>The agent stops the flow</span>
+<span style="margin-top: 6px; color: #5B6068; line-height: 1.45">There is no step 7. It was withdrawn from the design, and renumbering the rest would break every reference to them.</span>
 </div>
-<h2 id="wf-stage-name" style="margin: 14px 0 0; font-weight: 500; font-size: clamp(26px, 2.8vw, 34px); line-height: 1.1; letter-spacing: -.035em">Intake and de-duplication</h2>
-<p id="wf-stage-head" style="margin: 14px 0 0; font-size: 19px; line-height: 1.4; color: #0A0A0B">An advisory arrives and is checked against what is already known.</p>
-<p id="wf-stage-body" style="margin: 12px 0 0; font-size: 16px; line-height: 1.55; color: #5B6068">The vendor publishes. The agent records it, looks for an advisory that already covers the same flaw, and links supersessions rather than opening a second investigation into one problem.</p>
-<dl style="margin: 24px 0 0; font-size: 14px; line-height: 1.45">
-<div style="display: flex; gap: 16px; padding: 9px 0; border-top: 1px solid #E2E4E7"><dt style="flex: none; width: 96px; color: #5B6068">Run by</dt><dd id="wf-stage-agent" style="margin: 0">Advisory Intake agent</dd></div>
-<div style="display: flex; gap: 16px; padding: 9px 0; border-top: 1px solid #E2E4E7"><dt style="flex: none; width: 96px; color: #5B6068">Status</dt><dd id="wf-stage-status" style="margin: 0; font-weight: 500; color: #0B7A58">Built and running today</dd></div>
-<div style="display: flex; gap: 16px; padding: 9px 0; border-top: 1px solid #E2E4E7; border-bottom: 1px solid #E2E4E7"><dt style="flex: none; width: 96px; color: #5B6068">My estimate</dt><dd id="wf-stage-effort" style="margin: 0">0.5 hours by hand, 0 hours with the agents</dd></div>
-</dl>
 </div>
 
-<div class="nk-wf-stage"><div id="wf-scene"></div></div>
+<div id="wf-detail" class="nk-wf-detail"></div>
 
 </div>
 
 <div class="nk-wf-stats">
-<div><div id="wf-stat-assessed" style="font-size: 28px; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums">0</div><div style="font-size: 14px; color: #5B6068; margin-top: 6px">Devices assessed</div></div>
-<div><div id="wf-stat-vulnerable" style="font-size: 28px; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: #C2343A">0</div><div style="font-size: 14px; color: #5B6068; margin-top: 6px">Confirmed vulnerable</div></div>
-<div><div id="wf-stat-fixed" style="font-size: 28px; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: #0B7A58">0</div><div style="font-size: 14px; color: #5B6068; margin-top: 6px">Remediated and verified</div></div>
-<div><div id="wf-stat-decisions" style="font-size: 28px; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: #8A5300">0</div><div style="font-size: 14px; color: #5B6068; margin-top: 6px">Human decisions captured</div></div>
+<div><div id="wf-stat-checked" style="font-size: 28px; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums">0</div><div style="font-size: 14px; color: #5B6068; margin-top: 6px">Devices checked</div></div>
+<div><div id="wf-stat-risk" style="font-size: 28px; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: #C2343A">0</div><div style="font-size: 14px; color: #5B6068; margin-top: 6px">Devices at risk</div></div>
+<div><div id="wf-stat-fixed" style="font-size: 28px; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: #0B7A58">0</div><div style="font-size: 14px; color: #5B6068; margin-top: 6px">Fixed and checked</div></div>
+<div><div id="wf-stat-decisions" style="font-size: 28px; line-height: 1; letter-spacing: -.035em; font-variant-numeric: tabular-nums; color: #8A5300">0</div><div style="font-size: 14px; color: #5B6068; margin-top: 6px">Decisions made by people</div></div>
 </div>
-
-<div style="padding: 16px 28px 20px; display: flex; flex-wrap: wrap; gap: 6px 24px">
-<div style="flex: none; width: 96px; font-size: 14px; color: #5B6068">Run record</div>
-<div id="wf-log" class="nk-wf-log" style="flex: 1 1 300px; min-width: 0"></div>
-</div>
-
-<p style="margin: 0; padding: 14px 28px; border-top: 1px solid #E2E4E7; font-size: 13px; line-height: 1.5; color: #5B6068">There is no stage 7. It was withdrawn from the design, and renumbering the rest would break every reference to them.</p>
 
 </section>
 
 <section style="padding: 72px 28px; border-bottom: 1px solid #E2E4E7; display: flex; flex-wrap: wrap; gap: 40px 64px">
 <div style="flex: 1 1 400px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
-<h2 style="margin: 0; font-weight: 500; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.08; letter-spacing: -.035em">What is actually built, and what is a design</h2>
-<p style="margin: 0; color: #3D4147">Three of these stages run against a live ServiceNow instance today: intake, estate matching, and the qualification tasks that stop the flow and ask a person a question. They are marked <span style="color: #0B7A58; font-weight: 500">built and running today</span> in the replay.</p>
-<p style="margin: 0; color: #3D4147">The rest are designed, written up and sequenced, but not built. I would rather show you the join than hide it, because the interesting part of this work is not the demo. It is which stages turned out to need a model at all.</p>
-<p style="margin: 0; color: #3D4147">Of the fourteen, one needs judgement from a model: reading a vendor's prose into comparable version ranges. The other thirteen are ordinary code. A version comparison that a model gets right 99 times in 100 is a version comparison that marks seven devices safe when they are not.</p>
+<h2 style="margin: 0; font-weight: 500; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.08; letter-spacing: -.035em">What is built today, and what is still a design</h2>
+<p style="margin: 0; color: #3D4147">Three of these steps run against a live ServiceNow instance today: receiving the alert, finding the affected devices, and the task that stops the flow and asks an engineer a question. They are marked <span style="color: #0B7A58; font-weight: 500">built and running today</span>.</p>
+<p style="margin: 0; color: #3D4147">The rest are designed and written up, but not built. What you see on this page is a simulation of the whole flow, so you can see where it is going. I would rather show you the join than hide it.</p>
+<p style="margin: 0; color: #3D4147">Of the fourteen steps, only one needs an AI model: reading the vendor's wording and turning it into rules. The other thirteen are ordinary code. A check that an AI model gets right 99 times in 100 is a check that marks seven devices safe when they are not.</p>
 <a href="built-on.html" class="nk-btn" style="align-self: flex-start; margin-top: 6px; background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px">What agents are built on &nbsp;→</a>
 </div>
 
 <div style="flex: 1 1 340px; min-width: 0">
 <div style="padding-bottom: 22px; border-top: 1px solid #0A0A0B">
-<h3 style="margin: 16px 0 0; font-size: 17px; font-weight: 500">The numbers in the replay</h3>
-<p style="margin: 6px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">755 devices, 10 built by another vendor, 12 inside the affected range, 7 of those at sites under regulatory validation, 0 reachable from the internet. Those came from a real match against a real instance, not from my imagination.</p>
+<h3 style="margin: 16px 0 0; font-size: 17px; font-weight: 500">Which numbers are real</h3>
+<p style="margin: 6px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">For Cisco with the login bypass: 755 devices, 10 built by another vendor, 12 on an affected version, 7 of those at regulated sites, none reachable from the internet. Those came from a real check against a real instance. The other scenarios use made-up numbers, and the page says so when you pick one.</p>
 </div>
 <div style="padding-bottom: 22px; border-top: 1px solid #E2E4E7">
 <h3 style="margin: 16px 0 0; font-size: 17px; font-weight: 500">Where the honest answer was duller</h3>
-<p style="margin: 6px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">I expected a perimeter emergency. Once the exposure data was repaired, none of the twelve faced the internet. It turned into a change-window and regulatory problem instead, which is less dramatic and much more like the real job.</p>
+<p style="margin: 6px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">I expected an emergency at the edge of the network. Once the data was repaired, none of the twelve faced the internet. It became a question of change windows and regulated sites instead, which is less dramatic and much more like the real job.</p>
 </div>
 <div style="border-top: 1px solid #E2E4E7">
 <h3 style="margin: 16px 0 0; font-size: 17px; font-weight: 500">What the agents are never allowed to do</h3>
-<p style="margin: 6px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">Call a device qualified without a person confirming it. Send anything outside the organisation unapproved. Accept a risk. Submit a change that collides with another. Those are not settings, they are the shape of the flow.</p>
+<p style="margin: 6px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">Call a device at risk, or safe, without a person confirming it. Send a message that nobody approved. Accept a risk. Book a change that clashes with another. Those are not settings. They are how the flow is built.</p>
 </div>
 </div>
 </section>
