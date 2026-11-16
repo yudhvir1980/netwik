@@ -25,11 +25,11 @@ import {
   ServiceNowError, ConfigError
 } from '../lib/servicenow.js';
 import {
-  createEstateRecord, writeProblem, isWriteEnabled, WriteRefused
+  createEstateRecord, createEstateModel, writeProblem, isWriteEnabled, WriteRefused
 } from '../lib/servicenow-write.js';
 import {
-  MARKER, ORIGINALS, SITES, targets, templateCodeFor, buildPlan, countByRole,
-  legacyBranchCodes, transform, transformLocation, matchLocation
+  MARKER, ORIGINALS, SITES, BRANCH_MODEL, targets, templateCodeFor, buildPlan, countByRole,
+  legacyBranchCodes, transform, transformLocation, transformModel, matchLocation
 } from '../lib/estate-load.js';
 
 const PARENT = 'cmdb_ci_netgear';
@@ -84,7 +84,7 @@ async function siteLocations() {
 /* Should this sales office have an old edge router or a current one, and does
    the copy need its model changed to get there? Returns the override to apply
    to the router, or null to copy the template as it is. */
-async function edgeOverrideFor(site, plan, facts, warnings) {
+async function edgeOverrideFor(site, plan, facts, warnings, mode) {
   if (site.tier !== 'T4') return null;
   const template = facts.routers.filter(function (r) {
     return String(r.u_site_code || '').toUpperCase() === plan.branchTemplate;
@@ -118,10 +118,29 @@ async function edgeOverrideFor(site, plan, facts, warnings) {
       warnings.push('No current edge router model was found, so ' + site.name + ' keeps the old one.');
       return null;
     }
-    warnings.push('No Catalyst 8200 model is in the instance, so ' + site.name + ' gets a ' + current.modelName + '.');
+    /* The design's sales-office router is missing, so make it from the
+       larger sites' model. Once it exists, later calls find it above. */
+    let modelId = '(the new ' + BRANCH_MODEL + ' model)';
+    if (mode === 'apply') {
+      const source = await getRecords('cmdb_hardware_product_model', {
+        query: 'sys_id=' + current.model_id, limit: 1
+      });
+      const made = await createEstateModel(transformModel(source[0] || {}, current.modelName), mode, MARKER);
+      if (!made.ok || !made.sys_id) {
+        warnings.push('Could not create the ' + BRANCH_MODEL + ' model (' + (made.error || 'no id came back')
+          + '), so ' + site.name + ' gets a ' + current.modelName + '.');
+        return {
+          model_id: current.model_id, firmware_version: current.firmware_version, manufacturer: current.manufacturer,
+          modelName: current.modelName, replacesModelName: template.modelName
+        };
+      }
+      modelId = made.sys_id;
+    } else {
+      warnings.push('The ' + BRANCH_MODEL + ' model is not in the instance. The load creates it once, copied from the ' + current.modelName + '.');
+    }
     return {
-      model_id: current.model_id, firmware_version: current.firmware_version, manufacturer: current.manufacturer,
-      modelName: current.modelName, replacesModelName: template.modelName
+      model_id: modelId, firmware_version: current.firmware_version, manufacturer: current.manufacturer,
+      modelName: BRANCH_MODEL, replacesModelName: template.modelName
     };
   }
   return {
@@ -193,19 +212,37 @@ async function workOnSite(site, plan, facts, customerId, mode, batch) {
   const byName = {};
   templates.forEach(function (t) { byName[String(t.name).toUpperCase()] = t; });
 
-  const edgeOverride = await edgeOverrideFor(site, plan, facts, warnings);
+  const edgeOverride = await edgeOverrideFor(site, plan, facts, warnings, mode);
   const siteIndex = SITES.map(function (s) { return s.code; }).indexOf(site.code);
 
   if (mode !== 'apply') {
-    /* Show a router where there is one in this batch, since its description
-       is the one most likely to be wrong. */
-    const first = take.filter(function (i) { return i.table === 'cmdb_ci_ip_router'; })[0] || take[0];
-    const source = byName[first.templateName.toUpperCase()];
+    /* Show a router where one is still to be made, since its model and
+       description are the ones most likely to be wrong. */
+    const first = missing.filter(function (i) { return i.table === 'cmdb_ci_ip_router'; })[0] || take[0];
+    let source = byName[first.templateName.toUpperCase()];
+    if (!source) {
+      const rows = await getRecords(first.table, {
+        query: 'company=' + customerId + '^name=' + first.templateName, limit: 1, timeoutMs: 9000
+      });
+      source = rows[0];
+    }
     report.sample = source ? transform(source, first, {
       customerId: customerId, site: site, siteIndex: siteIndex,
       locationId: location ? location.sys_id : '(the new location)',
       templateSite: templateSite, edgeOverride: edgeOverride
     }) : null;
+    if (report.sample) {
+      /* Names, not ids, for the two things a person has to judge. */
+      const groupId = report.sample.support_group;
+      const modelId = report.sample.model_id;
+      const [groups, models] = await Promise.all([
+        groupId ? getRecords('sys_user_group', { query: 'sys_id=' + groupId, fields: ['name'], limit: 1 }) : [],
+        modelId && /^[0-9a-f]{32}$/i.test(modelId)
+          ? getRecords('cmdb_hardware_product_model', { query: 'sys_id=' + modelId, fields: ['name'], limit: 1 }) : []
+      ]);
+      report.sampleGroup = groups.length ? groups[0].name : null;
+      report.sampleModel = models.length ? models[0].name : (edgeOverride && first.table === 'cmdb_ci_ip_router' ? edgeOverride.modelName : null);
+    }
     report.remaining = missing.length;
     report.done = false;
     return report;

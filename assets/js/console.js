@@ -305,7 +305,8 @@
             + '. Already there ' + (seen.already || 0)
             + (mode === 'apply' ? ', created ' + seen.created + ', failed ' + seen.failed : '')
             + '. Location: ' + (r.location.found ? 'found "' + r.location.name + '"' : (r.location.created ? 'created' : 'will be created'))
-            + (r.sample && r.sample.short_description ? '\n      e.g. ' + r.sample.name + ': "' + r.sample.short_description + '"' : '')
+            + (r.sample && r.sample.short_description ? '\n      e.g. ' + r.sample.name + ': "' + r.sample.short_description + '"'
+              + (r.sampleModel ? ', model ' + r.sampleModel : '') + (r.sampleGroup ? ', support group ' + r.sampleGroup : '') : '')
             + (r.warnings && r.warnings.length ? '\n      ! ' + r.warnings.join('\n      ! ') : '')
             + (r.errors && r.errors.length ? '\n      x ' + r.errors.join('\n      x ') : ''));
         }
