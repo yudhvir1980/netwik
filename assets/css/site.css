@@ -279,7 +279,7 @@ a:hover { color: #0B7A58; }
 .nk-wf-in { animation: nk-rise .35s ease-out both; }
 
 /* One square per device. 755 of them, so the ratio is the picture. */
-.nk-wf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(9px, 1fr)); gap: 2px; }
+.nk-wf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(5px, 1fr)); gap: 1px; }
 .nk-wf-grid span { aspect-ratio: 1 / 1; background: #ECEEF0; transition: background .3s ease; }
 
 .nk-wf-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border-top: 1px solid var(--line); }

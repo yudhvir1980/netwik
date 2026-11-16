@@ -109,18 +109,18 @@
 <h2 style="margin: 0; font-weight: 500; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.08; letter-spacing: -.035em">What is built today, and what is still a design</h2>
 <p style="margin: 0; color: #3D4147">Three of these steps run against a live ServiceNow instance today: receiving the alert, finding the affected devices, and the task that stops the flow and asks an engineer a question. They are marked <span style="color: #0B7A58; font-weight: 500">built and running today</span>.</p>
 <p style="margin: 0; color: #3D4147">The rest are designed and written up, but not built. What you see on this page is a simulation of the whole flow, so you can see where it is going. I would rather show you the join than hide it.</p>
-<p style="margin: 0; color: #3D4147">Of the fourteen steps, only one needs an AI model: reading the vendor's wording and turning it into rules. The other thirteen are ordinary code. A check that an AI model gets right 99 times in 100 is a check that marks seven devices safe when they are not.</p>
+<p style="margin: 0; color: #3D4147">Of the fourteen steps, only one needs an AI model: reading the vendor's wording and turning it into rules. The other thirteen are ordinary code. A check that an AI model gets right 99 times in 100 is a check that marks about 38 devices safe when they are not.</p>
 <a href="built-on.html" class="nk-btn" style="align-self: flex-start; margin-top: 6px; background: #0A0A0B; color: #FFFFFF; text-decoration: none; font-weight: 600; font-size: 16px; padding: 15px 22px">What agents are built on &nbsp;→</a>
 </div>
 
 <div style="flex: 1 1 340px; min-width: 0">
 <div style="padding-bottom: 22px; border-top: 1px solid #0A0A0B">
 <h3 style="margin: 16px 0 0; font-size: 17px; font-weight: 500">Which numbers are real</h3>
-<p style="margin: 6px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">For Cisco with the login bypass: 755 devices, 10 built by another vendor, 12 on an affected version, 7 of those at regulated sites, none reachable from the internet. Those came from a real check against a real instance. The other scenarios use made-up numbers, and the page says so when you pick one.</p>
+<p style="margin: 6px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">For Cisco with the login bypass: 3,843 devices across all 31 sites, 42 built by another vendor, 39 on an affected version, 19 of those at regulated sites, none reachable from the internet. Those came from a real check against a real instance. The other scenarios use made-up numbers, and the page says so when you pick one.</p>
 </div>
 <div style="padding-bottom: 22px; border-top: 1px solid #E2E4E7">
 <h3 style="margin: 16px 0 0; font-size: 17px; font-weight: 500">Where the honest answer was duller</h3>
-<p style="margin: 6px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">I expected an emergency at the edge of the network. Once the data was repaired, none of the twelve faced the internet. It became a question of change windows and regulated sites instead, which is less dramatic and much more like the real job.</p>
+<p style="margin: 6px 0 0; color: #5B6068; font-size: 15px; line-height: 1.5">I expected an emergency at the edge of the network. Once the data was repaired, none of the affected devices faced the internet, and that held when all 31 sites were loaded. It became a question of change windows and regulated sites instead, which is less dramatic and much more like the real job.</p>
 </div>
 <div style="border-top: 1px solid #E2E4E7">
 <h3 style="margin: 16px 0 0; font-size: 17px; font-weight: 500">What the agents are never allowed to do</h3>

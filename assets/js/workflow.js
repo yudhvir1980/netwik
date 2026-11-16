@@ -193,16 +193,17 @@
     host.appendChild(card);
   }
 
-  /* 755 squares, one per device. The point of the picture is the ratio.
+  /* One square per device, 3,843 of them. The point of the picture is the ratio.
      Returns a painter taking how far the check has got, 0 to 1. */
   function blockGrid(host, block) {
     var COLOURS = { unseen: '#ECEEF0', front: '#0A0A0B', hot: '#E5484D', dim: '#A9AEB6', clear: '#BFE6D6' };
     var kind = [];
     var i;
     for (i = 0; i < block.total; i++) kind.push('clear');
-    for (i = 0; i < block.hot; i++) kind[(i * 61 + 29) % block.total] = 'hot';
+    for (i = 0; i < block.hot; i++) kind[(i * 67 + 29) % block.total] = 'hot';
     var left = block.dim;
-    /* 149 shares no factor with 755, so this visits every square once. */
+    /* 67 and 149 share no factor with 3,843 (9 x 7 x 61), so no square is
+       picked twice. Check this again if the total changes. */
     for (i = 0; i < block.total && left > 0; i++) {
       var k = (i * 149 + 11) % block.total;
       if (kind[k] === 'clear') { kind[k] = 'dim'; left--; }

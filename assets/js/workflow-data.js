@@ -7,9 +7,12 @@
  * deadlines.
  *
  * Honesty: only Cisco with the login bypass uses real numbers. They come
- * from a match against the ServiceNow instance: 755 devices on the list, 10
- * built by another vendor, 12 on an affected version, 7 of those at
- * regulated sites, none reachable from the internet. Every other pair is
+ * from a match against the ServiceNow instance on 16 November 2026, after
+ * all 31 sites were loaded: 3,843 devices on the list, 42 built by another
+ * vendor, 39 on an affected version (all switches, at 12 sites), 19 of those
+ * at regulated sites, none reachable from the internet. Everything after
+ * step 3 (which are switched on, the plan, the one device too old to fix) is
+ * the simulation built on those numbers. Every other pair is
  * made up to show how the flow changes, `real` is false for them, and the
  * page says so. Do not mark another pair real without a match behind it.
  *
@@ -26,7 +29,7 @@
 (function () {
   'use strict';
 
-  var TOTAL = 755;
+  var TOTAL = 3843;
 
   var VENDORS = {
     cisco: {
@@ -37,38 +40,38 @@
       fixedA: '17.9.5',
       fixedB: '17.12.2',
       running: '17.6.6',
-      mine: 745, other: 10, hit: 12, regulated: 7, internet: 0,
-      on: 9, off: 3, upgraded: 6, config: 2,
+      mine: 3801, other: 42, hit: 39, regulated: 19, internet: 0,
+      on: 31, off: 8, upgraded: 16, config: 14,
       sites: [
         { code: 'PNQ', name: 'Pune', reg: true, n: 5 },
-        { code: 'LON', name: 'London', reg: false, n: 5 },
-        { code: 'NCL', name: 'Newcastle', reg: true, n: 2 }
+        { code: 'T1', name: 'the four campuses (5 each)', reg: false, n: 20 },
+        { code: 'T2', name: 'the seven other plants (2 each)', reg: true, n: 14 }
       ],
-      shape: 'None of the twelve can be reached from the internet, so this is not a panic. Seven are at regulated sites, so they cannot simply be patched tonight.',
+      shape: 'None of the 39 can be reached from the internet, so this is not a panic. But they are spread over 12 sites, and 19 are at regulated sites, so they cannot simply be patched tonight.',
       bands: [
-        '2 core switches at Pune. A regulated site, and the most important devices',
-        '5 devices at London',
-        '2 switches at Newcastle, under a change freeze'
+        '5 switches at Pune. A regulated site, and the most important devices',
+        '12 switches at the four campuses: London, Boston, Zurich and Singapore Hub',
+        '14 factory-floor switches at the seven other plants, under change freezes'
       ],
       options: [
-        { label: 'Install the fixed software', sub: '6 devices. Each restarts once, inside an agreed window', value: 'recommended', tone: 'good' },
-        { label: 'Switch off {featureShort}', sub: '2 switches at Newcastle. No restart, and the risk is gone today', value: 'do now', tone: 'good' },
+        { label: 'Install the fixed software', sub: '16 switches. Each restarts once, inside an agreed window', value: 'recommended', tone: 'good' },
+        { label: 'Switch off {featureShort}', sub: '14 factory-floor switches at the plants. No restart, so production does not stop', value: 'do now', tone: 'good' },
         { label: 'Put extra protection in front', sub: 'Limits who can reach a device while it waits for its fix', value: 'stopgap', tone: 'warn' },
-        { label: 'Replace the equipment', sub: '1 edge router at London is too old. No fix will ever exist for it', value: 'must buy', tone: 'hot' },
+        { label: 'Replace the equipment', sub: '1 access switch at London is too old. No fix will ever exist for it', value: 'must buy', tone: 'hot' },
         { label: 'Accept the risk for a limited time', sub: 'Only with senior sign-off and a review date', value: 'last resort', tone: 'hot' }
       ],
       waves: [
-        { label: 'Night 1, tonight', sub: 'London: the 2 least important switches, as a trial run', value: '22:00', tone: 'good' },
-        { label: 'Night 2, tomorrow', sub: 'London: their 2 partner switches', value: '22:00', tone: 'good' },
-        { label: 'Night 3, Saturday', sub: 'Pune: 2 core switches, in the approved window', value: '02:00', tone: 'warn' },
-        { label: 'Today, no restart', sub: 'Newcastle: switch off {featureShort} on 2 switches under the change freeze', value: 'today', tone: 'good' },
-        { label: 'No fix possible', sub: 'London: 1 old edge router goes to step 13 for a senior decision', value: 'held', tone: 'hot' }
+        { label: 'Night 1, tonight', sub: 'London: 2 access switches, as a trial run', value: '22:00', tone: 'good' },
+        { label: 'Night 2, tomorrow', sub: 'Boston, Zurich and Singapore Hub: 3 switches each, at night in each city', value: '22:00 local', tone: 'good' },
+        { label: 'Night 3, Saturday', sub: 'Pune: 5 switches, in the approved window', value: '02:00', tone: 'warn' },
+        { label: 'Today, no restart', sub: 'Seven plants: switch off {featureShort} on 14 factory-floor switches', value: 'today', tone: 'good' },
+        { label: 'No fix possible', sub: 'London: 1 old access switch goes to step 13 for a senior decision', value: 'held', tone: 'hot' }
       ],
-      crCount: 7,
-      crMix: '6 upgrades and 1 settings change',
-      crUrgent: 2,
+      crCount: 23,
+      crMix: '16 upgrades and 7 settings changes, one for each plant',
+      crUrgent: 5,
       crSample: {
-        device: 'A core switch at Pune (1 of 2)',
+        device: 'A switch at Pune (1 of 5)',
         when: 'Saturday 02:00, in the approved window',
         steps: [
           'Save the current settings and software so they can be put back.',
@@ -78,19 +81,19 @@
         ]
       },
       clashes: [
-        { label: 'Other work on the same devices', sub: 'Another change is already booked on two of the London switches tomorrow night', value: 'clash', tone: 'hot' },
+        { label: 'Other work on the same devices', sub: 'Another change is already booked on two of the Boston switches tomorrow night', value: 'clash', tone: 'hot' },
         { label: 'No-change period', sub: 'Saturday falls inside the quarter-end freeze at Pune', value: 'clash', tone: 'hot' },
-        { label: 'How the plan was changed', sub: 'Night 2 moved back one night. Night 3 moved to the first approved window after the freeze', value: 're-planned', tone: 'warn' }
+        { label: 'How the plan was changed', sub: 'Boston moved back one night. Pune moved to the first approved window after the freeze', value: 're-planned', tone: 'warn' }
       ],
       exec: [
         { label: 'Night 1, London', sub: '2 of 2 switches upgraded', value: 'done', tone: 'good' },
-        { label: 'Night 2, London', sub: '1 of 2 upgraded. The other failed to restart and was put back safely', value: 'retry', tone: 'warn' },
-        { label: 'Night 2, second try', sub: 'Upgraded successfully the next night', value: 'done', tone: 'good' },
-        { label: 'Night 3, Pune', sub: '2 of 2 core switches upgraded in the approved window', value: 'done', tone: 'good' },
-        { label: 'Newcastle', sub: '{featureShortCap} switched off on 2 switches', value: 'done', tone: 'good' },
+        { label: 'Night 2, three campuses', sub: '8 of 9 upgraded. One at Zurich failed to restart and was put back safely', value: 'retry', tone: 'warn' },
+        { label: 'Night 2, second try', sub: 'The Zurich switch upgraded successfully the next night', value: 'done', tone: 'good' },
+        { label: 'Night 3, Pune', sub: '5 of 5 switches upgraded in the approved window', value: 'done', tone: 'good' },
+        { label: 'Seven plants', sub: '{featureShortCap} switched off on 14 factory-floor switches', value: 'done', tone: 'good' },
         { label: 'Marked done, but not changed', sub: '1 switch still showed the old version. Caught, reopened, then fixed', value: 'caught', tone: 'hot' }
       ],
-      oldKit: '1 edge router at London',
+      oldKit: '1 access switch at London',
       oldWhy: 'The vendor stopped supporting this model, so it will never get the fixed software.'
     },
     paloalto: {
@@ -101,7 +104,7 @@
       fixedA: '10.2.9',
       fixedB: '11.1.3',
       running: '10.2.6',
-      mine: 10, other: 745, hit: 6, regulated: 2, internet: 4,
+      mine: 42, other: 3801, hit: 6, regulated: 2, internet: 4,
       on: 5, off: 1, upgraded: 4, config: 0,
       sites: [
         { code: 'LON', name: 'London', reg: false, n: 3 },
