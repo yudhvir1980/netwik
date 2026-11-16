@@ -306,7 +306,8 @@
             + (mode === 'apply' ? ', created ' + seen.created + ', failed ' + seen.failed : '')
             + '. Location: ' + (r.location.found ? 'found "' + r.location.name + '"' : (r.location.created ? 'created' : 'will be created'))
             + (r.sample && r.sample.short_description ? '\n      e.g. ' + r.sample.name + ': "' + r.sample.short_description + '"'
-              + (r.sampleModel ? ', model ' + r.sampleModel : '') + (r.sampleGroup ? ', support group ' + r.sampleGroup : '') : '')
+              + (r.sampleModel ? ', model ' + r.sampleModel : '') + (r.sampleGroup ? ', support group ' + r.sampleGroup : '')
+              + (r.siteTeam ? ', managed by ' + r.siteTeam : '') : '')
             + (r.warnings && r.warnings.length ? '\n      ! ' + r.warnings.join('\n      ! ') : '')
             + (r.errors && r.errors.length ? '\n      x ' + r.errors.join('\n      x ') : ''));
         }
@@ -314,6 +315,50 @@
       });
     }
 
+    /* The devices already loaded move to their regional site IT group. New
+       copies get it when they are made, so only these need it. */
+    var regrouped = { updated: 0, toChange: 0 };
+    function regroup(codes, index) {
+      if (index >= codes.length || stopped) return null;
+      var code = codes[index];
+      var rounds = 0;
+      var first = null;
+      var done = 0;
+      function round() {
+        rounds++;
+        totals.calls++;
+        show('regrouping the devices already at ' + code + (rounds > 1 ? ', batch ' + rounds : ''));
+        return post('/api/snow-load-sites', { mode: mode, regroup: code, batch: 40 }).then(function (result) {
+          var data = result.data || {};
+          var g = data.regroup;
+          if (result.status !== 200 || !g || g.error) {
+            stopped = 'Stopped regrouping at ' + code + '. ' + result.status + ': ' + (data.error || (g && g.error) || 'no reason given');
+            return null;
+          }
+          if (!first) first = g;
+          done += g.updated || 0;
+          totals.failed += g.failed || 0;
+          if (mode === 'apply' && !g.done && g.updated > 0 && rounds < 40) return round();
+          if (mode === 'apply' && !g.done) {
+            stopped = 'Stopped regrouping at ' + code + ': a batch changed nothing. ' + (g.errors && g.errors.length ? g.errors[0] : '');
+          }
+          return null;
+        });
+      }
+      return round().then(function () {
+        if (first) {
+          regrouped.toChange += first.toChange || 0;
+          regrouped.updated += done;
+          lines.push(code + ': ' + first.devices + ' devices, ' + (first.toChange || 0) + ' to move to ' + first.team
+            + (mode === 'apply' ? ', moved ' + done : '') + '.'
+            + (first.groupsMissing && first.groupsMissing.length && index === 0
+              ? '\n      ! Not in the instance yet, created on load with no members or manager: ' + first.groupsMissing.join(', ') : ''));
+        }
+        return regroup(codes, index + 1);
+      });
+    }
+
+    var loadedCodes = [];
     totals.calls++;
     show('reading what is loaded today');
     post('/api/snow-load-sites', { mode: mode }).then(function (result) {
@@ -322,6 +367,7 @@
         stopped = 'The server answered ' + result.status + ': ' + (data.error || 'no reason given');
         return null;
       }
+      loadedCodes = data.loadedToday || [];
       lines.push('Loaded today: ' + (data.loadedToday || []).join(', ')
         + '. Sales offices are copied from ' + (data.salesOfficeTemplate || 'nothing') + '.');
       (data.problems || []).forEach(function (p) { lines.push('PROBLEM: ' + p); });
@@ -332,12 +378,18 @@
       }
       return site(data.sites, 0);
     }).then(function () {
+      if (stopped) return null;
+      lines.push('');
+      lines.push('Devices already loaded: "managed by" becomes the regional site IT group. The support group stays.');
+      return regroup(loadedCodes, 0);
+    }).then(function () {
       var seconds = ((Date.now() - started) / 1000).toFixed(0);
       var head = mode === 'apply'
-        ? (stopped ? 'STOPPED EARLY. ' : 'Load finished. ') + 'Created ' + totals.created + ', failed ' + totals.failed
+        ? (stopped ? 'STOPPED EARLY. ' : 'Load finished. ') + 'Created ' + totals.created + ', moved ' + regrouped.updated
+          + ' existing devices to their site team, failed ' + totals.failed
           + ', in ' + seconds + 's. Press Load again to carry on: what exists is skipped.'
         : 'Preview in ' + seconds + 's. Nothing was written. ' + totals.planned + ' devices planned, '
-          + totals.already + ' already there.';
+          + totals.already + ' already there, ' + regrouped.toChange + ' existing devices to move to their site team.';
       out.textContent = head + (stopped ? '\n\n' + stopped : '') + '\n\n' + lines.join('\n')
         + (firstSample ? '\n\nA sample of what would be created, for ' + firstSample.site + ':\n'
           + JSON.stringify(firstSample.record, null, 2) : '');

@@ -21,16 +21,74 @@
 import { requireSession, unauthorised } from '../lib/auth.js';
 import { sendJson, methodOf, readJsonBody } from '../lib/http.js';
 import {
-  getRecords, mapLimited, instanceHost, configProblem,
+  getRecords, countRecords, mapLimited, instanceHost, configProblem,
   ServiceNowError, ConfigError
 } from '../lib/servicenow.js';
 import {
-  createEstateRecord, createEstateModel, writeProblem, isWriteEnabled, WriteRefused
+  createEstateRecord, createEstateModel, createEstateGroup, patchMany,
+  writeProblem, isWriteEnabled, WriteRefused
 } from '../lib/servicenow-write.js';
 import {
-  MARKER, ORIGINALS, SITES, BRANCH_MODEL, targets, templateCodeFor, buildPlan, countByRole,
-  legacyBranchCodes, transform, transformLocation, transformModel, matchLocation
+  MARKER, ORIGINALS, SITES, BRANCH_MODEL, SITE_TEAMS, targets, templateCodeFor, buildPlan, countByRole,
+  legacyBranchCodes, transform, transformLocation, transformModel, matchLocation,
+  siteTeamFor, groupRecord
 } from '../lib/estate-load.js';
+
+/* The three regional site IT groups, by name. On apply, any that are missing
+   are created first, so no device is ever pointed at a group that does not
+   exist. Returns { ids: name -> sys_id, created: [names], missing: [names] }. */
+async function siteTeams(mode) {
+  const rows = await getRecords('sys_user_group', {
+    query: 'nameIN' + SITE_TEAMS.join(','), fields: ['sys_id', 'name'], limit: 10
+  });
+  const ids = {};
+  rows.forEach(function (r) { ids[r.name] = r.sys_id; });
+  const missing = SITE_TEAMS.filter(function (n) { return !ids[n]; });
+  const created = [];
+  if (mode === 'apply') {
+    for (const name of missing) {
+      const made = await createEstateGroup(groupRecord(name), mode, MARKER);
+      if (!made.ok || !made.sys_id) {
+        throw new ServiceNowError('Could not create the group ' + name + ': ' + (made.error || 'no id came back'));
+      }
+      ids[name] = made.sys_id;
+      created.push(name);
+    }
+    return { ids: ids, created: created, missing: [] };
+  }
+  return { ids: ids, created: created, missing: missing };
+}
+
+/* Point the devices already at a site at its regional site IT group, one
+   batch per call. Only managed_by_group changes; the support group stays. */
+async function regroupSite(code, customerId, mode, batch) {
+  const teamName = siteTeamFor(code);
+  if (!teamName) return { site: code, error: 'No region is known for ' + code + '.' };
+  const teams = await siteTeams(mode);
+  const teamId = teams.ids[teamName];
+  const base = 'company=' + customerId + '^u_site_code=' + code;
+  const query = teamId ? base + '^managed_by_group!=' + teamId + '^ORmanaged_by_groupISEMPTY' : base;
+  const total = await countRecords(PARENT, { query: base });
+  const toChange = await countRecords(PARENT, { query: query });
+  const report = {
+    site: code, team: teamName, devices: total, toChange: toChange,
+    groupsCreated: teams.created, groupsMissing: teams.missing,
+    updated: 0, failed: 0, errors: []
+  };
+  if (mode !== 'apply' || !toChange) {
+    report.remaining = toChange;
+    report.done = mode === 'apply' || !toChange;
+    return report;
+  }
+  const rows = await getRecords(PARENT, { query: query, fields: ['sys_id'], limit: batch, timeoutMs: 9000 });
+  const result = await patchMany(PARENT, rows.map(function (r) { return r.sys_id; }), { managed_by_group: teamId }, mode, 6);
+  report.updated = result.updated;
+  report.failed = result.failed;
+  report.errors = result.errors.map(function (e) { return e.sysId + ': ' + e.error; });
+  report.remaining = toChange - result.updated;
+  report.done = report.remaining <= 0;
+  return report;
+}
 
 const PARENT = 'cmdb_ci_netgear';
 const NOT_LOADED = [
@@ -215,6 +273,15 @@ async function workOnSite(site, plan, facts, customerId, mode, batch) {
   const edgeOverride = await edgeOverrideFor(site, plan, facts, warnings, mode);
   const siteIndex = SITES.map(function (s) { return s.code; }).indexOf(site.code);
 
+  const teamName = siteTeamFor(site.code);
+  const teams = await siteTeams(mode);
+  let siteTeamId = teamName ? teams.ids[teamName] : null;
+  report.siteTeam = teamName;
+  if (teamName && !siteTeamId) {
+    warnings.push('The group ' + teamName + ' is not in the instance. The load creates it, with no members or manager.');
+    siteTeamId = '(the new ' + teamName + ' group)';
+  }
+
   if (mode !== 'apply') {
     /* Show a router where one is still to be made, since its model and
        description are the ones most likely to be wrong. */
@@ -229,7 +296,7 @@ async function workOnSite(site, plan, facts, customerId, mode, batch) {
     report.sample = source ? transform(source, first, {
       customerId: customerId, site: site, siteIndex: siteIndex,
       locationId: location ? location.sys_id : '(the new location)',
-      templateSite: templateSite, edgeOverride: edgeOverride
+      templateSite: templateSite, edgeOverride: edgeOverride, siteTeamId: siteTeamId
     }) : null;
     if (report.sample) {
       /* Names, not ids, for the two things a person has to judge. */
@@ -274,7 +341,8 @@ async function workOnSite(site, plan, facts, customerId, mode, batch) {
     if (!source) return Promise.resolve({ ok: false, name: item.newName, error: 'Template ' + item.templateName + ' was not found.' });
     return createEstateRecord(table, transform(source, item, {
       customerId: customerId, site: site, siteIndex: siteIndex,
-      locationId: location.sys_id, templateSite: templateSite, edgeOverride: edgeOverride
+      locationId: location.sys_id, templateSite: templateSite, edgeOverride: edgeOverride,
+      siteTeamId: siteTeamId
     }), mode, guard);
   });
 
@@ -341,6 +409,18 @@ export default async function handler(req, res) {
       problems: plan.problems,
       notLoadedByThis: NOT_LOADED
     };
+
+    /* Moving the devices already loaded to their regional site IT group. */
+    if (body && body.regroup) {
+      const code = String(body.regroup).toUpperCase();
+      const known = SITES.map(function (s) { return s.code; });
+      if (known.indexOf(code) === -1) { sendJson(res, 400, { error: code + ' is not one of the sites.' }); return; }
+      const result = await regroupSite(code, owner.sys_id, mode, batch);
+      sendJson(res, 200, Object.assign(base, {
+        regroup: result, remaining: result.remaining, done: result.done, elapsedMs: Date.now() - started
+      }));
+      return;
+    }
 
     if (!siteCode) {
       sendJson(res, 200, Object.assign(base, {
