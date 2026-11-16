@@ -102,7 +102,10 @@ async function edgeOverrideFor(site, plan, facts, warnings) {
       warnings.push('No old edge router is loaded to copy, so ' + site.name + ' gets a current one.');
       return null;
     }
-    return { model_id: old.model_id, firmware_version: old.firmware_version, manufacturer: old.manufacturer };
+    return {
+      model_id: old.model_id, firmware_version: old.firmware_version, manufacturer: old.manufacturer,
+      modelName: old.modelName, replacesModelName: template.modelName
+    };
   }
 
   /* A current sales-office router: the 8200 model if the instance has it. */
@@ -116,9 +119,13 @@ async function edgeOverrideFor(site, plan, facts, warnings) {
       return null;
     }
     warnings.push('No Catalyst 8200 model is in the instance, so ' + site.name + ' gets a ' + current.modelName + '.');
-    return { model_id: current.model_id, firmware_version: current.firmware_version, manufacturer: current.manufacturer };
+    return {
+      model_id: current.model_id, firmware_version: current.firmware_version, manufacturer: current.manufacturer,
+      modelName: current.modelName, replacesModelName: template.modelName
+    };
   }
   return {
+    modelName: found[0].name, replacesModelName: template.modelName,
     model_id: found[0].sys_id,
     firmware_version: current ? current.firmware_version : null,
     manufacturer: current ? current.manufacturer : null
@@ -129,7 +136,10 @@ async function workOnSite(site, plan, facts, customerId, mode, batch) {
   const warnings = [];
   const templateCode = templateCodeFor(site, plan.branchTemplate);
   const named = SITES.filter(function (s) { return s.code === templateCode; })[0] || plan.loadedBranch;
-  const templateSite = { code: templateCode, name: named ? named.name : '' };
+  const templateSite = {
+    code: templateCode, name: named ? named.name : '',
+    city: named ? named.city : '', needles: named ? named.needles : [], tier: named ? named.tier : ''
+  };
 
   const [templateRows, existingRows, locations] = await Promise.all([
     getRecords(PARENT, {
@@ -187,7 +197,9 @@ async function workOnSite(site, plan, facts, customerId, mode, batch) {
   const siteIndex = SITES.map(function (s) { return s.code; }).indexOf(site.code);
 
   if (mode !== 'apply') {
-    const first = take[0];
+    /* Show a router where there is one in this batch, since its description
+       is the one most likely to be wrong. */
+    const first = take.filter(function (i) { return i.table === 'cmdb_ci_ip_router'; })[0] || take[0];
     const source = byName[first.templateName.toUpperCase()];
     report.sample = source ? transform(source, first, {
       customerId: customerId, site: site, siteIndex: siteIndex,
