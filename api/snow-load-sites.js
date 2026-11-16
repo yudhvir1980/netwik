@@ -410,6 +410,35 @@ export default async function handler(req, res) {
       notLoadedByThis: NOT_LOADED
     };
 
+    /* Reads only: the WAN lines as they are stored, and anything they are
+       related to, so the copy of the lines can be built on their real shape. */
+    if (body && body.lines === 'show') {
+      const raw = await getRecords('u_cmdb_ci_circuit', { limit: 100, displayValue: 'all', timeoutMs: 9000 });
+      const lines = raw.map(function (r) {
+        const out = {};
+        Object.keys(r).sort().forEach(function (key) {
+          if (key.indexOf('sys_') === 0 && key !== 'sys_id' && key !== 'sys_class_name') return;
+          const v = r[key];
+          const value = v && typeof v === 'object' ? v.value : v;
+          const shown = v && typeof v === 'object' ? v.display_value : v;
+          if (value === '' && (shown === '' || shown === undefined)) return;
+          out[key] = String(shown) === String(value) ? value : { value: value, shown: shown };
+        });
+        return out;
+      });
+      const ids = lines.map(function (l) { return typeof l.sys_id === 'object' ? l.sys_id.value : l.sys_id; }).filter(Boolean);
+      const relationships = ids.length ? await getRecords('cmdb_rel_ci', {
+        query: 'parentIN' + ids.join(',') + '^ORchildIN' + ids.join(','),
+        fields: ['parent', 'child', 'type'], displayValue: 'true', limit: 300, timeoutMs: 9000
+      }) : [];
+      sendJson(res, 200, Object.assign(base, {
+        lineCount: lines.length, lines: lines,
+        relationshipCount: relationships.length, relationships: relationships,
+        elapsedMs: Date.now() - started
+      }));
+      return;
+    }
+
     /* Moving the devices already loaded to their regional site IT group. */
     if (body && body.regroup) {
       const code = String(body.regroup).toUpperCase();

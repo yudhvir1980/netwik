@@ -19,6 +19,7 @@
   var schemaButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-schemabtn'));
   var runButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-runbtn'));
   var loadButtons = Array.prototype.slice.call(document.querySelectorAll('.nk-loadbtn'));
+  var linesButton = document.getElementById('lines-show');
   var loadHint = document.getElementById('loadhint');
   var out = document.getElementById('out');
 
@@ -62,6 +63,7 @@
       var isApply = b.getAttribute('data-mode') === 'apply';
       enable(b, Boolean(state.user) && state.snow && (!isApply || state.snowWrite));
     });
+    if (linesButton) enable(linesButton, Boolean(state.user) && state.snow);
     if (loadHint) {
       loadHint.textContent = state.user && state.snow && !state.snowWrite
         ? 'Load is unavailable: writing is switched off. Set SERVICENOW_WRITE_ENABLED to true in Vercel and redeploy, then switch it back off when the load is done.'
@@ -404,6 +406,25 @@
   loadButtons.forEach(function (button) {
     button.addEventListener('click', function () { runLoad(button.getAttribute('data-mode')); });
   });
+
+  /* Reads only: the WAN lines as stored, before a copy of them is built. */
+  if (linesButton) {
+    linesButton.addEventListener('click', function () {
+      enable(linesButton, false);
+      var started = Date.now();
+      out.textContent = 'Reading the WAN lines...';
+      post('/api/snow-load-sites', { lines: 'show' }).then(function (result) {
+        var data = result.data || {};
+        out.textContent = 'Read in ' + ((Date.now() - started) / 1000).toFixed(1) + 's. Nothing was written.\n\n'
+          + (result.status !== 200 ? 'The server answered ' + result.status + ': ' + (data.error || 'no reason given') + '\n\n' : '')
+          + JSON.stringify({ lineCount: data.lineCount, relationshipCount: data.relationshipCount, lines: data.lines, relationships: data.relationships }, null, 2);
+        render();
+      }).catch(function (error) {
+        out.textContent = 'The request failed: ' + String(error);
+        render();
+      });
+    });
+  }
 
   fixButtons.forEach(function (button) {
     button.addEventListener('click', function () {
