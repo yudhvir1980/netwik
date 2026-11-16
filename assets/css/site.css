@@ -340,7 +340,7 @@ a:hover { color: #0B7A58; }
 .nk-cu-table thead th { border-top: 0; padding-top: 0; font-size: 13px; color: var(--muted); }
 .nk-cu-table tbody th { font-weight: 500; white-space: nowrap; }
 
-.nk-cu-grid { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(14px, 1fr)); gap: 3px; }
+.nk-cu-grid { margin-top: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(8px, 1fr)); gap: 2px; }
 .nk-cu-grid span { aspect-ratio: 1 / 1; transition: opacity .2s ease; }
 .nk-cu-kinds { margin-top: 28px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 24px; }
 .nk-cu-kinds > div { transition: opacity .2s ease; }
@@ -369,7 +369,7 @@ a:hover { color: #0B7A58; }
 @media (max-width: 600px) {
   .nk-cu-tiers, .nk-cu-facts { grid-template-columns: minmax(0, 1fr); }
   .nk-cu-design { padding: 18px 16px 4px; }
-  .nk-cu-grid { grid-template-columns: repeat(auto-fill, minmax(10px, 1fr)); gap: 2px; }
+  .nk-cu-grid { grid-template-columns: repeat(auto-fill, minmax(5px, 1fr)); gap: 1px; }
   /* Four nav items have to fit on one line under the logo. */
   nav[aria-label="Main"] { gap: 4px 12px !important; font-size: 12px !important; letter-spacing: .04em !important; }
 }

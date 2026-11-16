@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The network the agents work on: Netwik</title>
-<meta name="description" content="The network behind the Netwik demos, counted from a live ServiceNow instance: 755 devices, how one site is put together, and how sites are connected.">
+<meta name="description" content="The network behind the Netwik demos, counted from a live ServiceNow instance: 3,807 devices across 31 sites, how one site is put together, and how sites are connected.">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,9 +38,9 @@
 <div style="margin-top: 36px; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 40px 56px">
 <div style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
 <p class="nk-rise" style="margin: 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: #0B7A58">Counted from the instance</p>
-<h1 class="nk-rise" style="margin: 0; font-weight: 500; font-size: clamp(38px, 5vw, 62px); line-height: 1.02; letter-spacing: -.045em; animation-delay: .06s">The network the agents work on: 755 devices.</h1>
+<h1 class="nk-rise" style="margin: 0; font-weight: 500; font-size: clamp(38px, 5vw, 62px); line-height: 1.02; letter-spacing: -.045em; animation-delay: .06s">The network the agents work on: 3,807 devices.</h1>
 <p class="nk-rise" style="margin: 0; font-size: 19px; line-height: 1.5; color: #5B6068; max-width: 540px; animation-delay: .12s">Veridian's network is made up, but it is really there: every device is a record in a ServiceNow instance that the agents read. The numbers on this page were counted from that instance on <span id="nw-checked"></span>, not taken from a design.</p>
-<p class="nk-rise" style="margin: 0; font-size: 17px; line-height: 1.5; color: #3D4147; max-width: 540px; animation-delay: .18s">The design covers all 31 sites. What is loaded today adds up to five of them: a data centre, the London head office, the Newcastle and Pune plants, and one sales office.</p>
+<p class="nk-rise" style="margin: 0; font-size: 17px; line-height: 1.5; color: #3D4147; max-width: 540px; animation-delay: .18s">All 31 sites are in the instance. Five came loaded: a data centre, the London head office, the Newcastle and Pune plants, and the Paris sales office. I built the other 26 by copying a loaded site of the same kind, device for device.</p>
 </div>
 <div id="nw-stats" class="nk-cu-stats nk-rise" style="flex: 1 1 380px; min-width: 0; animation-delay: .2s"></div>
 </div>
@@ -50,7 +50,7 @@
 <h2 style="margin: 0; font-weight: 500; font-size: clamp(28px, 3.2vw, 40px); line-height: 1.08; letter-spacing: -.035em">Every device, one square each</h2>
 <p style="margin: 12px 0 0; color: #5B6068; max-width: 680px">Most of a network is Wi-Fi. The few devices that connect sites and guard the way in are the ones a fault hurts most. Choose a kind to pick it out.</p>
 <div id="nw-kind-chips" style="margin-top: 24px; display: flex; flex-wrap: wrap; gap: 8px"></div>
-<div id="nw-grid" class="nk-cu-grid" role="img" aria-label="755 squares, one for each device: 650 Wi-Fi access points, 86 switches, 10 firewalls and 9 WAN edge routers."></div>
+<div id="nw-grid" class="nk-cu-grid" role="img" aria-label="3,807 squares, one for each device: 3,290 Wi-Fi access points, 426 switches, 42 firewalls and 49 WAN edge routers."></div>
 <div id="nw-kinds" class="nk-cu-kinds"></div>
 <p id="nw-controllers" style="margin: 16px 0 0; font-size: 14px; color: #5B6068; max-width: 680px"></p>
 </section>

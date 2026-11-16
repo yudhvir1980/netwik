@@ -152,7 +152,7 @@
     }).forEach(function (i) {
       var s = D.sites[i];
       var g = svg('g', { 'class': 'nk-cu-dot' });
-      var ring = s.loaded ? svg('circle', { cx: pts[i].x, cy: pts[i].y, r: 11.5, fill: 'none', stroke: '#0A0A0B', 'stroke-width': 1.5 }) : null;
+      var ring = s.original ? svg('circle', { cx: pts[i].x, cy: pts[i].y, r: 11.5, fill: 'none', stroke: '#0A0A0B', 'stroke-width': 1.5 }) : null;
       if (ring) g.appendChild(ring);
       var dot = svg('circle', { cx: pts[i].x, cy: pts[i].y, r: 7, fill: tone(tierByKey[s.tier].tone).solid, stroke: '#FFFFFF', 'stroke-width': 2 });
       g.appendChild(dot);
@@ -208,7 +208,7 @@
         ['People', t.users],
         ['Promised working time', t.target + ' of each month'],
         ['Changes', s.tier === 'T2' ? 'Only in an approved weekend window' : 'In a normal change window'],
-        ['In the instance today', s.loaded ? 'Yes, its devices are loaded' : (s.tier === 'T4' ? 'One sales office is, not confirmed which' : 'Not yet')]
+        ['In the instance', s.original ? 'Yes, it came loaded' : 'Yes, copied from a loaded site of the same kind']
       ].forEach(function (row) {
         var cell = sty(el('div'), 'flex: 1 1 150px; min-width: 0');
         cell.appendChild(sty(el('div', null, row[0]), 'font-size: 13px; color: #5B6068'));

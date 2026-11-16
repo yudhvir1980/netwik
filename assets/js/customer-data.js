@@ -6,14 +6,15 @@
  * Three kinds of number live here, and the pages say which is which:
  *   - the company profile (employees, revenue, 31 sites) is the story I wrote;
  *   - the split of people by region and business unit is made up to fit it;
- *   - everything under `estate` was counted from the ServiceNow instance on
- *     15 November 2026, scoped to the customer company. Do not round these up
- *     to the design: 755 devices is what is there.
+ *   - everything under `estate` is what the ServiceNow instance holds for the
+ *     customer company. Do not round these to the design.
  *
- * The estate counts add up to exactly five sites built to the standard design
- * (one data centre, one campus, two plants, one branch). Device names confirm
- * DC1, LON, NCL and PNQ. Which branch is loaded is not confirmed, so no branch
- * is marked `loaded`.
+ * The instance came with five sites: DC1, LON, NCL, PNQ and the Paris sales
+ * office (755 devices, counted on 15 November 2026). On 16 November the
+ * console's load built the other 26 by copying a loaded site of the same kind,
+ * device for device: 3,084 more, none failed. The counts below were read
+ * from the instance after the load, on 16 November 2026, by the console's
+ * readiness check. `original` marks the first five.
  */
 (function () {
   'use strict';
@@ -91,32 +92,32 @@
     }
   ];
 
-  /* lat and lon place the dot. `loaded` marks a site whose devices are in the
-     instance today. */
+  /* lat and lon place the dot. `original` marks the five sites the instance
+     came with; the other 26 were copied from them. */
   var SITES = [
-    { name: 'London DC1', place: 'Slough, UK', region: 'EMEA', tier: 'T0', lat: 51.51, lon: -0.59, loaded: true },
+    { name: 'London DC1', place: 'Slough, UK', region: 'EMEA', tier: 'T0', lat: 51.51, lon: -0.59, original: true },
     { name: 'Ashburn DC2', place: 'Virginia, US', region: 'AMER', tier: 'T0', lat: 39.04, lon: -77.49 },
     { name: 'Singapore DC3', place: 'Singapore', region: 'APAC', tier: 'T0', lat: 1.42, lon: 103.9 },
 
-    { name: 'London HQ', place: 'Canary Wharf, UK', region: 'EMEA', tier: 'T1', lat: 51.5, lon: -0.02, loaded: true },
+    { name: 'London HQ', place: 'Canary Wharf, UK', region: 'EMEA', tier: 'T1', lat: 51.5, lon: -0.02, original: true },
     { name: 'Boston', place: 'Massachusetts, US', region: 'AMER', tier: 'T1', lat: 42.36, lon: -71.06 },
     { name: 'Zurich', place: 'Switzerland', region: 'EMEA', tier: 'T1', lat: 47.38, lon: 8.54 },
     { name: 'Singapore Hub', place: 'Singapore', region: 'APAC', tier: 'T1', lat: 1.29, lon: 103.85 },
 
-    { name: 'Newcastle', place: 'UK', region: 'EMEA', tier: 'T2', lat: 54.98, lon: -1.62, loaded: true },
+    { name: 'Newcastle', place: 'UK', region: 'EMEA', tier: 'T2', lat: 54.98, lon: -1.62, original: true },
     { name: 'Leeds', place: 'UK', region: 'EMEA', tier: 'T2', lat: 53.8, lon: -1.55 },
     { name: 'Cork', place: 'Ireland', region: 'EMEA', tier: 'T2', lat: 51.9, lon: -8.47 },
     { name: 'Ghent', place: 'Belgium', region: 'EMEA', tier: 'T2', lat: 51.05, lon: 3.72 },
     { name: 'Raleigh', place: 'North Carolina, US', region: 'AMER', tier: 'T2', lat: 35.78, lon: -78.64 },
     { name: 'Indianapolis', place: 'Indiana, US', region: 'AMER', tier: 'T2', lat: 39.77, lon: -86.16 },
-    { name: 'Pune', place: 'India', region: 'APAC', tier: 'T2', lat: 18.52, lon: 73.86, loaded: true },
+    { name: 'Pune', place: 'India', region: 'APAC', tier: 'T2', lat: 18.52, lon: 73.86, original: true },
     { name: 'Jurong', place: 'Singapore', region: 'APAC', tier: 'T2', lat: 1.33, lon: 103.72 },
 
     { name: 'Oxford', place: 'UK', region: 'EMEA', tier: 'T3', lat: 51.75, lon: -1.26 },
     { name: 'San Diego', place: 'California, US', region: 'AMER', tier: 'T3', lat: 32.72, lon: -117.16 },
     { name: 'Shanghai', place: 'China', region: 'APAC', tier: 'T3', lat: 31.23, lon: 121.47 },
 
-    { name: 'Paris', place: 'France', region: 'EMEA', tier: 'T4', lat: 48.86, lon: 2.35 },
+    { name: 'Paris', place: 'France', region: 'EMEA', tier: 'T4', lat: 48.86, lon: 2.35, original: true },
     { name: 'Madrid', place: 'Spain', region: 'EMEA', tier: 'T4', lat: 40.42, lon: -3.7 },
     { name: 'Milan', place: 'Italy', region: 'EMEA', tier: 'T4', lat: 45.46, lon: 9.19 },
     { name: 'Munich', place: 'Germany', region: 'EMEA', tier: 'T4', lat: 48.14, lon: 11.58 },
@@ -186,25 +187,25 @@
     { level: 'P4', name: 'Low', respond: '8 hours', fix: '5 working days', hours: 'Working hours' }
   ];
 
-  /* Counted from the instance, scoped to the customer company. */
+  /* What the instance holds for the customer company. */
   var ESTATE = {
-    checked: '15 November 2026',
-    total: 755,
+    checked: '16 November 2026',
+    total: 3807,
     kinds: [
-      { key: 'ap', name: 'Wi-Fi access points', count: 650, tone: 'green', does: 'The boxes on the ceiling that laptops and phones connect to.' },
-      { key: 'switch', name: 'Switches', count: 86, tone: 'ink', does: 'Connect everything inside a building.' },
-      { key: 'firewall', name: 'Firewalls', count: 10, tone: 'amber', does: 'Decide what traffic is allowed in and out.' },
-      { key: 'edge', name: 'WAN edge routers', count: 9, tone: 'blue', does: 'Connect each site to the others.' }
+      { key: 'ap', name: 'Wi-Fi access points', count: 3290, tone: 'green', does: 'The boxes on the ceiling that laptops and phones connect to.' },
+      { key: 'switch', name: 'Switches', count: 426, tone: 'ink', does: 'Connect everything inside a building.' },
+      { key: 'firewall', name: 'Firewalls', count: 42, tone: 'amber', does: 'Decide what traffic is allowed in and out.' },
+      { key: 'edge', name: 'WAN edge routers', count: 49, tone: 'blue', does: 'Connect each site to the others.' }
     ],
-    controllers: 8,
+    controllers: 36,
     makers: [
-      { name: 'Cisco', count: 745, tone: 'ink' },
-      { name: 'Palo Alto Networks', count: 10, tone: 'amber' }
+      { name: 'Cisco', count: 3765, tone: 'ink' },
+      { name: 'Palo Alto Networks', count: 42, tone: 'amber' }
     ],
-    internetFacing: 19,
+    internetFacing: 91,
     models: 22,
     links: 12,
-    sites: 5,
+    sites: 31,
     /* Whole-table counts. The instance also holds a few sample records of its
        own, so the pages show these rounded and say so. */
     history: [

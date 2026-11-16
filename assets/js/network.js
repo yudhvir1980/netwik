@@ -57,7 +57,7 @@
     if (!host) return;
     var rows = [[num(E.total), 'Devices in all']];
     E.kinds.forEach(function (k) { rows.push([num(k.count), k.name]); });
-    rows.push([E.sites, 'Sites loaded today']);
+    rows.push([E.sites, 'Sites in the instance']);
     rows.forEach(function (row) {
       var cell = el('div', 'nk-cu-stat');
       cell.appendChild(el('div', 'nk-cu-statnum', row[0]));
